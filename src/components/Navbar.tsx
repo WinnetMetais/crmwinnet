@@ -13,14 +13,14 @@ const Navbar = () => {
     <header className="border-b">
       <div className="container mx-auto flex h-16 items-center px-4">
         <div className="mr-8 font-bold text-xl">
-          <Link to="/">Ad Platform</Link>
+          <Link to="/">Winnet Metais</Link>
         </div>
         <nav className="flex items-center space-x-6 text-sm font-medium">
           <Link 
-            to="/" 
+            to="/dashboard" 
             className={cn(
               "transition-colors hover:text-primary",
-              isActive('/') ? "text-primary" : "text-muted-foreground"
+              isActive('/dashboard') ? "text-primary" : "text-muted-foreground"
             )}
           >
             Dashboard
