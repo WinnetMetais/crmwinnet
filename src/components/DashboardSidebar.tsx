@@ -13,7 +13,11 @@ import {
   Target,
   MessageSquare,
   Megaphone,
-  TrendingUp
+  TrendingUp,
+  Search,
+  ShoppingBag,
+  ShoppingCart,
+  Tag
 } from 'lucide-react';
 import {
   Sidebar,
@@ -156,6 +160,62 @@ const DashboardSidebar = () => {
                   <Link to="/ads">
                     <Megaphone className="mr-2 h-4 w-4" />
                     <span>Anúncios</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Comercial</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/products')}
+                  tooltip="Produtos"
+                  asChild
+                >
+                  <Link to="/products">
+                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    <span>Produtos</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/sales')}
+                  tooltip="Vendas"
+                  asChild
+                >
+                  <Link to="/sales">
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <span>Vendas</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/promotions')}
+                  tooltip="Promoções"
+                  asChild
+                >
+                  <Link to="/promotions">
+                    <Tag className="mr-2 h-4 w-4" />
+                    <span>Promoções</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/market-research')}
+                  tooltip="Pesquisa de Mercado"
+                  asChild
+                >
+                  <Link to="/market-research">
+                    <Search className="mr-2 h-4 w-4" />
+                    <span>Pesquisa de Mercado</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
