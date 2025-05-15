@@ -8,7 +8,12 @@ import {
   Users, 
   CalendarIcon, 
   Filter, 
-  Download
+  FileBarChart,
+  Layers,
+  Target,
+  MessageSquare,
+  Megaphone,
+  TrendingUp
 } from 'lucide-react';
 import {
   Sidebar,
@@ -21,6 +26,9 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 
 const DashboardSidebar = () => {
@@ -28,16 +36,17 @@ const DashboardSidebar = () => {
   
   // Helper function to check if a route is active
   const isActive = (path: string) => location.pathname === path;
+  const isActiveGroup = (paths: string[]) => paths.some(path => location.pathname.startsWith(path));
 
   return (
     <Sidebar variant="inset" className="border-r">
       <SidebarHeader>
         <div className="flex h-12 items-center px-4">
-          <span className="font-bold text-lg">Dashboard</span>
+          <span className="font-bold text-lg">Insight Hub</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup defaultOpen={isActiveGroup(['/dashboard', '/campaigns', '/audience'])}>
           <SidebarGroupLabel>Análise</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -45,57 +54,153 @@ const DashboardSidebar = () => {
                 <SidebarMenuButton
                   isActive={isActive('/dashboard')}
                   tooltip="Dashboard"
+                  asChild
                 >
-                  <BarChart className="mr-2 h-4 w-4" />
-                  <span>Visão Geral</span>
+                  <Link to="/dashboard">
+                    <BarChart className="mr-2 h-4 w-4" />
+                    <span>Visão Geral</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  isActive={isActive('/campaigns')}
                   tooltip="Campanhas"
+                  asChild
                 >
-                  <PieChart className="mr-2 h-4 w-4" />
-                  <span>Campanhas</span>
+                  <Link to="/campaigns">
+                    <Layers className="mr-2 h-4 w-4" />
+                    <span>Campanhas</span>
+                  </Link>
+                </SidebarMenuButton>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <Link to="/campaigns/google">Google Ads</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <Link to="/campaigns/facebook">Facebook/Instagram</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <Link to="/campaigns/linkedin">LinkedIn</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/audience')}
+                  tooltip="Audiência"
+                  asChild
+                >
+                  <Link to="/audience">
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>Audiência</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  tooltip="Audiência"
+                  isActive={isActive('/performance')}
+                  tooltip="Performance"
+                  asChild
                 >
-                  <Users className="mr-2 h-4 w-4" />
-                  <span>Audiência</span>
+                  <Link to="/performance">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    <span>Performance</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup defaultOpen={isActiveGroup(['/content', '/social'])}>
+          <SidebarGroupLabel>Conteúdo</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/content/plan')}
+                  tooltip="Planejamento"
+                  asChild
+                >
+                  <Link to="/content/plan">
+                    <Target className="mr-2 h-4 w-4" />
+                    <span>Planejamento</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/social')}
+                  tooltip="Redes Sociais"
+                  asChild
+                >
+                  <Link to="/social">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    <span>Redes Sociais</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/ads')}
+                  tooltip="Anúncios"
+                  asChild
+                >
+                  <Link to="/ads">
+                    <Megaphone className="mr-2 h-4 w-4" />
+                    <span>Anúncios</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup defaultOpen={isActiveGroup(['/reports', '/calendar', '/filters'])}>
           <SidebarGroupLabel>Ferramentas</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  tooltip="Filtros"
-                >
-                  <Filter className="mr-2 h-4 w-4" />
-                  <span>Filtros Avançados</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Agenda"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  <span>Agenda</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
+                  isActive={isActive('/reports')}
                   tooltip="Relatórios"
+                  asChild
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  <span>Relatórios</span>
+                  <Link to="/reports">
+                    <FileBarChart className="mr-2 h-4 w-4" />
+                    <span>Relatórios</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/filters')}
+                  tooltip="Filtros"
+                  asChild
+                >
+                  <Link to="/filters">
+                    <Filter className="mr-2 h-4 w-4" />
+                    <span>Filtros Avançados</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive('/calendar')}
+                  tooltip="Agenda"
+                  asChild
+                >
+                  <Link to="/calendar">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <span>Agenda</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -105,7 +210,10 @@ const DashboardSidebar = () => {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton 
+              isActive={isActive('/config')}
+              asChild
+            >
               <Link 
                 to="/config"
                 className="w-full flex items-center"
