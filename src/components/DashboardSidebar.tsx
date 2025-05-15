@@ -46,7 +46,7 @@ const DashboardSidebar = () => {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup defaultOpen={isActiveGroup(['/dashboard', '/campaigns', '/audience'])}>
+        <SidebarGroup>
           <SidebarGroupLabel>Análise</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -119,7 +119,7 @@ const DashboardSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup defaultOpen={isActiveGroup(['/content', '/social'])}>
+        <SidebarGroup>
           <SidebarGroupLabel>Conteúdo</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -163,7 +163,7 @@ const DashboardSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup defaultOpen={isActiveGroup(['/reports', '/calendar', '/filters'])}>
+        <SidebarGroup>
           <SidebarGroupLabel>Ferramentas</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
