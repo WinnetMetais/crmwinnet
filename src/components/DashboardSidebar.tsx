@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -18,8 +17,8 @@ import {
   ShoppingBag,
   ShoppingCart,
   Tag,
-  Pipeline,
-  Funnel,
+  GitBranch,
+  LineChart,
   KanbanSquare
 } from 'lucide-react';
 import {
@@ -189,7 +188,7 @@ const DashboardSidebar = () => {
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild>
                       <Link to="/sales?view=funnel">
-                        <Funnel className="mr-2 h-4 w-4" />
+                        <LineChart className="mr-2 h-4 w-4" />
                         Funil de Vendas
                       </Link>
                     </SidebarMenuSubButton>
@@ -197,7 +196,7 @@ const DashboardSidebar = () => {
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild>
                       <Link to="/sales?view=pipeline">
-                        <Pipeline className="mr-2 h-4 w-4" />
+                        <GitBranch className="mr-2 h-4 w-4" />
                         Pipeline
                       </Link>
                     </SidebarMenuSubButton>

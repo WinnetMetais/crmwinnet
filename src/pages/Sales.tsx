@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Funnel, Pipeline, KanbanSquare } from "lucide-react";
+import { ArrowRight, LineChart, GitBranch, KanbanSquare } from "lucide-react";
 import { SalesFunnelChart } from "@/components/sales/SalesFunnelChart";
 import { SalesPipeline } from "@/components/sales/SalesPipeline";
 import { SalesKanban } from "@/components/sales/SalesKanban";
@@ -28,11 +28,11 @@ const Sales = () => {
         <TabsList className="grid w-full grid-cols-4 md:w-auto md:grid-cols-4">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="funnel" className="flex items-center gap-2">
-            <Funnel className="h-4 w-4" />
+            <LineChart className="h-4 w-4" />
             Funil de Vendas
           </TabsTrigger>
           <TabsTrigger value="pipeline" className="flex items-center gap-2">
-            <Pipeline className="h-4 w-4" />
+            <GitBranch className="h-4 w-4" />
             Pipeline
           </TabsTrigger>
           <TabsTrigger value="kanban" className="flex items-center gap-2">
