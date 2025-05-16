@@ -23,39 +23,53 @@ import Filters from "./pages/Filters";
 import Navbar from "./components/Navbar";
 import Promotions from "./pages/Promotions";
 import Performance from "./pages/Performance";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/config" element={<Config />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/campaigns" element={<Campaigns />} />
-          <Route path="/campaigns/google" element={<GoogleCampaigns />} />
-          <Route path="/sales" element={<Sales />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/content" element={<Content />} />
-          <Route path="/content/plan" element={<ContentPlan />} />
-          <Route path="/content/social" element={<Social />} />
-          <Route path="/social" element={<Social />} />
-          <Route path="/ads" element={<Ads />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/filters" element={<Filters />} />
-          <Route path="/promotions" element={<Promotions />} />
-          <Route path="/performance" element={<Performance />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+    <ThemeProvider defaultTheme="light" storageKey="winnet-theme">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner position="top-right" />
+        <BrowserRouter>
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-1">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/config" element={<Config />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/campaigns" element={<Campaigns />} />
+                <Route path="/campaigns/google" element={<GoogleCampaigns />} />
+                <Route path="/sales" element={<Sales />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/content" element={<Content />} />
+                <Route path="/content/plan" element={<ContentPlan />} />
+                <Route path="/content/social" element={<Social />} />
+                <Route path="/social" element={<Social />} />
+                <Route path="/ads" element={<Ads />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/filters" element={<Filters />} />
+                <Route path="/promotions" element={<Promotions />} />
+                <Route path="/performance" element={<Performance />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
+        </BrowserRouter>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
