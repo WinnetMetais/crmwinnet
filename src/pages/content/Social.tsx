@@ -282,202 +282,202 @@ const Social = () => {
                     <TabsTrigger value="calendar">Calendário</TabsTrigger>
                     <TabsTrigger value="analytics">Análises</TabsTrigger>
                   </TabsList>
-                </Tabs>
-              </CardHeader>
-              
-              <CardContent>
-                <TabsContent value="posts" className="mt-0">
-                  <div className="space-y-6">
-                    <div className="flex justify-end">
-                      <Button variant="outline" size="sm" className="mb-2">
-                        <UploadCloud className="mr-2 h-4 w-4" />
-                        Importar Conteúdo
-                      </Button>
-                    </div>
-                  
-                    {/* Criação rápida de post */}
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="flex items-start gap-4">
-                          <Avatar>
-                            <AvatarFallback>WM</AvatarFallback>
-                            <AvatarImage src="/placeholder.svg" alt="Winnet Metais" />
-                          </Avatar>
-                          <div className="flex-1 space-y-4">
-                            <Textarea 
-                              placeholder="O que deseja compartilhar hoje?" 
-                              className="min-h-20"
-                            />
-                            <div className="flex flex-wrap justify-between items-center gap-2">
-                              <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
-                                  <ImageIcon className="h-4 w-4 mr-1" /> Imagem
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  <FileText className="h-4 w-4 mr-1" /> Documento
-                                </Button>
-                              </div>
-                              <div className="flex gap-2">
-                                <Select defaultValue="instagram">
-                                  <SelectTrigger className="w-[140px]">
-                                    <SelectValue placeholder="Plataforma" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="instagram">Instagram</SelectItem>
-                                    <SelectItem value="linkedin">LinkedIn</SelectItem>
-                                    <SelectItem value="facebook">Facebook</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button variant="outline" size="sm" className="w-[150px] justify-start">
-                                      <Clock className="mr-2 h-4 w-4" />
-                                      Agendar
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                      mode="single"
-                                      selected={date}
-                                      onSelect={setDate}
-                                      initialFocus
-                                      className="p-3"
-                                    />
-                                    <div className="p-3 border-t">
-                                      <Select defaultValue="09:00">
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Horário" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="09:00">09:00</SelectItem>
-                                          <SelectItem value="12:00">12:00</SelectItem>
-                                          <SelectItem value="15:00">15:00</SelectItem>
-                                          <SelectItem value="18:00">18:00</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                  </PopoverContent>
-                                </Popover>
-                                
-                                <Button>Publicar</Button>
+                
+                <CardContent>
+                  <TabsContent value="posts" className="mt-0">
+                    <div className="space-y-6">
+                      <div className="flex justify-end">
+                        <Button variant="outline" size="sm" className="mb-2">
+                          <UploadCloud className="mr-2 h-4 w-4" />
+                          Importar Conteúdo
+                        </Button>
+                      </div>
+                    
+                      {/* Criação rápida de post */}
+                      <Card>
+                        <CardContent className="pt-6">
+                          <div className="flex items-start gap-4">
+                            <Avatar>
+                              <AvatarFallback>WM</AvatarFallback>
+                              <AvatarImage src="/placeholder.svg" alt="Winnet Metais" />
+                            </Avatar>
+                            <div className="flex-1 space-y-4">
+                              <Textarea 
+                                placeholder="O que deseja compartilhar hoje?" 
+                                className="min-h-20"
+                              />
+                              <div className="flex flex-wrap justify-between items-center gap-2">
+                                <div className="flex gap-2">
+                                  <Button variant="outline" size="sm">
+                                    <ImageIcon className="h-4 w-4 mr-1" /> Imagem
+                                  </Button>
+                                  <Button variant="outline" size="sm">
+                                    <FileText className="h-4 w-4 mr-1" /> Documento
+                                  </Button>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Select defaultValue="instagram">
+                                    <SelectTrigger className="w-[140px]">
+                                      <SelectValue placeholder="Plataforma" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="instagram">Instagram</SelectItem>
+                                      <SelectItem value="linkedin">LinkedIn</SelectItem>
+                                      <SelectItem value="facebook">Facebook</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="outline" size="sm" className="w-[150px] justify-start">
+                                        <Clock className="mr-2 h-4 w-4" />
+                                        Agendar
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={setDate}
+                                        initialFocus
+                                        className="p-3"
+                                      />
+                                      <div className="p-3 border-t">
+                                        <Select defaultValue="09:00">
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Horário" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="09:00">09:00</SelectItem>
+                                            <SelectItem value="12:00">12:00</SelectItem>
+                                            <SelectItem value="15:00">15:00</SelectItem>
+                                            <SelectItem value="18:00">18:00</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
+                                  
+                                  <Button>Publicar</Button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    {/* Lista de posts */}
-                    <div className="space-y-6">
-                      {socialPosts.map((post) => (
-                        <Card key={post.id}>
-                          <CardContent className="p-6">
-                            <div className="flex justify-between items-start">
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarFallback>WM</AvatarFallback>
-                                  <AvatarImage src="/placeholder.svg" alt="Winnet Metais" />
-                                </Avatar>
-                                <div>
-                                  <h3 className="font-medium">Winnet Metais</h3>
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
-                                    <span>•</span>
-                                    <span className="flex items-center">
-                                      {getPlatformIcon(post.platform)}
-                                    </span>
-                                    <Badge variant="outline" className={`ml-1 ${getStatusColor(post.status)}`}>
-                                      {post.status}
-                                    </Badge>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Lista de posts */}
+                      <div className="space-y-6">
+                        {socialPosts.map((post) => (
+                          <Card key={post.id}>
+                            <CardContent className="p-6">
+                              <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarFallback>WM</AvatarFallback>
+                                    <AvatarImage src="/placeholder.svg" alt="Winnet Metais" />
+                                  </Avatar>
+                                  <div>
+                                    <h3 className="font-medium">Winnet Metais</h3>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                                      <span>•</span>
+                                      <span className="flex items-center">
+                                        {getPlatformIcon(post.platform)}
+                                      </span>
+                                      <Badge variant="outline" className={`ml-1 ${getStatusColor(post.status)}`}>
+                                        {post.status}
+                                      </Badge>
+                                    </div>
                                   </div>
                                 </div>
+                                
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem>Editar</DropdownMenuItem>
+                                    <DropdownMenuItem>Duplicar</DropdownMenuItem>
+                                    <DropdownMenuItem>Reagendar</DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-600">Excluir</DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                               
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>Editar</DropdownMenuItem>
-                                  <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                                  <DropdownMenuItem>Reagendar</DropdownMenuItem>
-                                  <DropdownMenuItem className="text-red-600">Excluir</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                            
-                            <div className="mt-4">
-                              <p className="text-sm">{post.content}</p>
+                              <div className="mt-4">
+                                <p className="text-sm">{post.content}</p>
+                                
+                                {post.image && (
+                                  <div className="mt-3 rounded-md overflow-hidden">
+                                    <img 
+                                      src={post.image} 
+                                      alt="Conteúdo do post" 
+                                      className="w-full h-auto object-cover" 
+                                    />
+                                  </div>
+                                )}
+                              </div>
                               
-                              {post.image && (
-                                <div className="mt-3 rounded-md overflow-hidden">
-                                  <img 
-                                    src={post.image} 
-                                    alt="Conteúdo do post" 
-                                    className="w-full h-auto object-cover" 
-                                  />
+                              {post.status === 'Publicado' && (
+                                <div className="mt-4 pt-4 border-t">
+                                  <div className="flex justify-between">
+                                    <div className="flex space-x-6">
+                                      <div className="flex items-center text-sm">
+                                        <Heart className="h-4 w-4 mr-1" />
+                                        {post.engagement.likes}
+                                      </div>
+                                      <div className="flex items-center text-sm">
+                                        <MessageCircle className="h-4 w-4 mr-1" />
+                                        {post.engagement.comments}
+                                      </div>
+                                      <div className="flex items-center text-sm">
+                                        <Share className="h-4 w-4 mr-1" />
+                                        {post.engagement.shares}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center text-sm">
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      {post.engagement.reach} visualizações
+                                    </div>
+                                  </div>
                                 </div>
                               )}
-                            </div>
-                            
-                            {post.status === 'Publicado' && (
-                              <div className="mt-4 pt-4 border-t">
-                                <div className="flex justify-between">
-                                  <div className="flex space-x-6">
-                                    <div className="flex items-center text-sm">
-                                      <Heart className="h-4 w-4 mr-1" />
-                                      {post.engagement.likes}
-                                    </div>
-                                    <div className="flex items-center text-sm">
-                                      <MessageCircle className="h-4 w-4 mr-1" />
-                                      {post.engagement.comments}
-                                    </div>
-                                    <div className="flex items-center text-sm">
-                                      <Share className="h-4 w-4 mr-1" />
-                                      {post.engagement.shares}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center text-sm">
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    {post.engagement.reach} visualizações
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="calendar" className="mt-0">
-                  <div className="p-4 bg-muted/50 rounded-md h-[400px] flex items-center justify-center">
-                    <div className="text-center">
-                      <CalendarIcon className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-                      <h3 className="font-medium mb-1">Calendário de Publicações</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Visualize e organize suas publicações em um calendário interativo
-                      </p>
+                  </TabsContent>
+                  
+                  <TabsContent value="calendar" className="mt-0">
+                    <div className="p-4 bg-muted/50 rounded-md h-[400px] flex items-center justify-center">
+                      <div className="text-center">
+                        <CalendarIcon className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
+                        <h3 className="font-medium mb-1">Calendário de Publicações</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Visualize e organize suas publicações em um calendário interativo
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="analytics" className="mt-0">
-                  <div className="p-4 bg-muted/50 rounded-md h-[400px] flex items-center justify-center">
-                    <div className="text-center">
-                      <BarChart className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-                      <h3 className="font-medium mb-1">Análise de Performance</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Explore métricas detalhadas sobre o desempenho dos seus posts
-                      </p>
+                  </TabsContent>
+                  
+                  <TabsContent value="analytics" className="mt-0">
+                    <div className="p-4 bg-muted/50 rounded-md h-[400px] flex items-center justify-center">
+                      <div className="text-center">
+                        <BarChart className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
+                        <h3 className="font-medium mb-1">Análise de Performance</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Explore métricas detalhadas sobre o desempenho dos seus posts
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
-              </CardContent>
+                  </TabsContent>
+                </CardContent>
+                </Tabs>
+              </CardHeader>
             </Card>
           </div>
         </div>
