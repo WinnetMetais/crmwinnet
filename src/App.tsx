@@ -14,6 +14,9 @@ import Sales from "./pages/Sales";
 import Customers from "./pages/Customers";
 import Products from "./pages/Products";
 import Content from "./pages/Content";
+import ContentPlan from "./pages/content/ContentPlan";
+import Social from "./pages/content/Social";
+import Ads from "./pages/content/Ads";
 import Calendar from "./pages/Calendar";
 import Filters from "./pages/Filters";
 import Navbar from "./components/Navbar";
@@ -37,6 +40,9 @@ const App = () => (
           <Route path="/customers" element={<Customers />} />
           <Route path="/products" element={<Products />} />
           <Route path="/content" element={<Content />} />
+          <Route path="/content/plan" element={<ContentPlan />} />
+          <Route path="/social" element={<Social />} />
+          <Route path="/ads" element={<Ads />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/filters" element={<Filters />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

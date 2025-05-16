@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -20,7 +19,8 @@ import {
   ChevronDown,
   Calendar,
   Users,
-  DollarSign
+  DollarSign,
+  Box
 } from "lucide-react";
 import {
   Select,
@@ -541,7 +541,7 @@ const Filters = () => {
                       
                       <div className="py-3 first:pt-0 last:pb-0">
                         <h4 className="text-sm font-medium flex items-center">
-                          <Package className="h-4 w-4 mr-2" />
+                          <Box className="h-4 w-4 mr-2" />
                           Produto
                         </h4>
                         <ul className="text-sm text-muted-foreground mt-2 space-y-1">
