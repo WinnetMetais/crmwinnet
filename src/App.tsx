@@ -11,6 +11,11 @@ import Dashboard from "./pages/Dashboard";
 import Reports from "./pages/Reports";
 import Campaigns from "./pages/Campaigns";
 import Sales from "./pages/Sales";
+import Customers from "./pages/Customers";
+import Products from "./pages/Products";
+import Content from "./pages/Content";
+import Calendar from "./pages/Calendar";
+import Filters from "./pages/Filters";
 import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
@@ -29,6 +34,11 @@ const App = () => (
           <Route path="/reports" element={<Reports />} />
           <Route path="/campaigns" element={<Campaigns />} />
           <Route path="/sales" element={<Sales />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/content" element={<Content />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/filters" element={<Filters />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
