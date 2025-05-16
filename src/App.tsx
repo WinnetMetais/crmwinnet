@@ -10,6 +10,7 @@ import Config from "./pages/Config";
 import Dashboard from "./pages/Dashboard";
 import Reports from "./pages/Reports";
 import Campaigns from "./pages/Campaigns";
+import GoogleCampaigns from "./pages/campaigns/GoogleCampaigns";
 import Sales from "./pages/Sales";
 import Customers from "./pages/Customers";
 import Products from "./pages/Products";
@@ -20,6 +21,8 @@ import Ads from "./pages/content/Ads";
 import Calendar from "./pages/Calendar";
 import Filters from "./pages/Filters";
 import Navbar from "./components/Navbar";
+import Promotions from "./pages/Promotions";
+import Performance from "./pages/Performance";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,7 @@ const App = () => (
           <Route path="/config" element={<Config />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/campaigns" element={<Campaigns />} />
+          <Route path="/campaigns/google" element={<GoogleCampaigns />} />
           <Route path="/sales" element={<Sales />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/products" element={<Products />} />
@@ -46,6 +50,8 @@ const App = () => (
           <Route path="/ads" element={<Ads />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/filters" element={<Filters />} />
+          <Route path="/promotions" element={<Promotions />} />
+          <Route path="/performance" element={<Performance />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

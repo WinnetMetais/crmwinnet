@@ -1,239 +1,73 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Search, 
-  Plus, 
-  Calendar,
-  Edit,
-  Eye, 
-  MoreHorizontal,
-  Instagram,
-  Facebook,
-  Linkedin,
-  FileText,
-  Image as ImageIcon,
-  Video,
-  PenTool,
-  ThumbsUp,
-  MessageSquare
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
+import { Target, MessageSquare, Megaphone, Calendar, Image, FileText, BarChart4, PlusCircle, ChevronRight } from "lucide-react";
 
 const Content = () => {
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Sample content data
-  const contentItems = [
+  // Content modules
+  const contentModules = [
     {
-      id: 1,
-      title: 'Tipos de Aço Inox: Qual o Melhor para Sua Indústria?',
-      type: 'blog',
-      status: 'Publicado',
-      date: '15 Mai 2025',
-      author: 'Ana Silva',
-      platform: 'Blog',
-      engagement: {
-        views: 1240,
-        likes: 58,
-        comments: 12
-      },
-      image: '/placeholder.svg'
+      title: "Planejamento de Conteúdo",
+      description: "Defina a estratégia e calendário de conteúdo",
+      icon: <Target className="h-6 w-6" />,
+      link: "/content/plan",
+      color: "bg-blue-50 text-blue-600"
     },
     {
-      id: 2,
-      title: 'Novos produtos de alumínio para o setor automotivo',
-      type: 'social',
-      status: 'Publicado',
-      date: '12 Mai 2025',
-      author: 'Carlos Santos',
-      platform: 'Instagram',
-      engagement: {
-        views: 3580,
-        likes: 245,
-        comments: 37
-      },
-      image: '/placeholder.svg'
+      title: "Redes Sociais",
+      description: "Gerencie posts e métricas das redes sociais",
+      icon: <MessageSquare className="h-6 w-6" />,
+      link: "/social",
+      color: "bg-green-50 text-green-600"
     },
     {
-      id: 3,
-      title: 'Processo de Fabricação: Do Lingote às Chapas Metálicas',
-      type: 'video',
-      status: 'Publicado',
-      date: '08 Mai 2025',
-      author: 'Ricardo Gomes',
-      platform: 'YouTube',
-      engagement: {
-        views: 2150,
-        likes: 186,
-        comments: 24
-      },
-      image: '/placeholder.svg'
-    },
-    {
-      id: 4,
-      title: 'Sustentabilidade na Indústria Metalúrgica',
-      type: 'blog',
-      status: 'Rascunho',
-      date: '20 Mai 2025',
-      author: 'Marina Costa',
-      platform: 'Blog',
-      engagement: {
-        views: 0,
-        likes: 0,
-        comments: 0
-      },
-      image: '/placeholder.svg'
-    },
-    {
-      id: 5,
-      title: 'Novidades em ligas de bronze para uso marítimo',
-      type: 'social',
-      status: 'Agendado',
-      date: '22 Mai 2025',
-      author: 'Pedro Alves',
-      platform: 'LinkedIn',
-      engagement: {
-        views: 0,
-        likes: 0,
-        comments: 0
-      },
-      image: '/placeholder.svg'
-    },
-    {
-      id: 6,
-      title: 'Guia Completo: Como Escolher o Metal Certo para Seu Projeto',
-      type: 'ebook',
-      status: 'Publicado',
-      date: '30 Abr 2025',
-      author: 'Juliana Mendes',
-      platform: 'Website',
-      engagement: {
-        views: 578,
-        likes: 0,
-        comments: 0,
-        downloads: 145
-      },
-      image: '/placeholder.svg'
-    },
-    {
-      id: 7,
-      title: 'Comparativo: Aço Carbono vs Aço Galvanizado',
-      type: 'infographic',
-      status: 'Publicado',
-      date: '05 Mai 2025',
-      author: 'Felipe Martins',
-      platform: 'Facebook',
-      engagement: {
-        views: 4250,
-        likes: 320,
-        comments: 45,
-        shares: 87
-      },
-      image: '/placeholder.svg'
-    },
-    {
-      id: 8,
-      title: 'Aplicações do Cobre na Indústria Moderna',
-      type: 'blog',
-      status: 'Rascunho',
-      date: '25 Mai 2025',
-      author: 'Ana Silva',
-      platform: 'Blog',
-      engagement: {
-        views: 0,
-        likes: 0,
-        comments: 0
-      },
-      image: '/placeholder.svg'
-    },
-  ];
-
-  // Filter content based on active tab and search term
-  const filteredContent = contentItems.filter(item => {
-    // Filter by type
-    if (activeTab !== 'all' && item.type !== activeTab) {
-      return false;
-    }
-    
-    // Filter by search term
-    if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
-    }
-    
-    return true;
-  });
-
-  // Content metrics
-  const contentMetrics = [
-    { 
-      title: 'Total de Publicações',
-      value: '36',
-      change: '+8',
-      changeLabel: 'vs. mês anterior',
-      icon: FileText
-    },
-    { 
-      title: 'Engajamento',
-      value: '24.5K',
-      change: '+15%',
-      changeLabel: 'vs. mês anterior',
-      icon: ThumbsUp
-    },
-    { 
-      title: 'Taxa de Conversão',
-      value: '3.8%',
-      change: '+0.5%',
-      changeLabel: 'vs. mês anterior',
-      icon: MessageSquare
+      title: "Anúncios",
+      description: "Configure e analise campanhas de anúncios",
+      icon: <Megaphone className="h-6 w-6" />,
+      link: "/ads",
+      color: "bg-purple-50 text-purple-600"
     }
   ];
 
-  // Function to render platform icon
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case 'Instagram':
-        return <Instagram className="h-4 w-4" />;
-      case 'Facebook':
-        return <Facebook className="h-4 w-4" />;
-      case 'LinkedIn':
-        return <Linkedin className="h-4 w-4" />;
-      default:
-        return null;
+  // Recent content
+  const recentContent = [
+    {
+      title: "Post LinkedIn - Lançamento de Produto",
+      type: "Rede Social",
+      date: "15/05/2025",
+      status: "Publicado"
+    },
+    {
+      title: "Campanha Google Ads - Aço Inox",
+      type: "Anúncio",
+      date: "12/05/2025",
+      status: "Ativa"
+    },
+    {
+      title: "Post Instagram - Processo Produtivo",
+      type: "Rede Social",
+      date: "10/05/2025",
+      status: "Programado"
+    },
+    {
+      title: "Artigo Blog - Tendências do Setor",
+      type: "Blog",
+      date: "05/05/2025",
+      status: "Rascunho"
     }
-  };
+  ];
 
-  // Function to render content type icon
-  const getContentTypeIcon = (type: string) => {
-    switch (type) {
-      case 'blog':
-        return <FileText className="h-4 w-4 mr-2" />;
-      case 'social':
-        return <MessageSquare className="h-4 w-4 mr-2" />;
-      case 'video':
-        return <Video className="h-4 w-4 mr-2" />;
-      case 'infographic':
-        return <ImageIcon className="h-4 w-4 mr-2" />;
-      case 'ebook':
-        return <FileText className="h-4 w-4 mr-2" />;
-      default:
-        return <FileText className="h-4 w-4 mr-2" />;
-    }
-  };
+  // Performance metrics
+  const performanceMetrics = [
+    { name: "Impressões totais", value: "128.450", change: "+12%", status: "positive" },
+    { name: "Interações", value: "8.940", change: "+15%", status: "positive" },
+    { name: "Taxa de Engajamento", value: "6.9%", change: "+3.2%", status: "positive" },
+    { name: "Leads gerados", value: "42", change: "-5%", status: "negative" }
+  ];
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -245,256 +79,186 @@ const Content = () => {
             <div className="flex justify-between items-center mb-8">
               <div className="flex space-x-4 items-center">
                 <SidebarTrigger />
-                <h1 className="text-3xl font-bold">Gestão de Conteúdo</h1>
+                <div>
+                  <h1 className="text-3xl font-bold">Gestão de Conteúdo</h1>
+                  <p className="text-muted-foreground">Planeje, crie e analise o conteúdo da Winnet Metais</p>
+                </div>
               </div>
               
               <div className="flex space-x-2">
-                <Button variant="outline">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Calendário
-                </Button>
-                
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Novo Conteúdo
+                <Button asChild>
+                  <Link to="/content/plan">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Calendário de Conteúdo
+                  </Link>
                 </Button>
               </div>
             </div>
 
-            {/* Content Metrics */}
+            {/* Content Modules */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {contentMetrics.map((metric, index) => (
-                <Card key={index}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center text-sm font-medium">
-                      <metric.icon className="mr-2 h-4 w-4" />
-                      {metric.title}
-                    </CardTitle>
+              {contentModules.map((module, index) => (
+                <Card key={index} className="transition-all hover:shadow-md">
+                  <CardHeader>
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${module.color}`}>
+                      {module.icon}
+                    </div>
+                    <CardTitle>{module.title}</CardTitle>
+                    <CardDescription>{module.description}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{metric.value}</div>
-                    <p className="text-xs text-green-600 mt-1">{metric.change} {metric.changeLabel}</p>
-                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to={module.link}>
+                        Acessar
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardFooter>
                 </Card>
               ))}
             </div>
 
-            {/* Content Calendar Preview */}
+            {/* Performance Overview */}
             <Card className="mb-8">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  Calendário de Conteúdo
+                  <BarChart4 className="mr-2 h-5 w-5" />
+                  Performance de Conteúdo
                 </CardTitle>
-                <CardDescription>
-                  Publicações planejadas para os próximos 7 dias
-                </CardDescription>
+                <CardDescription>Métricas dos últimos 30 dias</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-7 gap-2">
-                  {["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"].map((day) => (
-                    <div key={day} className="text-center font-medium text-sm">
-                      {day}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {performanceMetrics.map((metric, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <p className="text-sm text-muted-foreground">{metric.name}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-2xl font-bold">{metric.value}</p>
+                        <span className={`text-sm px-2 py-1 rounded-full ${
+                          metric.status === 'positive' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {metric.change}
+                        </span>
+                      </div>
                     </div>
                   ))}
-                  
-                  {Array.from({ length: 7 }).map((_, index) => {
-                    const date = new Date();
-                    date.setDate(date.getDate() + index);
-                    const dayNumber = date.getDate();
-                    
-                    // Randomly assign content to some days for demo
-                    const hasContent = [0, 2, 4].includes(index);
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className={`border rounded-md p-2 min-h-[80px] ${
-                          index === 0 ? "bg-blue-50 border-blue-200" : ""
-                        }`}
-                      >
-                        <div className="text-right text-sm font-medium mb-1">{dayNumber}</div>
-                        {hasContent && (
-                          <div className={`text-xs p-1 rounded mb-1 ${
-                            index === 0 ? "bg-blue-100 text-blue-700" :
-                            index === 2 ? "bg-green-100 text-green-700" :
-                            "bg-purple-100 text-purple-700"
-                          }`}>
-                            {index === 0 ? "Blog post" :
-                             index === 2 ? "Instagram" :
-                             "LinkedIn"}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button variant="outline">Ver Calendário Completo</Button>
+              <CardFooter>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/reports">
+                    Ver Relatório Completo
+                  </Link>
+                </Button>
               </CardFooter>
             </Card>
 
-            {/* Content List */}
+            {/* Recent Content */}
             <Card>
               <CardHeader>
-                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle>Biblioteca de Conteúdo</CardTitle>
-                    <CardDescription>
-                      Gerencie suas publicações e materiais
-                    </CardDescription>
+                    <CardTitle>Conteúdo Recente</CardTitle>
+                    <CardDescription>Últimos conteúdos criados ou programados</CardDescription>
                   </div>
-                  
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar conteúdo..."
-                        className="pl-8 w-full md:w-[250px]"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
-                    
-                    <Tabs 
-                      defaultValue="all" 
-                      className="w-full md:w-auto" 
-                      onValueChange={setActiveTab}
-                      value={activeTab}
-                    >
-                      <TabsList className="grid grid-cols-5 w-full md:w-auto">
-                        <TabsTrigger value="all">Todos</TabsTrigger>
-                        <TabsTrigger value="blog">Blog</TabsTrigger>
-                        <TabsTrigger value="social">Social</TabsTrigger>
-                        <TabsTrigger value="video">Vídeos</TabsTrigger>
-                        <TabsTrigger value="infographic">Infográficos</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                  </div>
+                  <Button size="sm" variant="outline" className="flex items-center">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Criar Novo
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Título</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Autor</TableHead>
-                      <TableHead>Plataforma</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Engajamento</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredContent.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-10">
-                          <FileText className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                          <p className="text-muted-foreground">Nenhum conteúdo encontrado</p>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredContent.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 rounded bg-gray-100 mr-3 overflow-hidden flex-shrink-0">
-                                <img 
-                                  src={item.image} 
-                                  alt={item.title} 
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <span className="font-medium">{item.title}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              {getContentTypeIcon(item.type)}
-                              <span className="capitalize">{item.type}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <Avatar className="h-6 w-6 mr-2">
-                                <AvatarFallback>
-                                  {item.author.split(' ').map(name => name[0]).join('')}
-                                </AvatarFallback>
-                              </Avatar>
-                              {item.author}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              {getPlatformIcon(item.platform)}
-                              <span className="ml-1">{item.platform}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{item.date}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                item.status === 'Publicado' ? 'default' : 
-                                item.status === 'Rascunho' ? 'outline' : 
-                                'secondary'
-                              }
-                              className={
-                                item.status === 'Publicado' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 
-                                item.status === 'Rascunho' ? 'bg-gray-100 text-gray-800 hover:bg-gray-100' :
-                                'bg-blue-100 text-blue-800 hover:bg-blue-100'
-                              }
-                            >
-                              {item.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {item.status === 'Publicado' ? (
-                              <div className="flex items-center text-sm">
-                                <div className="flex items-center mr-2">
-                                  <Eye className="h-3 w-3 mr-1 text-muted-foreground" />
-                                  {item.engagement.views.toLocaleString()}
-                                </div>
-                                <div className="flex items-center">
-                                  <ThumbsUp className="h-3 w-3 mr-1 text-muted-foreground" />
-                                  {item.engagement.likes.toLocaleString()}
-                                </div>
-                              </div>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Visualizar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600">
-                                  <FileText className="h-4 w-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                <div className="space-y-4">
+                  {recentContent.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-md">
+                      <div className="flex items-center">
+                        {item.type === "Rede Social" && (
+                          <div className="bg-green-100 text-green-800 p-2 rounded-md mr-3">
+                            <MessageSquare className="h-5 w-5" />
+                          </div>
+                        )}
+                        {item.type === "Anúncio" && (
+                          <div className="bg-purple-100 text-purple-800 p-2 rounded-md mr-3">
+                            <Megaphone className="h-5 w-5" />
+                          </div>
+                        )}
+                        {item.type === "Blog" && (
+                          <div className="bg-blue-100 text-blue-800 p-2 rounded-md mr-3">
+                            <FileText className="h-5 w-5" />
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium">{item.title}</p>
+                          <p className="text-sm text-muted-foreground">{item.type} • {item.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          item.status === 'Publicado' ? 'bg-green-100 text-green-800' : 
+                          item.status === 'Ativa' ? 'bg-blue-100 text-blue-800' : 
+                          item.status === 'Programado' ? 'bg-purple-100 text-purple-800' : 
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {item.status}
+                        </span>
+                        <Button variant="ghost" size="sm">
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button variant="outline" asChild>
+                  <Link to="/content/plan">
+                    Ver Calendário
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/content/social">
+                    Gerenciar Redes Sociais
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/ads">
+                    Campanhas de Anúncios
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Content Ideas */}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Image className="mr-2 h-5 w-5" />
+                  Banco de Ideias de Conteúdo
+                </CardTitle>
+                <CardDescription>Ideias salvas para criação de conteúdo futuro</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    "Vídeo sobre o processo de fabricação",
+                    "Comparativo entre tipos de aço",
+                    "Estudo de caso com cliente importante",
+                    "Infográfico sobre aplicações dos metais",
+                    "Artigo sobre sustentabilidade no setor metalúrgico",
+                    "Tendências do mercado para 2026"
+                  ].map((idea, index) => (
+                    <div key={index} className="p-3 border rounded-md hover:bg-gray-50 transition-colors">
+                      <p className="font-medium">{idea}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Adicionar Nova Ideia
+                </Button>
+              </CardFooter>
             </Card>
           </div>
         </div>
