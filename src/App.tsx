@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Config from "./pages/Config";
@@ -24,6 +25,7 @@ import Navbar from "./components/Navbar";
 import Promotions from "./pages/Promotions";
 import Performance from "./pages/Performance";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +36,54 @@ const queryClient = new QueryClient({
   },
 });
 
+// Protected route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-gradient text-4xl font-bold">Winnet Metais</div>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Main App component with routing
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/auth" element={<Auth />} />
+    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    <Route path="/config" element={<ProtectedRoute><Config /></ProtectedRoute>} />
+    <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+    <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
+    <Route path="/campaigns/google" element={<ProtectedRoute><GoogleCampaigns /></ProtectedRoute>} />
+    <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
+    <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+    <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+    <Route path="/content" element={<ProtectedRoute><Content /></ProtectedRoute>} />
+    <Route path="/content/plan" element={<ProtectedRoute><ContentPlan /></ProtectedRoute>} />
+    <Route path="/content/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
+    <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
+    <Route path="/ads" element={<ProtectedRoute><Ads /></ProtectedRoute>} />
+    <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+    <Route path="/filters" element={<ProtectedRoute><Filters /></ProtectedRoute>} />
+    <Route path="/promotions" element={<ProtectedRoute><Promotions /></ProtectedRoute>} />
+    <Route path="/performance" element={<ProtectedRoute><Performance /></ProtectedRoute>} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="winnet-theme">
@@ -41,33 +91,17 @@ const App = () => (
         <Toaster />
         <Sonner position="top-right" />
         <BrowserRouter>
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-1">
+          <AuthProvider>
+            <div className="flex flex-col min-h-screen">
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/config" element={<Config />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/campaigns" element={<Campaigns />} />
-                <Route path="/campaigns/google" element={<GoogleCampaigns />} />
-                <Route path="/sales" element={<Sales />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/content" element={<Content />} />
-                <Route path="/content/plan" element={<ContentPlan />} />
-                <Route path="/content/social" element={<Social />} />
-                <Route path="/social" element={<Social />} />
-                <Route path="/ads" element={<Ads />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/filters" element={<Filters />} />
-                <Route path="/promotions" element={<Promotions />} />
-                <Route path="/performance" element={<Performance />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
+                <Route path="/auth" element={null} />
+                <Route path="*" element={<Navbar />} />
               </Routes>
-            </main>
-          </div>
+              <main className="flex-1">
+                <AppRoutes />
+              </main>
+            </div>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
