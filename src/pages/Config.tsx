@@ -28,6 +28,9 @@ import {
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+// Define constant for the redirect URI
+const APP_URL = "https://ad-connect-config.lovable.app";
+
 const Config = () => {
   const [googleAdsToken, setGoogleAdsToken] = useState('');
   const [googleClientId, setGoogleClientId] = useState('');
@@ -47,9 +50,8 @@ const Config = () => {
   }>({});
 
   useEffect(() => {
-    // Set the redirect URI based on the current environment
-    const host = window.location.origin;
-    setGoogleRedirectUri(`${host}/config?provider=google`);
+    // Use the fixed APP_URL instead of window.location.origin
+    setGoogleRedirectUri(`${APP_URL}/config?provider=google`);
     
     // Check for authentication response in the URL
     const url = new URL(window.location.href);
@@ -211,7 +213,7 @@ const Config = () => {
   });
 
   const handleCopyInviteLink = () => {
-    navigator.clipboard.writeText('https://winnet-metais-insight-hub.lovable.app/invite/abc123');
+    navigator.clipboard.writeText(`${APP_URL}/invite/abc123`);
     toast.success("Link de convite copiado para a área de transferência!");
   };
 
