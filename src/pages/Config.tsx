@@ -327,7 +327,7 @@ const Config = () => {
                           <div>
                             <p className="font-medium">1. Verifique os logs da Edge Function</p>
                             <p className="text-xs text-muted-foreground">
-                              Acesse os logs da função "exchange-google-auth-code" no console do Supabase para ver mensagens de erro do servidor.
+                              Acesse os logs da função "exchange-google-auth-code" no console do Supabase para ver mensagens de erro desenvolvidas.
                             </p>
                           </div>
 
@@ -341,14 +341,14 @@ const Config = () => {
                           <div>
                             <p className="font-medium">3. Confirme as credenciais</p>
                             <p className="text-xs text-muted-foreground">
-                              Certifique-se de que o Client ID e Client Secret que você está inserindo no formulário coincidem exatamente com os valores do Google Cloud Console.
+                              Certifique-se de que o Client ID e Client Secret que você está inserindo no formulário específico exatamente aos valores do Google Cloud Console.
                             </p>
                           </div>
 
                           <div>
                             <p className="font-medium">4. Verifique as APIs ativadas</p>
                             <p className="text-xs text-muted-foreground">
-                              No Google Cloud Console, vá para a seção "APIs e Serviços" > "APIs Ativadas" e confirme que as APIs do Google Ads estão ativadas.
+                              No Google Cloud Console, vá para a seção "APIs e Serviços" {'>'} "APIs Ativadas" e confirme que as APIs do Google Ads estão ativadas.
                             </p>
                           </div>
 
