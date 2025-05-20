@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Check, Loader, AlertTriangle, Copy, ArrowRight, UserPlus } from "lucide-react";
+import { Check, Loader, AlertTriangle, Copy, ArrowRight, UserPlus, ExternalLink, Info } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -20,19 +19,141 @@ import {
 import { useForm } from "react-hook-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Config = () => {
   const [googleAdsToken, setGoogleAdsToken] = useState('');
+  const [googleClientId, setGoogleClientId] = useState('');
+  const [googleClientSecret, setGoogleClientSecret] = useState('');
+  const [googleAuthStatus, setGoogleAuthStatus] = useState<"success" | "error" | "pending" | null>(null);
+  const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
   const [facebookAdsToken, setFacebookAdsToken] = useState('');
   const [linkedinAdsToken, setLinkedinAdsToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('tokens');
+  const [googleRedirectUri, setGoogleRedirectUri] = useState('');
   
   const [connectionStatus, setConnectionStatus] = useState<{
     google?: "success" | "error" | "pending" | null,
     facebook?: "success" | "error" | "pending" | null,
     linkedin?: "success" | "error" | "pending" | null,
   }>({});
+
+  useEffect(() => {
+    // Set the redirect URI based on the current environment
+    const host = window.location.origin;
+    setGoogleRedirectUri(`${host}/config?provider=google`);
+    
+    // Check for authentication response in the URL
+    const url = new URL(window.location.href);
+    const provider = url.searchParams.get('provider');
+    const code = url.searchParams.get('code');
+    const error = url.searchParams.get('error');
+    
+    if (provider === 'google' && code) {
+      handleGoogleAuthCode(code);
+    } else if (error) {
+      setGoogleAuthStatus('error');
+      setGoogleAuthError(error);
+      toast.error("Falha na autenticação com Google", {
+        description: error
+      });
+    }
+    
+    // Load stored tokens from localStorage
+    const loadSavedTokens = () => {
+      try {
+        const savedTokens = localStorage.getItem('adTokens');
+        if (savedTokens) {
+          const tokens = JSON.parse(savedTokens);
+          setGoogleAdsToken(tokens.googleAdsToken || '');
+          setFacebookAdsToken(tokens.facebookAdsToken || '');
+          setLinkedinAdsToken(tokens.linkedinAdsToken || '');
+          
+          // Check if Google is connected
+          if (tokens.googleAdsToken) {
+            setConnectionStatus(prev => ({...prev, google: "success"}));
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar tokens salvos", error);
+      }
+    };
+    
+    loadSavedTokens();
+  }, []);
+
+  const handleGoogleAuthCode = async (code: string) => {
+    setGoogleAuthStatus("pending");
+    try {
+      // Clear the URL to avoid re-authorization if page is refreshed
+      window.history.replaceState({}, document.title, "/config");
+      
+      // Exchange the code for tokens using Supabase edge function
+      const { data, error } = await supabase.functions.invoke('exchange-google-auth-code', {
+        body: { 
+          code,
+          redirectUri: googleRedirectUri,
+          clientId: googleClientId,
+          clientSecret: googleClientSecret
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data && data.access_token) {
+        // Save the token
+        const newTokens = {
+          googleAdsToken: data.access_token,
+          facebookAdsToken,
+          linkedinAdsToken
+        };
+        
+        localStorage.setItem('adTokens', JSON.stringify(newTokens));
+        setGoogleAdsToken(data.access_token);
+        setConnectionStatus(prev => ({...prev, google: "success"}));
+        setGoogleAuthStatus("success");
+        
+        toast.success("Conectado ao Google Ads com sucesso!");
+      } else {
+        throw new Error("Resposta inválida da API");
+      }
+    } catch (error: any) {
+      console.error("Erro na autenticação Google:", error);
+      setConnectionStatus(prev => ({...prev, google: "error"}));
+      setGoogleAuthStatus("error");
+      setGoogleAuthError(error.message || "Erro desconhecido");
+      toast.error("Falha na conexão com Google Ads", {
+        description: error.message
+      });
+    }
+  };
+
+  const initiateGoogleAuth = () => {
+    if (!googleClientId) {
+      toast.error("O Client ID é necessário para autenticação");
+      return;
+    }
+
+    // Google OAuth configuration
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.append('client_id', googleClientId);
+    authUrl.searchParams.append('redirect_uri', googleRedirectUri);
+    authUrl.searchParams.append('response_type', 'code');
+    authUrl.searchParams.append('scope', 'https://www.googleapis.com/auth/adwords');
+    authUrl.searchParams.append('access_type', 'offline');
+    authUrl.searchParams.append('prompt', 'consent');
+
+    // Redirect to Google's auth page
+    window.location.href = authUrl.toString();
+  };
 
   const handleSaveConfig = () => {
     setIsLoading(true);
@@ -124,20 +245,124 @@ const Config = () => {
               </TabsList>
               
               <TabsContent value="google">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center">
-                    Google Ads Access Token {renderStatusBadge(connectionStatus.google)}
-                  </label>
-                  <Input 
-                    type="text"
-                    value={googleAdsToken}
-                    onChange={(e) => setGoogleAdsToken(e.target.value)}
-                    placeholder="Insira seu token de acesso do Google Ads"
-                    className="w-full"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    O token pode ser obtido no console do Google Ads API.
-                  </p>
+                <div className="space-y-6">
+                  {googleAuthStatus === "error" && (
+                    <Alert variant="destructive" className="mb-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Erro na autenticação</AlertTitle>
+                      <AlertDescription>
+                        {googleAuthError || "Ocorreu um erro durante a autenticação com Google Ads."}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center">
+                      Google Ads Client ID {renderStatusBadge(connectionStatus.google)}
+                    </label>
+                    <Input 
+                      type="text"
+                      value={googleClientId}
+                      onChange={(e) => setGoogleClientId(e.target.value)}
+                      placeholder="Seu Client ID do Google Cloud Console"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      O Client ID pode ser obtido no console do Google Cloud.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center">
+                      Google Ads Client Secret
+                    </label>
+                    <Input 
+                      type="password"
+                      value={googleClientSecret}
+                      onChange={(e) => setGoogleClientSecret(e.target.value)}
+                      placeholder="Seu Client Secret do Google Cloud Console"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      O Client Secret é necessário para a autenticação OAuth.
+                    </p>
+                  </div>
+
+                  {googleAdsToken && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center">
+                        Token de Acesso (Atual)
+                      </label>
+                      <div className="p-2 bg-slate-50 border rounded-md">
+                        <span className="text-sm font-mono truncate block">
+                          {googleAdsToken.substring(0, 15)}...{googleAdsToken.substring(googleAdsToken.length - 10)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <Button 
+                    onClick={initiateGoogleAuth}
+                    className="mt-4"
+                    disabled={!googleClientId || !googleClientSecret || isLoading}
+                  >
+                    {(isLoading || googleAuthStatus === "pending") ? 
+                      <Loader className="h-4 w-4 mr-2 animate-spin" /> : 
+                      <ExternalLink className="h-4 w-4 mr-2" />}
+                    Conectar com Google Ads
+                  </Button>
+
+                  <Accordion type="single" collapsible className="mt-4">
+                    <AccordionItem value="googleTroubleshooting">
+                      <AccordionTrigger>
+                        <div className="flex items-center">
+                          <Info className="h-4 w-4 mr-2 text-blue-600" />
+                          Solução de problemas
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 text-sm text-slate-700 pl-4 border-l-2 border-slate-200">
+                          <p className="font-medium">Se estiver tendo problemas com a autenticação do Google:</p>
+                          
+                          <div>
+                            <p className="font-medium">1. Verifique os logs da Edge Function</p>
+                            <p className="text-xs text-muted-foreground">
+                              Acesse os logs da função "exchange-google-auth-code" no console do Supabase para ver mensagens de erro do servidor.
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="font-medium">2. Verifique os logs do navegador</p>
+                            <p className="text-xs text-muted-foreground">
+                              Abra o console do navegador (F12) enquanto tenta fazer a autenticação para ver mensagens de erro do lado do cliente.
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="font-medium">3. Confirme as credenciais</p>
+                            <p className="text-xs text-muted-foreground">
+                              Certifique-se de que o Client ID e Client Secret que você está inserindo no formulário coincidem exatamente com os valores do Google Cloud Console.
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="font-medium">4. Verifique as APIs ativadas</p>
+                            <p className="text-xs text-muted-foreground">
+                              No Google Cloud Console, vá para a seção "APIs e Serviços" > "APIs Ativadas" e confirme que as APIs do Google Ads estão ativadas.
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="font-medium">5. Teste com a URL específica</p>
+                            <p className="text-xs text-muted-foreground">
+                              Use exatamente a mesma URL que está configurada nas URIs de redirecionamento autorizado ao tentar fazer a autenticação.
+                            </p>
+                            <p className="mt-1 text-xs font-mono">URI atual: {googleRedirectUri}</p>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
               </TabsContent>
               

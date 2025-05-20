@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,9 +36,8 @@ const queryClient = new QueryClient({
   },
 });
 
-// Temporarily modified ProtectedRoute to allow access without authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { loading } = useAuth();
+  const { loading, user } = useAuth();
   
   if (loading) {
     return (
@@ -50,7 +50,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  // Temporarily allow access without authentication
+  if (!user) {
+    return <Navigate to="/auth" />;
+  }
+  
   return <>{children}</>;
 };
 

@@ -1,1 +1,5 @@
+
 project_id = "fgabadpelymhgvbtemwa"
+
+[functions.exchange-google-auth-code]
+verify_jwt = false
