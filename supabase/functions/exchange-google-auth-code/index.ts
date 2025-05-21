@@ -45,6 +45,11 @@ serve(async (req) => {
       );
     }
 
+    // Log detailed info for debugging (don't log full code or secrets)
+    console.log("Code length:", code.length);
+    console.log("Client ID prefix:", clientId.substring(0, 5) + "...");
+    console.log("Redirect URI:", redirectUri);
+
     // Prepare the token exchange request to Google OAuth 2.0 server
     const formData = new URLSearchParams({
       code,
@@ -70,11 +75,13 @@ serve(async (req) => {
 
     // Check if the exchange was successful
     if (!tokenResponse.ok) {
-      console.error("Google token exchange failed:", tokenData);
+      console.error("Google token exchange failed. Status:", tokenResponse.status);
+      console.error("Error response:", JSON.stringify(tokenData));
       return new Response(
         JSON.stringify({ 
           error: "Failed to exchange code for token", 
-          google_error: tokenData 
+          google_error: tokenData,
+          status: tokenResponse.status
         }),
         {
           status: 400,
@@ -84,6 +91,10 @@ serve(async (req) => {
     }
 
     console.log("Token exchange successful");
+    console.log("Access token received (first 5 chars):", tokenData.access_token?.substring(0, 5) + "...");
+    console.log("Token type:", tokenData.token_type);
+    console.log("Expires in:", tokenData.expires_in);
+    console.log("Refresh token received:", !!tokenData.refresh_token);
 
     // Return the token data
     return new Response(JSON.stringify(tokenData), {
@@ -93,7 +104,10 @@ serve(async (req) => {
     console.error("Error in exchange-google-auth-code:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        stack: error.stack
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

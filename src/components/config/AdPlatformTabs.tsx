@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Loader, AlertTriangle, Check } from "lucide-react";
 import { GoogleAuthSection } from './GoogleAuthSection';
+import { FacebookAuthSection } from './FacebookAuthSection';
+import { LinkedInAuthSection } from './LinkedInAuthSection';
 
 interface AdPlatformTabsProps {
   googleAdsToken: string;
@@ -49,18 +48,6 @@ export const AdPlatformTabs: React.FC<AdPlatformTabsProps> = ({
   isLoading,
   googleRedirectUri,
 }) => {
-
-  const renderStatusBadge = (status: "success" | "error" | "pending" | null | undefined) => {
-    if (status === "success") {
-      return <Badge className="ml-2 bg-green-500"><Check className="h-3 w-3 mr-1" /> Conectado</Badge>;
-    } else if (status === "error") {
-      return <Badge className="ml-2 bg-red-500"><AlertTriangle className="h-3 w-3 mr-1" /> Erro</Badge>;
-    } else if (status === "pending") {
-      return <Badge className="ml-2 bg-yellow-500"><Loader className="h-3 w-3 mr-1 animate-spin" /> Testando</Badge>;
-    }
-    return null;
-  };
-
   return (
     <Tabs defaultValue="google" className="w-full">
       <TabsList className="grid w-full grid-cols-3 mb-6">
@@ -88,39 +75,21 @@ export const AdPlatformTabs: React.FC<AdPlatformTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="facebook">
-        <div className="space-y-2">
-          <label className="text-sm font-medium flex items-center">
-            Facebook/Instagram Ads Access Token {renderStatusBadge(connectionStatus.facebook)}
-          </label>
-          <Input 
-            type="text"
-            value={facebookAdsToken}
-            onChange={(e) => setFacebookAdsToken(e.target.value)}
-            placeholder="Insira seu token de acesso do Facebook Ads"
-            className="w-full"
-          />
-          <p className="text-xs text-muted-foreground">
-            O token pode ser obtido no Facebook Developers.
-          </p>
-        </div>
+        <FacebookAuthSection 
+          facebookAdsToken={facebookAdsToken}
+          setFacebookAdsToken={setFacebookAdsToken}
+          connectionStatus={connectionStatus}
+          isLoading={isLoading}
+        />
       </TabsContent>
       
       <TabsContent value="linkedin">
-        <div className="space-y-2">
-          <label className="text-sm font-medium flex items-center">
-            LinkedIn Ads Access Token {renderStatusBadge(connectionStatus.linkedin)}
-          </label>
-          <Input 
-            type="text"
-            value={linkedinAdsToken}
-            onChange={(e) => setLinkedinAdsToken(e.target.value)}
-            placeholder="Insira seu token de acesso do LinkedIn Ads"
-            className="w-full"
-          />
-          <p className="text-xs text-muted-foreground">
-            O token pode ser obtido no LinkedIn Marketing Developer Platform.
-          </p>
-        </div>
+        <LinkedInAuthSection 
+          linkedinAdsToken={linkedinAdsToken}
+          setLinkedinAdsToken={setLinkedinAdsToken}
+          connectionStatus={connectionStatus}
+          isLoading={isLoading}
+        />
       </TabsContent>
     </Tabs>
   );
