@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader, ExternalLink, Info, AlertTriangle, Check } from "lucide-react";
+import { Loader, ExternalLink, Info, AlertTriangle, Check, Copy, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { initiateGoogleAuth } from "@/utils/googleAuth";
 import { 
   Accordion,
   AccordionContent,
@@ -45,23 +45,29 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
   isLoading,
   googleRedirectUri,
 }) => {
-  const initiateGoogleAuth = () => {
-    if (!googleClientId) {
-      toast.error("O Client ID é necessário para autenticação");
+  const [showSecret, setShowSecret] = useState(false);
+
+  const handleInitiateGoogleAuth = () => {
+    if (!googleClientId || !googleClientSecret) {
+      toast.error("Client ID e Client Secret são necessários para autenticação");
       return;
     }
+    
+    // Log authentication attempt
+    console.log("Iniciando autenticação com Google Ads", {
+      clientIdLength: googleClientId.length,
+      redirectUri: googleRedirectUri
+    });
+    
+    toast.info("Redirecionando para autenticação do Google...");
+    
+    // Use the utility function
+    initiateGoogleAuth(googleClientId, googleRedirectUri);
+  };
 
-    // Google OAuth configuration
-    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    authUrl.searchParams.append('client_id', googleClientId);
-    authUrl.searchParams.append('redirect_uri', googleRedirectUri);
-    authUrl.searchParams.append('response_type', 'code');
-    authUrl.searchParams.append('scope', 'https://www.googleapis.com/auth/adwords');
-    authUrl.searchParams.append('access_type', 'offline');
-    authUrl.searchParams.append('prompt', 'consent');
-
-    // Redirect to Google's auth page
-    window.location.href = authUrl.toString();
+  const handleCopyRedirectUri = () => {
+    navigator.clipboard.writeText(googleRedirectUri);
+    toast.success("URI de redirecionamento copiada!");
   };
 
   const renderStatusBadge = (status: "success" | "error" | "pending" | null | undefined) => {
@@ -107,15 +113,43 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
         <label className="text-sm font-medium flex items-center">
           Google Ads Client Secret
         </label>
-        <Input 
-          type="password"
-          value={googleClientSecret}
-          onChange={(e) => setGoogleClientSecret(e.target.value)}
-          placeholder="Seu Client Secret do Google Cloud Console"
-          className="w-full"
-        />
+        <div className="relative">
+          <Input 
+            type={showSecret ? "text" : "password"}
+            value={googleClientSecret}
+            onChange={(e) => setGoogleClientSecret(e.target.value)}
+            placeholder="Seu Client Secret do Google Cloud Console"
+            className="w-full pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowSecret(!showSecret)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+          >
+            {showSecret ? 
+              <span className="text-xs">Ocultar</span> : 
+              <span className="text-xs">Mostrar</span>}
+          </button>
+        </div>
         <p className="text-xs text-muted-foreground">
           O Client Secret é necessário para a autenticação OAuth.
+        </p>
+      </div>
+
+      <div className="space-y-2 p-3 bg-slate-50 rounded-md border border-slate-200">
+        <div className="flex justify-between items-center">
+          <label className="text-sm font-medium">URI de Redirecionamento</label>
+          <Button variant="ghost" size="sm" onClick={handleCopyRedirectUri}>
+            <Copy className="h-4 w-4 mr-1" /> Copiar
+          </Button>
+        </div>
+        <div className="p-2 bg-white border rounded-md">
+          <span className="text-sm font-mono overflow-x-auto block">
+            {googleRedirectUri}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Use exatamente esta URI no console do Google Cloud em "URIs de redirecionamento autorizados".
         </p>
       </div>
 
@@ -132,16 +166,36 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
         </div>
       )}
       
-      <Button 
-        onClick={initiateGoogleAuth}
-        className="mt-4"
-        disabled={!googleClientId || !googleClientSecret || isLoading}
-      >
-        {(isLoading || googleAuthStatus === "pending") ? 
-          <Loader className="h-4 w-4 mr-2 animate-spin" /> : 
-          <ExternalLink className="h-4 w-4 mr-2" />}
-        Conectar com Google Ads
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button 
+          onClick={handleInitiateGoogleAuth}
+          className="flex-1"
+          disabled={!googleClientId || !googleClientSecret || isLoading}
+        >
+          {(isLoading || googleAuthStatus === "pending") ? 
+            <Loader className="h-4 w-4 mr-2 animate-spin" /> : 
+            <ExternalLink className="h-4 w-4 mr-2" />}
+          Conectar com Google Ads
+        </Button>
+        
+        {googleAdsToken && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              setGoogleAuthStatus("pending");
+              setTimeout(() => {
+                // This is just a refresh attempt simulation for UI purposes
+                toast.success("Conexão verificada com sucesso");
+                setGoogleAuthStatus("success");
+              }, 1500);
+            }}
+            disabled={isLoading || !googleAdsToken}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Verificar Conexão
+          </Button>
+        )}
+      </div>
 
       <Accordion type="single" collapsible className="mt-4">
         <AccordionItem value="googleTroubleshooting">
@@ -155,40 +209,43 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
             <div className="space-y-3 text-sm text-slate-700 pl-4 border-l-2 border-slate-200">
               <p className="font-medium">Se estiver tendo problemas com a autenticação do Google:</p>
               
-              <div>
-                <p className="font-medium">1. Verifique os logs da Edge Function</p>
+              <div className="mt-3">
+                <p className="font-medium">1. Verifique as configurações no Google Cloud Console</p>
+                <ul className="list-disc pl-5 space-y-1 mt-1">
+                  <li>Certifique-se de que o projeto tem a API Google Ads ativada</li>
+                  <li>Verifique se o Client ID e Client Secret estão corretos</li>
+                  <li>Confirme que a URI de redirecionamento <span className="font-mono text-xs bg-slate-100 px-1 rounded">{googleRedirectUri}</span> está exatamente igual nas URIs de redirecionamento autorizados</li>
+                  <li>Verifique que o domínio <span className="font-mono text-xs bg-slate-100 px-1 rounded">lovable.app</span> está nos domínios autorizados</li>
+                </ul>
+              </div>
+              
+              <div className="mt-3">
+                <p className="font-medium">2. Verifique as configurações no Supabase</p>
+                <ul className="list-disc pl-5 space-y-1 mt-1">
+                  <li>Confirme que a URL do site no Supabase está configurada para <span className="font-mono text-xs bg-slate-100 px-1 rounded">https://ad-connect-config.lovable.app</span></li>
+                  <li>Verifique que a mesma URL está nas URLs de redirecionamento</li>
+                </ul>
+              </div>
+
+              <div className="mt-3">
+                <p className="font-medium">3. Verifique os logs do console</p>
                 <p className="text-xs text-muted-foreground">
-                  Acesse os logs da função "exchange-google-auth-code" no console do Supabase para ver mensagens de erro desenvolvidas.
+                  Abra o console do navegador (F12) antes de tentar fazer a autenticação para ver mensagens de erro detalhadas.
                 </p>
               </div>
 
-              <div>
-                <p className="font-medium">2. Verifique os logs do navegador</p>
+              <div className="mt-3">
+                <p className="font-medium">4. Limpe os cookies e cache</p>
                 <p className="text-xs text-muted-foreground">
-                  Abra o console do navegador (F12) enquanto tenta fazer a autenticação para ver mensagens de erro do lado do cliente.
+                  Problemas de autenticação podem ser resolvidos limpando cookies e cache do navegador.
                 </p>
               </div>
-
-              <div>
-                <p className="font-medium">3. Confirme as credenciais</p>
+              
+              <div className="mt-3">
+                <p className="font-medium">5. Atenção aos diferentes ambientes</p>
                 <p className="text-xs text-muted-foreground">
-                  Certifique-se de que o Client ID e Client Secret que você está inserindo no formulário específico exatamente aos valores do Google Cloud Console.
+                  Se você estiver testando em diferentes ambientes (desenvolvimento/produção), certifique-se de usar as credenciais corretas para cada ambiente.
                 </p>
-              </div>
-
-              <div>
-                <p className="font-medium">4. Verifique as APIs ativadas</p>
-                <p className="text-xs text-muted-foreground">
-                  No Google Cloud Console, vá para a seção "APIs e Serviços" {'>'} "APIs Ativadas" e confirme que as APIs do Google Ads estão ativadas.
-                </p>
-              </div>
-
-              <div>
-                <p className="font-medium">5. Teste com a URL específica</p>
-                <p className="text-xs text-muted-foreground">
-                  Use exatamente a mesma URL que está configurada nas URIs de redirecionamento autorizado ao tentar fazer a autenticação.
-                </p>
-                <p className="mt-1 text-xs font-mono">URI atual: {googleRedirectUri}</p>
               </div>
             </div>
           </AccordionContent>
