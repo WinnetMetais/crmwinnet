@@ -11,8 +11,8 @@ import { AdPlatformTabs } from "@/components/config/AdPlatformTabs";
 import { TeamSection } from "@/components/config/TeamSection";
 import PreferencesSection from "@/components/config/PreferencesSection";
 
-// Define constant for the redirect URI
-const APP_URL = "https://ad-connect-config.lovable.app";
+// Define constant for the redirect URI - Updated to use the correct domain
+const APP_URL = "https://crmwinnet.lovable.app";
 
 const Config = () => {
   const [googleAdsToken, setGoogleAdsToken] = useState('');
@@ -43,8 +43,10 @@ const Config = () => {
     const error = url.searchParams.get('error');
     
     if (provider === 'google' && code) {
+      console.log("Auth code detected in URL. Processing Google authentication...");
       handleGoogleAuthCode(code);
     } else if (error) {
+      console.error("Authentication error detected in URL:", error);
       setGoogleAuthStatus('error');
       setGoogleAuthError(error);
       toast.error("Falha na autenticação com Google", {
