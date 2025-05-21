@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +10,8 @@ import { AdPlatformTabs } from "@/components/config/AdPlatformTabs";
 import { TeamSection } from "@/components/config/TeamSection";
 import PreferencesSection from "@/components/config/PreferencesSection";
 
-// Define constant for the redirect URI - Updated to use the correct domain
-const APP_URL = "https://crmwinnet.lovable.app";
+// Define constant for the redirect URI - Updated to match Google Cloud Console
+const APP_URL = "https://ad-connect-config.lovable.app";
 
 const Config = () => {
   const [googleAdsToken, setGoogleAdsToken] = useState('');

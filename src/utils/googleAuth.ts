@@ -1,9 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Constants for Google Auth - Updated to use the correct domain
-const APP_URL = "https://crmwinnet.lovable.app";
+// Constants for Google Auth - Updated to match Google Cloud Console
+const APP_URL = "https://ad-connect-config.lovable.app";
 
 /**
  * Exchanges a Google auth code for an access token
@@ -32,7 +31,7 @@ export const exchangeGoogleAuthCode = async (
       throw new Error("Código de autorização inválido ou muito curto");
     }
     
-    if (!redirectUri || !redirectUri.includes("crmwinnet.lovable.app")) {
+    if (!redirectUri || !redirectUri.includes("ad-connect-config.lovable.app")) {
       throw new Error(`URI de redirecionamento inválida: ${redirectUri}`);
     }
     
@@ -113,7 +112,7 @@ export const initiateGoogleAuth = (
     return;
   }
   
-  if (!googleRedirectUri || !googleRedirectUri.includes("crmwinnet.lovable.app")) {
+  if (!googleRedirectUri || !googleRedirectUri.includes("ad-connect-config.lovable.app")) {
     toast.error("URI de redirecionamento inválida");
     return;
   }

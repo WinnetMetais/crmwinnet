@@ -32,7 +32,7 @@ serve(async (req) => {
     console.log(`- Client ID present: ${!!clientId}`);
     console.log(`- Client Secret present: ${!!clientSecret}`);
     console.log(`- Request timestamp: ${new Date().toISOString()}`);
-    console.log(`- Request URL: ${req.url}`); // Log the request URL
+    console.log(`- Request URL: ${req.url}`); 
     console.log(`- Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
 
     // Validate required parameters
@@ -77,13 +77,13 @@ serve(async (req) => {
     }
 
     // Validate redirect URI format (basic check)
-    // Updated to check for crmwinnet.lovable.app
-    if (!redirectUri.startsWith("https://") || !redirectUri.includes("crmwinnet.lovable.app")) {
+    // Updated to check for ad-connect-config.lovable.app
+    if (!redirectUri.startsWith("https://") || !redirectUri.includes("ad-connect-config.lovable.app")) {
       console.error("Invalid redirect URI format:", redirectUri);
       return new Response(
         JSON.stringify({ 
           error: "Invalid redirect URI format", 
-          details: "The redirect URI must be a valid HTTPS URL from the crmwinnet.lovable.app domain",
+          details: "The redirect URI must be a valid HTTPS URL from the ad-connect-config.lovable.app domain",
           uri_provided: redirectUri,
           timestamp: new Date().toISOString()
         }),
