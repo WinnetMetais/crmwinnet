@@ -28,9 +28,10 @@ serve(async (req) => {
 
     console.log("Request received with the following parameters:");
     console.log(`- Redirect URI: ${redirectUri}`);
-    console.log(`- Code present: ${!!code}`);
+    console.log(`- Code length: ${code ? code.length : 0}`);
     console.log(`- Client ID present: ${!!clientId}`);
     console.log(`- Client Secret present: ${!!clientSecret}`);
+    console.log(`- Request timestamp: ${new Date().toISOString()}`);
 
     // Validate required parameters
     if (!code || !redirectUri || !clientId || !clientSecret) {
@@ -47,7 +48,41 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: "Missing required parameters", 
-          details: missingParams
+          details: missingParams,
+          timestamp: new Date().toISOString()
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Validate code format (basic check)
+    if (code.length < 10) {
+      console.error("Invalid authorization code format");
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid authorization code format", 
+          details: "The authorization code appears to be too short or malformed",
+          timestamp: new Date().toISOString()
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Validate redirect URI format (basic check)
+    if (!redirectUri.startsWith("https://") || !redirectUri.includes("lovable.app")) {
+      console.error("Invalid redirect URI format:", redirectUri);
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid redirect URI format", 
+          details: "The redirect URI must be a valid HTTPS URL from the lovable.app domain",
+          uri_provided: redirectUri,
+          timestamp: new Date().toISOString()
         }),
         {
           status: 400,
@@ -74,6 +109,7 @@ serve(async (req) => {
     console.log("Sending token exchange request to Google");
     console.log("Request URL: https://oauth2.googleapis.com/token");
     console.log("Request method: POST");
+    console.log("Request timestamp:", new Date().toISOString());
 
     // Make the token exchange request
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -87,6 +123,7 @@ serve(async (req) => {
     // Log response status
     console.log("Google API response status:", tokenResponse.status);
     console.log("Google API response status text:", tokenResponse.statusText);
+    console.log("Response timestamp:", new Date().toISOString());
 
     // Parse the response
     const tokenData = await tokenResponse.json();
@@ -96,11 +133,22 @@ serve(async (req) => {
       console.error("Google token exchange failed. Status:", tokenResponse.status);
       console.error("Error response:", JSON.stringify(tokenData));
       
+      // More detailed error reporting
+      const errorDetails = {
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        google_error: tokenData,
+        redirect_uri_used: redirectUri,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.error("Complete error details:", JSON.stringify(errorDetails));
+      
       return new Response(
         JSON.stringify({ 
           error: "Failed to exchange code for token", 
-          google_error: tokenData,
-          status: tokenResponse.status,
+          details: errorDetails,
+          troubleshooting: "Verify that the client ID, client secret, and redirect URI match exactly with what's configured in Google Cloud Console.",
           timestamp: new Date().toISOString()
         }),
         {
@@ -130,7 +178,8 @@ serve(async (req) => {
       JSON.stringify({ 
         error: error.message,
         stack: error.stack,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        troubleshooting: "This appears to be a server-side error in the Edge Function. Check logs for more details."
       }),
       {
         status: 500,
