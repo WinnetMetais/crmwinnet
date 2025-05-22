@@ -34,6 +34,26 @@ serve(async (req) => {
     console.log(`- Request timestamp: ${new Date().toISOString()}`);
     console.log(`- Request URL: ${req.url}`); 
     console.log(`- Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
+    
+    // Validate domain in redirectUri (should contain ad-connect-config.lovable.app)
+    if (!redirectUri || !redirectUri.includes("ad-connect-config.lovable.app")) {
+      console.error("Redirect URI domain is incorrect:", redirectUri);
+      console.error("Expected domain: ad-connect-config.lovable.app");
+      
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid redirect URI domain", 
+          details: "The redirect URI must use the domain ad-connect-config.lovable.app",
+          provided: redirectUri,
+          expected_domain: "ad-connect-config.lovable.app",
+          timestamp: new Date().toISOString()
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     // Validate required parameters
     if (!code || !redirectUri || !clientId || !clientSecret) {
@@ -113,6 +133,7 @@ serve(async (req) => {
     console.log("Request URL: https://oauth2.googleapis.com/token");
     console.log("Request method: POST");
     console.log("Request timestamp:", new Date().toISOString());
+    console.log("Using redirect URI:", redirectUri);
 
     // Make the token exchange request
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {

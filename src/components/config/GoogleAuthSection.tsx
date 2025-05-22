@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader, ExternalLink, Info, AlertTriangle, Check, Copy, RefreshCw, Trash2 } from "lucide-react";
+import { Loader, ExternalLink, Info, AlertTriangle, Check, Copy, RefreshCw, Trash2, Bug } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { initiateGoogleAuth, clearPlatformToken } from "@/utils/googleAuth";
+import { initiateGoogleAuth, clearPlatformToken, validateGoogleAuthConfig } from "@/utils/googleAuth";
 import { 
   Accordion,
   AccordionContent,
@@ -54,6 +54,7 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
   const [showSecret, setShowSecret] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [accordionOpen, setAccordionOpen] = useState<string | undefined>(googleAuthStatus === "error" ? "troubleshooting" : undefined);
+  const [configValidation, setConfigValidation] = useState<any>(null);
 
   // If there's an error, open the troubleshooting accordion
   useEffect(() => {
@@ -62,9 +63,29 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
     }
   }, [googleAuthStatus]);
 
+  // Validate configuration when inputs change
+  useEffect(() => {
+    if (googleClientId || googleRedirectUri) {
+      const validation = validateGoogleAuthConfig(googleClientId, googleRedirectUri);
+      setConfigValidation(validation);
+      
+      if (!validation.isValid) {
+        console.log("Problemas detectados na configuração:", validation.issues);
+      }
+    }
+  }, [googleClientId, googleRedirectUri]);
+
   const handleInitiateGoogleAuth = () => {
     if (!googleClientId || !googleClientSecret) {
       toast.error("Client ID e Client Secret são necessários para autenticação");
+      return;
+    }
+    
+    // Validate config before initiating
+    const validation = validateGoogleAuthConfig(googleClientId, googleRedirectUri);
+    if (!validation.isValid) {
+      toast.error(`Configuração inválida: ${validation.issues.join(", ")}`);
+      setAccordionOpen("troubleshooting");
       return;
     }
     
@@ -111,6 +132,24 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
     return null;
   };
 
+  // Debug function to show detailed config info
+  const debugConfig = () => {
+    // Show validation results
+    const validation = validateGoogleAuthConfig(googleClientId, googleRedirectUri);
+    console.log("Diagnóstico da configuração:", validation);
+    
+    // Current app URL
+    console.log("URL atual:", window.location.href);
+    console.log("Origem:", window.location.origin);
+    
+    // Show toast with validation results
+    if (validation.isValid) {
+      toast.success("Configuração parece válida!");
+    } else {
+      toast.error(`Problemas detectados: ${validation.issues.join(", ")}`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {googleAuthStatus === "error" && (
@@ -119,6 +158,20 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
           <AlertTitle>Erro na autenticação</AlertTitle>
           <AlertDescription>
             {googleAuthError || "Ocorreu um erro durante a autenticação com Google Ads."}
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {configValidation && !configValidation.isValid && (
+        <Alert variant="warning" className="mb-4 bg-amber-50 border-amber-300">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Problemas na configuração</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc pl-5 space-y-1 mt-1">
+              {configValidation.issues.map((issue: string, idx: number) => (
+                <li key={idx}>{issue}</li>
+              ))}
+            </ul>
           </AlertDescription>
         </Alert>
       )}
@@ -132,7 +185,7 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
           value={googleClientId}
           onChange={(e) => setGoogleClientId(e.target.value)}
           placeholder="Seu Client ID do Google Cloud Console"
-          className="w-full"
+          className={`w-full ${configValidation && !configValidation.clientIdValid ? 'border-red-500' : ''}`}
         />
         <p className="text-xs text-muted-foreground">
           O Client ID pode ser obtido no console do Google Cloud.
@@ -186,13 +239,24 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
           </TooltipProvider>
         </div>
         <div className="p-2 bg-white border rounded-md overflow-x-auto">
-          <span className="text-sm font-mono block whitespace-nowrap">
+          <span className={`text-sm font-mono block whitespace-nowrap ${configValidation && configValidation.issues && configValidation.issues.some((i: string) => i.includes('redirecionamento')) ? 'text-red-500' : ''}`}>
             {googleRedirectUri}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Use <span className="font-bold">exatamente</span> esta URI no console do Google Cloud em "URIs de redirecionamento autorizados".
-        </p>
+        <div className="flex justify-between">
+          <p className="text-xs text-muted-foreground">
+            Use <span className="font-bold">exatamente</span> esta URI no console do Google Cloud em "URIs de redirecionamento autorizados".
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-6 text-xs"
+            onClick={debugConfig}
+          >
+            <Bug className="h-3 w-3 mr-1" />
+            Diagnosticar
+          </Button>
+        </div>
       </div>
 
       {googleAdsToken && (
@@ -261,52 +325,44 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
               <p className="font-medium">Se estiver tendo problemas com a autenticação do Google:</p>
               
               <div className="mt-3">
-                <p className="font-medium">1. Verifique as configurações no Google Cloud Console</p>
+                <p className="font-medium">1. Verificações Principais</p>
+                <ul className="list-disc pl-5 space-y-1 mt-1">
+                  <li>O domínio correto para este projeto é <span className="font-mono text-xs bg-slate-100 px-1 rounded font-bold">ad-connect-config.lovable.app</span></li>
+                  <li>Certifique-se que o Client ID e Client Secret estão corretos</li>
+                  <li>A URI de redirecionamento deve ser exatamente <span className="font-mono text-xs bg-slate-100 px-1 rounded">{googleRedirectUri}</span></li>
+                </ul>
+              </div>
+              
+              <div className="mt-3">
+                <p className="font-medium">2. Verifique as configurações no Google Cloud Console</p>
                 <ul className="list-disc pl-5 space-y-1 mt-1">
                   <li>Certifique-se de que o projeto tem a API Google Ads ativada</li>
-                  <li>Verifique se o Client ID e Client Secret estão corretos</li>
                   <li>Confirme que a URI de redirecionamento <span className="font-mono text-xs bg-slate-100 px-1 rounded">{googleRedirectUri}</span> está <span className="font-bold">exatamente igual</span> nas URIs de redirecionamento autorizados</li>
                   <li>Verifique que o domínio <span className="font-mono text-xs bg-slate-100 px-1 rounded">ad-connect-config.lovable.app</span> está nos domínios autorizados</li>
                 </ul>
               </div>
               
               <div className="mt-3">
-                <p className="font-medium">2. Verifique as configurações no Supabase</p>
+                <p className="font-medium">3. Limpe o cache e cookies</p>
                 <ul className="list-disc pl-5 space-y-1 mt-1">
-                  <li>Confirme que a URL do site no Supabase está configurada para <span className="font-mono text-xs bg-slate-100 px-1 rounded">https://ad-connect-config.lovable.app</span></li>
-                  <li>Verifique que a mesma URL está nas URLs de redirecionamento</li>
-                </ul>
-              </div>
-
-              <div className="mt-3">
-                <p className="font-medium">3. Problemas comuns de redirecionamento</p>
-                <ul className="list-disc pl-5 space-y-1 mt-1">
-                  <li>Certifique-se de que o domínio da URL de redirecionamento é o mesmo usado para acessar o aplicativo</li>
-                  <li>O parâmetro <span className="font-mono text-xs bg-slate-100 px-1 rounded">?provider=google</span> na URL de redirecionamento é essencial</li>
-                  <li>A rejeição da conexão pode acontecer se houver discrepância entre as URLs configuradas</li>
-                </ul>
-              </div>
-
-              <div className="mt-3">
-                <p className="font-medium">4. Limpeza de cache</p>
-                <ul className="list-disc pl-5 space-y-1 mt-1">
-                  <li>Tente em uma janela anônima/incógnito</li>
                   <li>Limpe os cookies e cache do navegador</li>
+                  <li>Tente em uma janela anônima/incógnito</li>
                   <li>Tente um navegador diferente</li>
                 </ul>
               </div>
 
               <div className="mt-3">
-                <p className="font-medium">5. Verifique os logs do console</p>
+                <p className="font-medium">4. Verifique os logs do console</p>
                 <p className="text-xs text-muted-foreground">
                   Abra o console do navegador (F12) antes de tentar fazer a autenticação para ver mensagens de erro detalhadas.
                 </p>
               </div>
               
-              <div className="mt-3">
-                <p className="font-medium">6. Atenção aos diferentes ambientes</p>
-                <p className="text-xs text-muted-foreground">
-                  Se você estiver testando em diferentes ambientes (desenvolvimento/produção), certifique-se de usar as credenciais corretas para cada ambiente.
+              <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded">
+                <p className="font-medium text-amber-800">Importante! Verifique o redirecionamento</p>
+                <p className="text-xs text-amber-700">
+                  O parâmetro <span className="font-mono bg-slate-100 px-1 rounded">?provider=google</span> na URL de redirecionamento é essencial 
+                  e o domínio correto para este projeto é <span className="font-mono bg-slate-100 px-1 rounded font-bold">ad-connect-config.lovable.app</span>.
                 </p>
               </div>
             </div>

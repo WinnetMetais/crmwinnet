@@ -247,3 +247,42 @@ export const clearPlatformToken = (platform: 'google' | 'facebook' | 'linkedin')
     console.error(`Erro ao remover token de ${platform}:`, error);
   }
 };
+
+/**
+ * Verifica e valida as configurações de autenticação do Google
+ * @param clientId Client ID do Google
+ * @param redirectUri URI de redirecionamento
+ * @returns Objeto com resultado da validação
+ */
+export const validateGoogleAuthConfig = (clientId: string, redirectUri: string) => {
+  const issues = [];
+  
+  if (!clientId) {
+    issues.push("Client ID não foi fornecido");
+  } else if (clientId.length < 20) {
+    issues.push("Client ID parece ser muito curto ou inválido");
+  }
+  
+  if (!redirectUri) {
+    issues.push("URI de redirecionamento não foi fornecida");
+  } else {
+    if (!redirectUri.startsWith("https://")) {
+      issues.push("URI de redirecionamento deve usar HTTPS");
+    }
+    
+    if (!redirectUri.includes("ad-connect-config.lovable.app")) {
+      issues.push(`URI de redirecionamento deve incluir o domínio 'ad-connect-config.lovable.app', valor atual: ${redirectUri}`);
+    }
+    
+    if (!redirectUri.includes("provider=google")) {
+      issues.push("URI de redirecionamento deve incluir o parâmetro 'provider=google'");
+    }
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues,
+    redirectUri,
+    clientIdValid: clientId && clientId.length >= 20
+  };
+};

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
-import { exchangeGoogleAuthCode } from "@/utils/googleAuth";
+import { exchangeGoogleAuthCode, validateGoogleAuthConfig } from "@/utils/googleAuth";
 import { AdPlatformTabs } from "@/components/config/AdPlatformTabs";
 import { TeamSection } from "@/components/config/TeamSection";
 import PreferencesSection from "@/components/config/PreferencesSection";
@@ -33,13 +34,26 @@ const Config = () => {
 
   useEffect(() => {
     // Use the fixed APP_URL instead of window.location.origin
-    setGoogleRedirectUri(`${APP_URL}/config?provider=google`);
+    const redirectUri = `${APP_URL}/config?provider=google`;
+    setGoogleRedirectUri(redirectUri);
+    
+    console.log("Configurando URI de redirecionamento:", redirectUri);
+    console.log("APP_URL definido como:", APP_URL);
+    console.log("URL atual:", window.location.href);
     
     // Check for authentication response in the URL
     const url = new URL(window.location.href);
     const provider = url.searchParams.get('provider');
     const code = url.searchParams.get('code');
     const error = url.searchParams.get('error');
+    
+    // Log URL parameters for debugging
+    console.log("Parâmetros na URL:", {
+      provider,
+      hasCode: !!code,
+      codeLength: code ? code.length : 0,
+      error
+    });
     
     if (provider === 'google' && code) {
       console.log("Auth code detected in URL. Processing Google authentication...");
@@ -76,9 +90,28 @@ const Config = () => {
     loadSavedTokens();
   }, []);
 
+  // Validate config when inputs change
+  useEffect(() => {
+    if (googleClientId || googleRedirectUri) {
+      const validation = validateGoogleAuthConfig(googleClientId, googleRedirectUri);
+      if (!validation.isValid) {
+        console.log("Problemas na configuração Google:", validation.issues);
+      }
+    }
+  }, [googleClientId, googleRedirectUri]);
+
   const handleGoogleAuthCode = async (code: string) => {
     setGoogleAuthStatus("pending");
     try {
+      // Log the code and parameters for debugging
+      console.log("Processando código de autenticação Google:", {
+        codeLength: code.length,
+        redirectUri: googleRedirectUri,
+        clientIdPresent: !!googleClientId,
+        clientSecretPresent: !!googleClientSecret,
+        timestamp: new Date().toISOString()
+      });
+      
       // Clear the URL to avoid re-authorization if page is refreshed
       window.history.replaceState({}, document.title, "/config");
       
