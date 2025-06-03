@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -11,9 +10,11 @@ import { CashFlowManager } from "@/components/financial/CashFlowManager";
 import { RevenueAnalysis } from "@/components/financial/RevenueAnalysis";
 import { ExpenseControl } from "@/components/financial/ExpenseControl";
 import { ChannelAnalysis } from "@/components/financial/ChannelAnalysis";
+import { NewTransactionForm } from "@/components/financial/NewTransactionForm";
 
 const Financial = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showNewTransactionForm, setShowNewTransactionForm] = useState(false);
 
   // Dados resumidos baseados nas planilhas
   const financialSummary = {
@@ -55,7 +56,7 @@ const Financial = () => {
                   <Download className="h-4 w-4 mr-2" />
                   Exportar
                 </Button>
-                <Button>
+                <Button onClick={() => setShowNewTransactionForm(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Transação
                 </Button>
@@ -159,6 +160,10 @@ const Financial = () => {
                 <ChannelAnalysis channels={financialSummary.channels} />
               </TabsContent>
             </Tabs>
+
+            {showNewTransactionForm && (
+              <NewTransactionForm onClose={() => setShowNewTransactionForm(false)} />
+            )}
           </div>
         </div>
       </div>

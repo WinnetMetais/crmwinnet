@@ -25,6 +25,7 @@ import Navbar from "./components/Navbar";
 import Promotions from "./pages/Promotions";
 import Performance from "./pages/Performance";
 import Financial from "./pages/Financial";
+import CRMOverview from "./pages/CRMOverview";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import Auth from "./pages/Auth";
 
@@ -64,6 +65,7 @@ const AppRoutes = () => (
     <Route path="/auth" element={<Auth />} />
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    <Route path="/crm-overview" element={<ProtectedRoute><CRMOverview /></ProtectedRoute>} />
     <Route path="/config" element={<ProtectedRoute><Config /></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />

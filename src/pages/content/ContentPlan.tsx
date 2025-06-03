@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -27,10 +26,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { NewContentForm } from "@/components/content/NewContentForm";
 
 const ContentPlan = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [activeTab, setActiveTab] = useState('monthly');
+  const [showNewContentForm, setShowNewContentForm] = useState(false);
 
   // Dados fictícios para o plano de conteúdo
   const contentPlanItems = [
@@ -133,7 +134,7 @@ const ContentPlan = () => {
                   Ver Calendário
                 </Button>
                 
-                <Button>
+                <Button onClick={() => setShowNewContentForm(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Novo Conteúdo
                 </Button>
@@ -311,6 +312,9 @@ const ContentPlan = () => {
           </div>
         </div>
       </div>
+      {showNewContentForm && (
+        <NewContentForm onClose={() => setShowNewContentForm(false)} />
+      )}
     </SidebarProvider>
   );
 };

@@ -8,9 +8,11 @@ import { SalesFunnelChart } from "@/components/sales/SalesFunnelChart";
 import { SalesPipeline } from "@/components/sales/SalesPipeline";
 import { SalesKanban } from "@/components/sales/SalesKanban";
 import { SalesStats } from "@/components/sales/SalesStats";
+import { NewOpportunityForm } from "@/components/sales/NewOpportunityForm";
 
 const Sales = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showNewOpportunityForm, setShowNewOpportunityForm] = useState(false);
 
   return (
     <div className="container mx-auto p-6">
@@ -19,7 +21,9 @@ const Sales = () => {
           <h1 className="text-3xl font-bold">Gestão de Vendas</h1>
           <p className="text-muted-foreground">Gerencie o processo comercial da Winnet Metais</p>
         </div>
-        <Button>Nova Oportunidade <ArrowRight className="ml-2 h-4 w-4" /></Button>
+        <Button onClick={() => setShowNewOpportunityForm(true)}>
+          Nova Oportunidade <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
       </div>
 
       <SalesStats />
@@ -107,6 +111,10 @@ const Sales = () => {
           <SalesKanban />
         </TabsContent>
       </Tabs>
+
+      {showNewOpportunityForm && (
+        <NewOpportunityForm onClose={() => setShowNewOpportunityForm(false)} />
+      )}
     </div>
   );
 };
