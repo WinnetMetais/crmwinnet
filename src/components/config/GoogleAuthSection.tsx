@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,10 +162,10 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
       )}
       
       {configValidation && !configValidation.isValid && (
-        <Alert variant="warning" className="mb-4 bg-amber-50 border-amber-300">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Problemas na configuração</AlertTitle>
-          <AlertDescription>
+        <Alert variant="default" className="mb-4 bg-amber-50 border-amber-300 text-amber-800">
+          <Info className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800">Problemas na configuração</AlertTitle>
+          <AlertDescription className="text-amber-700">
             <ul className="list-disc pl-5 space-y-1 mt-1">
               {configValidation.issues.map((issue: string, idx: number) => (
                 <li key={idx}>{issue}</li>
