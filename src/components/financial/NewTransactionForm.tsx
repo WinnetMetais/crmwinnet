@@ -2,49 +2,18 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
-import { DollarSign, Calendar, Tag } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-interface TransactionFormData {
-  type: 'receita' | 'despesa';
-  title: string;
-  amount: number;
-  category: string;
-  subcategory: string;
-  channel: string;
-  date: string;
-  dueDate: string;
-  paymentMethod: string;
-  status: 'pendente' | 'pago' | 'vencido';
-  recurring: boolean;
-  recurringPeriod: string;
-  description: string;
-  tags: string[];
-  clientName: string;
-  invoiceNumber: string;
-}
-
-const revenueCategories = {
-  'vendas': ['Site', 'Mercado Livre CNPJ', 'Madeira Madeira', 'VIA', 'Comercial'],
-  'servicos': ['Consultoria', 'Instalação', 'Manutenção'],
-  'outros': ['Juros', 'Rendimentos', 'Diversos']
-};
-
-const expenseCategories = {
-  'operacional': ['Fornecedores', 'Matéria Prima', 'Logística', 'Embalagens'],
-  'pessoal': ['Salários', 'Benefícios', 'Terceirizados', 'Comissões'],
-  'marketing': ['Google Ads', 'Facebook Ads', 'Materiais', 'Eventos'],
-  'administrativo': ['Contabilidade', 'Jurídico', 'Bancário', 'Seguros'],
-  'tecnologia': ['Software', 'Hardware', 'Internet', 'Telefone'],
-  'impostos': ['ICMS', 'PIS', 'COFINS', 'IRPJ', 'CSLL']
-};
+import { TransactionFormData } from "@/types/transaction";
+import { TransactionTypeSelector } from "./TransactionTypeSelector";
+import { BasicInfoSection } from "./BasicInfoSection";
+import { CategorySection } from "./CategorySection";
+import { DateStatusSection } from "./DateStatusSection";
+import { AdditionalInfoSection } from "./AdditionalInfoSection";
+import { RecurrenceSection } from "./RecurrenceSection";
+import { TagsSection } from "./TagsSection";
 
 export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
   const [formData, setFormData] = useState<TransactionFormData>({
@@ -66,25 +35,6 @@ export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
     invoiceNumber: ''
   });
 
-  const [newTag, setNewTag] = useState('');
-
-  const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }));
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Nova transação:', formData);
@@ -95,8 +45,8 @@ export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
     onClose();
   };
 
-  const getCurrentCategories = () => {
-    return formData.type === 'receita' ? revenueCategories : expenseCategories;
+  const updateFormData = (updates: Partial<TransactionFormData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
   };
 
   return (
@@ -113,226 +63,67 @@ export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Tipo de Transação */}
-            <div className="space-y-3">
-              <Label>Tipo de Transação *</Label>
-              <RadioGroup
-                value={formData.type}
-                onValueChange={(value: 'receita' | 'despesa') => setFormData(prev => ({ 
-                  ...prev, 
-                  type: value,
-                  category: '',
-                  subcategory: ''
-                }))}
-                className="flex gap-6"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="receita" id="receita" />
-                  <Label htmlFor="receita" className="text-green-600 font-medium">Receita</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="despesa" id="despesa" />
-                  <Label htmlFor="despesa" className="text-red-600 font-medium">Despesa</Label>
-                </div>
-              </RadioGroup>
-            </div>
+            <TransactionTypeSelector
+              value={formData.type}
+              onChange={(type) => updateFormData({ 
+                type, 
+                category: '', 
+                subcategory: '' 
+              })}
+            />
 
-            {/* Informações Básicas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Título da Transação *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Ex: Venda de chapas de aço"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="amount">Valor (R$) *</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                  required
-                />
-              </div>
-            </div>
+            <BasicInfoSection
+              title={formData.title}
+              amount={formData.amount}
+              onTitleChange={(title) => updateFormData({ title })}
+              onAmountChange={(amount) => updateFormData({ amount })}
+            />
 
-            {/* Categorização */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoria *</Label>
-                <Select 
-                  value={formData.category} 
-                  onValueChange={(value) => setFormData(prev => ({ 
-                    ...prev, 
-                    category: value,
-                    subcategory: ''
-                  }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(getCurrentCategories()).map((cat) => (
-                      <SelectItem key={cat} value={cat} className="capitalize">
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="subcategory">Subcategoria</Label>
-                <Select 
-                  value={formData.subcategory} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, subcategory: value }))}
-                  disabled={!formData.category}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma subcategoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {formData.category && getCurrentCategories()[formData.category as keyof typeof getCurrentCategories()]?.map((subcat) => (
-                      <SelectItem key={subcat} value={subcat}>
-                        {subcat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <CategorySection
+              type={formData.type}
+              category={formData.category}
+              subcategory={formData.subcategory}
+              onCategoryChange={(category) => updateFormData({ category, subcategory: '' })}
+              onSubcategoryChange={(subcategory) => updateFormData({ subcategory })}
+            />
 
-            {/* Datas e Status */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Data da Transação *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dueDate">Data de Vencimento</Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pendente">Pendente</SelectItem>
-                    <SelectItem value="pago">Pago</SelectItem>
-                    <SelectItem value="vencido">Vencido</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <DateStatusSection
+              date={formData.date}
+              dueDate={formData.dueDate}
+              status={formData.status}
+              onDateChange={(date) => updateFormData({ date })}
+              onDueDateChange={(dueDate) => updateFormData({ dueDate })}
+              onStatusChange={(status) => updateFormData({ status })}
+            />
 
-            {/* Informações Adicionais */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-                <Select value={formData.paymentMethod} onValueChange={(value) => setFormData(prev => ({ ...prev, paymentMethod: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a forma" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                    <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="cartao-credito">Cartão de Crédito</SelectItem>
-                    <SelectItem value="cartao-debito">Cartão de Débito</SelectItem>
-                    <SelectItem value="boleto">Boleto</SelectItem>
-                    <SelectItem value="transferencia">Transferência</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Nome do Cliente/Fornecedor</Label>
-                <Input
-                  id="clientName"
-                  value={formData.clientName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
-                  placeholder="Nome da empresa ou pessoa"
-                />
-              </div>
-            </div>
+            <AdditionalInfoSection
+              paymentMethod={formData.paymentMethod}
+              clientName={formData.clientName}
+              onPaymentMethodChange={(paymentMethod) => updateFormData({ paymentMethod })}
+              onClientNameChange={(clientName) => updateFormData({ clientName })}
+            />
 
-            {/* Recorrência */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="recurring"
-                  checked={formData.recurring}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, recurring: checked }))}
-                />
-                <Label htmlFor="recurring">Transação Recorrente</Label>
-              </div>
-              
-              {formData.recurring && (
-                <div className="space-y-2">
-                  <Label htmlFor="recurringPeriod">Período de Recorrência</Label>
-                  <Select value={formData.recurringPeriod} onValueChange={(value) => setFormData(prev => ({ ...prev, recurringPeriod: value }))}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mensal">Mensal</SelectItem>
-                      <SelectItem value="trimestral">Trimestral</SelectItem>
-                      <SelectItem value="semestral">Semestral</SelectItem>
-                      <SelectItem value="anual">Anual</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
+            <RecurrenceSection
+              recurring={formData.recurring}
+              recurringPeriod={formData.recurringPeriod}
+              onRecurringChange={(recurring) => updateFormData({ recurring })}
+              onRecurringPeriodChange={(recurringPeriod) => updateFormData({ recurringPeriod })}
+            />
 
-            {/* Tags */}
-            <div className="space-y-3">
-              <Label>Tags</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Adicionar tag..."
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                />
-                <Button type="button" onClick={addTag} variant="outline" size="sm">
-                  <Tag className="h-4 w-4" />
-                </Button>
-              </div>
-              {formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {formData.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
-                      {tag} ✕
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
+            <TagsSection
+              tags={formData.tags}
+              onAddTag={(tag) => updateFormData({ tags: [...formData.tags, tag] })}
+              onRemoveTag={(tagToRemove) => updateFormData({ 
+                tags: formData.tags.filter(tag => tag !== tagToRemove) 
+              })}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="description">Descrição</Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => updateFormData({ description: e.target.value })}
                 placeholder="Informações adicionais sobre a transação..."
                 rows={3}
               />
