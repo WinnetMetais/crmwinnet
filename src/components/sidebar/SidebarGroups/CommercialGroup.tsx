@@ -2,108 +2,120 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  ShoppingCart, 
+  TrendingUp, 
+  Target, 
   ShoppingBag, 
-  Tag, 
-  Search,
-  LineChart,
-  GitBranch,
-  KanbanSquare
+  Users, 
+  DollarSign,
+  Calculator
 } from 'lucide-react';
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-export const CommercialGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolean, isActive: (path: string) => boolean }> = ({ isActiveGroup, isActive }) => {
+interface CommercialGroupProps {
+  isActive: (path: string) => boolean;
+  isActiveGroup: (paths: string[]) => boolean;
+}
+
+export const CommercialGroup = ({ isActive, isActiveGroup }: CommercialGroupProps) => {
+  const commercialPaths = ['/sales', '/customers', '/products', '/promotions', '/financial'];
+  
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Comercial</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={isActive('/sales')}
-              tooltip="Vendas"
-              asChild
-            >
-              <Link to="/sales">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                <span>Vendas</span>
-              </Link>
-            </SidebarMenuButton>
-            <SidebarMenuSub>
-              <SidebarMenuSubItem>
-                <SidebarMenuSubButton asChild>
-                  <Link to="/sales?view=funnel">
-                    <LineChart className="mr-2 h-4 w-4" />
-                    Funil de Vendas
+    <Collapsible defaultOpen={isActiveGroup(commercialPaths)}>
+      <SidebarGroup>
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger className="group/collapsible">
+            Comercial
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
+        <CollapsibleContent>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  isActive={isActive('/sales')}
+                  asChild
+                >
+                  <Link 
+                    to="/sales"
+                    className="w-full flex items-center"
+                  >
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    <span>Vendas</span>
                   </Link>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-              <SidebarMenuSubItem>
-                <SidebarMenuSubButton asChild>
-                  <Link to="/sales?view=pipeline">
-                    <GitBranch className="mr-2 h-4 w-4" />
-                    Pipeline
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  isActive={isActive('/financial')}
+                  asChild
+                >
+                  <Link 
+                    to="/financial"
+                    className="w-full flex items-center"
+                  >
+                    <Calculator className="mr-2 h-4 w-4" />
+                    <span>Financeiro</span>
                   </Link>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-              <SidebarMenuSubItem>
-                <SidebarMenuSubButton asChild>
-                  <Link to="/sales?view=kanban">
-                    <KanbanSquare className="mr-2 h-4 w-4" />
-                    Kanban
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  isActive={isActive('/customers')}
+                  asChild
+                >
+                  <Link 
+                    to="/customers"
+                    className="w-full flex items-center"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>Clientes</span>
                   </Link>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            </SidebarMenuSub>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={isActive('/products')}
-              tooltip="Produtos"
-              asChild
-            >
-              <Link to="/products">
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                <span>Produtos</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={isActive('/promotions')}
-              tooltip="Promoções"
-              asChild
-            >
-              <Link to="/promotions">
-                <Tag className="mr-2 h-4 w-4" />
-                <span>Promoções</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={isActive('/market-research')}
-              tooltip="Pesquisa de Mercado"
-              asChild
-            >
-              <Link to="/market-research">
-                <Search className="mr-2 h-4 w-4" />
-                <span>Pesquisa de Mercado</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  isActive={isActive('/products')}
+                  asChild
+                >
+                  <Link 
+                    to="/products"
+                    className="w-full flex items-center"
+                  >
+                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    <span>Produtos</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  isActive={isActive('/promotions')}
+                  asChild
+                >
+                  <Link 
+                    to="/promotions"
+                    className="w-full flex items-center"
+                  >
+                    <Target className="mr-2 h-4 w-4" />
+                    <span>Promoções</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
   );
 };

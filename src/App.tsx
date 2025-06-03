@@ -24,6 +24,7 @@ import Filters from "./pages/Filters";
 import Navbar from "./components/Navbar";
 import Promotions from "./pages/Promotions";
 import Performance from "./pages/Performance";
+import Financial from "./pages/Financial";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import Auth from "./pages/Auth";
 
@@ -68,6 +69,7 @@ const AppRoutes = () => (
     <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
     <Route path="/campaigns/google" element={<ProtectedRoute><GoogleCampaigns /></ProtectedRoute>} />
     <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
+    <Route path="/financial" element={<ProtectedRoute><Financial /></ProtectedRoute>} />
     <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
     <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
     <Route path="/content" element={<ProtectedRoute><Content /></ProtectedRoute>} />
