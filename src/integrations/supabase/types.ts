@@ -189,38 +189,74 @@ export type Database = {
         Row: {
           active: boolean | null
           category: string | null
+          cost_price: number | null
           created_at: string
           description: string | null
+          dimensions: string | null
           id: string
           inventory_count: number | null
+          margin_50: number | null
+          margin_55: number | null
+          margin_60: number | null
+          margin_65: number | null
+          margin_70: number | null
+          margin_75: number | null
+          min_stock: number | null
           name: string
           price: number | null
           sku: string | null
+          supplier: string | null
+          unit: string | null
           updated_at: string
+          weight: number | null
         }
         Insert: {
           active?: boolean | null
           category?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
+          dimensions?: string | null
           id?: string
           inventory_count?: number | null
+          margin_50?: number | null
+          margin_55?: number | null
+          margin_60?: number | null
+          margin_65?: number | null
+          margin_70?: number | null
+          margin_75?: number | null
+          min_stock?: number | null
           name: string
           price?: number | null
           sku?: string | null
+          supplier?: string | null
+          unit?: string | null
           updated_at?: string
+          weight?: number | null
         }
         Update: {
           active?: boolean | null
           category?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
+          dimensions?: string | null
           id?: string
           inventory_count?: number | null
+          margin_50?: number | null
+          margin_55?: number | null
+          margin_60?: number | null
+          margin_65?: number | null
+          margin_70?: number | null
+          margin_75?: number | null
+          min_stock?: number | null
           name?: string
           price?: number | null
           sku?: string | null
+          supplier?: string | null
+          unit?: string | null
           updated_at?: string
+          weight?: number | null
         }
         Relationships: []
       }

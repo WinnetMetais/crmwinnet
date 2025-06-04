@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Download, Send, Calculator, FileText } from "lucide-react";
+import { Plus, Trash2, Download, Send, Calculator, FileText, Package2 } from "lucide-react";
 import { QuoteFormData, QuoteItem } from "@/types/quote";
+import { Product } from "@/services/products";
+import { ProductSelector } from "@/components/products/ProductSelector";
 import { toast } from "@/hooks/use-toast";
 
 interface QuoteFormProps {
@@ -20,6 +21,7 @@ interface QuoteFormProps {
 }
 
 export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormProps) => {
+  const [showProductSelector, setShowProductSelector] = useState(false);
   const [formData, setFormData] = useState<QuoteFormData>({
     quoteNumber: generateQuoteNumber(),
     date: new Date().toISOString().split('T')[0],
@@ -68,6 +70,33 @@ export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormPr
       ...prev,
       items: [...prev.items, newItem]
     }));
+  };
+
+  const handleProductSelect = (product: Product, marginPercent: number) => {
+    const marginPrice = product.cost_price ? product.cost_price / (1 - marginPercent / 100) : 0;
+    
+    const newItem: QuoteItem = {
+      id: Date.now().toString(),
+      code: product.sku || '',
+      description: product.name + (product.description ? ` - ${product.description}` : ''),
+      quantity: 1,
+      unit: product.unit || 'kg',
+      unitPrice: marginPrice,
+      total: marginPrice
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, newItem]
+    }));
+
+    setShowProductSelector(false);
+    calculateTotals();
+
+    toast({
+      title: "Produto adicionado",
+      description: `${product.name} foi adicionado ao orçamento com margem de ${marginPercent}%`,
+    });
   };
 
   const updateItem = (id: string, field: keyof QuoteItem, value: any) => {
@@ -137,329 +166,345 @@ export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-6xl max-h-[95vh] overflow-y-auto">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <FileText className="h-6 w-6" />
-              <div>
-                <h2 className="text-xl font-bold">ORÇAMENTO</h2>
-                <p className="text-blue-100">Nº {formData.quoteNumber}</p>
+    <>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <Card className="w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-6 w-6" />
+                <div>
+                  <h2 className="text-xl font-bold">ORÇAMENTO</h2>
+                  <p className="text-blue-100">Nº {formData.quoteNumber}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-white/10 text-white border-white/20">
-                {formData.status.toUpperCase()}
-              </Badge>
-              <Button variant="ghost" onClick={onClose} className="text-white hover:bg-white/10">
-                ✕
-              </Button>
-            </div>
-          </CardTitle>
-        </CardHeader>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                  {formData.status.toUpperCase()}
+                </Badge>
+                <Button variant="ghost" onClick={onClose} className="text-white hover:bg-white/10">
+                  ✕
+                </Button>
+              </div>
+            </CardTitle>
+          </CardHeader>
 
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Cabeçalho da Empresa */}
-            <div className="text-center border-b pb-4">
-              <h1 className="text-2xl font-bold text-blue-800">WINNET METAIS</h1>
-              <p className="text-sm text-gray-600">Av. Wallace Simonsen, 437 - Nova Petrópolis - São Bernardo do Campo - SP</p>
-              <p className="text-sm text-gray-600">CNPJ: 57.656.387/0001-26 | Telefone: (11) 4428-9099</p>
-            </div>
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Cabeçalho da Empresa */}
+              <div className="text-center border-b pb-4">
+                <h1 className="text-2xl font-bold text-blue-800">WINNET METAIS</h1>
+                <p className="text-sm text-gray-600">Av. Wallace Simonsen, 437 - Nova Petrópolis - São Bernardo do Campo - SP</p>
+                <p className="text-sm text-gray-600">CNPJ: 57.656.387/0001-26 | Telefone: (11) 4428-9099</p>
+              </div>
 
-            {/* Informações do Orçamento */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Data</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="validUntil">Válido até</Label>
-                <Input
-                  id="validUntil"
-                  type="date"
-                  value={formData.validUntil}
-                  onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="requestedBy">Solicitado por</Label>
-                <Input
-                  id="requestedBy"
-                  value={formData.requestedBy}
-                  onChange={(e) => setFormData(prev => ({ ...prev, requestedBy: e.target.value }))}
-                  placeholder="Nome do solicitante"
-                />
-              </div>
-            </div>
-
-            {/* Dados do Cliente */}
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <h3 className="font-medium mb-3">CLIENTE</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Informações do Orçamento */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="customerName">Nome/Razão Social *</Label>
+                  <Label htmlFor="date">Data</Label>
                   <Input
-                    id="customerName"
-                    value={formData.customerName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
-                    placeholder="Nome do cliente"
+                    id="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="customerCnpj">CNPJ/CPF</Label>
+                  <Label htmlFor="validUntil">Válido até</Label>
                   <Input
-                    id="customerCnpj"
-                    value={formData.customerCnpj}
-                    onChange={(e) => setFormData(prev => ({ ...prev, customerCnpj: e.target.value }))}
-                    placeholder="XX.XXX.XXX/XXXX-XX"
+                    id="validUntil"
+                    type="date"
+                    value={formData.validUntil}
+                    onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
+                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="customerEmail">E-mail</Label>
+                  <Label htmlFor="requestedBy">Solicitado por</Label>
                   <Input
-                    id="customerEmail"
-                    type="email"
-                    value={formData.customerEmail}
-                    onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
-                    placeholder="email@cliente.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="customerPhone">Telefone</Label>
-                  <Input
-                    id="customerPhone"
-                    value={formData.customerPhone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
-                    placeholder="(11) 99999-9999"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="customerAddress">Endereço</Label>
-                  <Input
-                    id="customerAddress"
-                    value={formData.customerAddress}
-                    onChange={(e) => setFormData(prev => ({ ...prev, customerAddress: e.target.value }))}
-                    placeholder="Endereço completo"
+                    id="requestedBy"
+                    value={formData.requestedBy}
+                    onChange={(e) => setFormData(prev => ({ ...prev, requestedBy: e.target.value }))}
+                    placeholder="Nome do solicitante"
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Itens do Orçamento */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium">ITENS DO ORÇAMENTO</h3>
-                <Button type="button" onClick={addItem} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Item
-                </Button>
+              {/* Dados do Cliente */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-3">CLIENTE</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customerName">Nome/Razão Social *</Label>
+                    <Input
+                      id="customerName"
+                      value={formData.customerName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
+                      placeholder="Nome do cliente"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customerCnpj">CNPJ/CPF</Label>
+                    <Input
+                      id="customerCnpj"
+                      value={formData.customerCnpj}
+                      onChange={(e) => setFormData(prev => ({ ...prev, customerCnpj: e.target.value }))}
+                      placeholder="XX.XXX.XXX/XXXX-XX"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customerEmail">E-mail</Label>
+                    <Input
+                      id="customerEmail"
+                      type="email"
+                      value={formData.customerEmail}
+                      onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
+                      placeholder="email@cliente.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customerPhone">Telefone</Label>
+                    <Input
+                      id="customerPhone"
+                      value={formData.customerPhone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
+                      placeholder="(11) 99999-9999"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="customerAddress">Endereço</Label>
+                    <Input
+                      id="customerAddress"
+                      value={formData.customerAddress}
+                      onChange={(e) => setFormData(prev => ({ ...prev, customerAddress: e.target.value }))}
+                      placeholder="Endereço completo"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="w-20">Código</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead className="w-20">Qtd</TableHead>
-                      <TableHead className="w-20">Unid</TableHead>
-                      <TableHead className="w-32">Preço Unit.</TableHead>
-                      <TableHead className="w-32">Total</TableHead>
-                      <TableHead className="w-16">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {formData.items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>
-                          <Input
-                            value={item.code}
-                            onChange={(e) => updateItem(item.id, 'code', e.target.value)}
-                            placeholder="F40905A"
-                            className="w-full text-xs"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            value={item.description}
-                            onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                            placeholder="Descrição do produto"
-                            className="w-full text-xs"
-                            required
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.quantity}
-                            onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="w-full text-xs"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Select value={item.unit} onValueChange={(value) => updateItem(item.id, 'unit', value)}>
-                            <SelectTrigger className="w-full text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="kg">kg</SelectItem>
-                              <SelectItem value="ton">Ton</SelectItem>
-                              <SelectItem value="m">m</SelectItem>
-                              <SelectItem value="m2">m²</SelectItem>
-                              <SelectItem value="pc">Pç</SelectItem>
-                              <SelectItem value="un">Un</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.unitPrice}
-                            onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            className="w-full text-xs"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">
-                            R$ {item.total.toFixed(2)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeItem(item.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+              {/* Itens do Orçamento */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">ITENS DO ORÇAMENTO</h3>
+                  <div className="flex gap-2">
+                    <Button type="button" onClick={() => setShowProductSelector(true)} variant="default" size="sm">
+                      <Package2 className="h-4 w-4 mr-2" />
+                      Buscar Produto
+                    </Button>
+                    <Button type="button" onClick={addItem} variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Item Manual
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="w-20">Código</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead className="w-20">Qtd</TableHead>
+                        <TableHead className="w-20">Unid</TableHead>
+                        <TableHead className="w-32">Preço Unit.</TableHead>
+                        <TableHead className="w-32">Total</TableHead>
+                        <TableHead className="w-16">Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.items.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <Input
+                              value={item.code}
+                              onChange={(e) => updateItem(item.id, 'code', e.target.value)}
+                              placeholder="SKU"
+                              className="w-full text-xs"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={item.description}
+                              onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                              placeholder="Descrição do produto"
+                              className="w-full text-xs"
+                              required
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={item.quantity}
+                              onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                              className="w-full text-xs"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Select value={item.unit} onValueChange={(value) => updateItem(item.id, 'unit', value)}>
+                              <SelectTrigger className="w-full text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="kg">kg</SelectItem>
+                                <SelectItem value="ton">Ton</SelectItem>
+                                <SelectItem value="m">m</SelectItem>
+                                <SelectItem value="m2">m²</SelectItem>
+                                <SelectItem value="pc">Pç</SelectItem>
+                                <SelectItem value="un">Un</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={item.unitPrice}
+                              onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                              className="w-full text-xs"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              R$ {item.total.toFixed(2)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
 
-              {/* Totais */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-end">
-                  <div className="w-80 space-y-2">
-                    <div className="flex justify-between">
-                      <span>Subtotal:</span>
-                      <span className="font-medium">R$ {formData.subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Desconto (%):</span>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        value={formData.discount}
-                        onChange={(e) => {
-                          setFormData(prev => ({ ...prev, discount: parseFloat(e.target.value) || 0 }));
-                          calculateTotals();
-                        }}
-                        className="w-20 text-right"
-                      />
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>TOTAL GERAL:</span>
-                      <span>R$ {formData.total.toFixed(2)}</span>
+                {/* Totais */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-end">
+                    <div className="w-80 space-y-2">
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span className="font-medium">R$ {formData.subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Desconto (%):</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={formData.discount}
+                          onChange={(e) => {
+                            setFormData(prev => ({ ...prev, discount: parseFloat(e.target.value) || 0 }));
+                            calculateTotals();
+                          }}
+                          className="w-20 text-right"
+                        />
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>TOTAL GERAL:</span>
+                        <span>R$ {formData.total.toFixed(2)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Condições de Pagamento e Entrega */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="paymentTerms">Forma de Pagamento</Label>
-                <Select value={formData.paymentTerms} onValueChange={(value) => setFormData(prev => ({ ...prev, paymentTerms: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione as condições" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pix">PIX - À vista</SelectItem>
-                    <SelectItem value="boleto-vista">Boleto - À vista</SelectItem>
-                    <SelectItem value="cartao-credito">Cartão de Crédito</SelectItem>
-                    <SelectItem value="30-dias">30 dias</SelectItem>
-                    <SelectItem value="30-60-dias">30/60 dias</SelectItem>
-                    <SelectItem value="30-60-90-dias">30/60/90 dias</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Condições de Pagamento e Entrega */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="paymentTerms">Forma de Pagamento</Label>
+                  <Select value={formData.paymentTerms} onValueChange={(value) => setFormData(prev => ({ ...prev, paymentTerms: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione as condições" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pix">PIX - À vista</SelectItem>
+                      <SelectItem value="boleto-vista">Boleto - À vista</SelectItem>
+                      <SelectItem value="cartao-credito">Cartão de Crédito</SelectItem>
+                      <SelectItem value="30-dias">30 dias</SelectItem>
+                      <SelectItem value="30-60-dias">30/60 dias</SelectItem>
+                      <SelectItem value="30-60-90-dias">30/60/90 dias</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryTerms">Prazo de Entrega</Label>
+                  <Input
+                    id="deliveryTerms"
+                    value={formData.deliveryTerms}
+                    onChange={(e) => setFormData(prev => ({ ...prev, deliveryTerms: e.target.value }))}
+                    placeholder="Ex: 15 dias úteis"
+                  />
+                </div>
               </div>
+
+              {/* Garantia */}
               <div className="space-y-2">
-                <Label htmlFor="deliveryTerms">Prazo de Entrega</Label>
+                <Label htmlFor="warranty">Garantia</Label>
                 <Input
-                  id="deliveryTerms"
-                  value={formData.deliveryTerms}
-                  onChange={(e) => setFormData(prev => ({ ...prev, deliveryTerms: e.target.value }))}
-                  placeholder="Ex: 15 dias úteis"
+                  id="warranty"
+                  value={formData.warranty}
+                  onChange={(e) => setFormData(prev => ({ ...prev, warranty: e.target.value }))}
                 />
               </div>
-            </div>
 
-            {/* Garantia */}
-            <div className="space-y-2">
-              <Label htmlFor="warranty">Garantia</Label>
-              <Input
-                id="warranty"
-                value={formData.warranty}
-                onChange={(e) => setFormData(prev => ({ ...prev, warranty: e.target.value }))}
-              />
-            </div>
+              {/* Observações */}
+              <div className="space-y-2">
+                <Label htmlFor="notes">Observações</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Observações adicionais para o cliente..."
+                  rows={3}
+                />
+              </div>
 
-            {/* Observações */}
-            <div className="space-y-2">
-              <Label htmlFor="notes">Observações</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Observações adicionais para o cliente..."
-                rows={3}
-              />
-            </div>
+              {/* Ações */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button type="submit" className="flex-1">
+                  <Calculator className="h-4 w-4 mr-2" />
+                  Salvar Orçamento
+                </Button>
+                <Button type="button" variant="outline" onClick={generatePDF}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Gerar PDF
+                </Button>
+                <Button type="button" variant="outline" onClick={sendQuote}>
+                  <Send className="h-4 w-4 mr-2" />
+                  Enviar Cliente
+                </Button>
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
 
-            {/* Ações */}
-            <div className="flex gap-3 pt-4 border-t">
-              <Button type="submit" className="flex-1">
-                <Calculator className="h-4 w-4 mr-2" />
-                Salvar Orçamento
-              </Button>
-              <Button type="button" variant="outline" onClick={generatePDF}>
-                <Download className="h-4 w-4 mr-2" />
-                Gerar PDF
-              </Button>
-              <Button type="button" variant="outline" onClick={sendQuote}>
-                <Send className="h-4 w-4 mr-2" />
-                Enviar Cliente
-              </Button>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancelar
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+      {/* Product Selector Modal */}
+      {showProductSelector && (
+        <ProductSelector
+          onSelectProduct={handleProductSelect}
+          onClose={() => setShowProductSelector(false)}
+        />
+      )}
+    </>
   );
 };

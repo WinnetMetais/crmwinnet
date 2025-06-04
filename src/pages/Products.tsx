@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,105 +13,79 @@ import {
   Plus, 
   Filter, 
   Package, 
-  ShoppingCart, 
-  Truck, 
   ArrowUpDown, 
   Edit, 
-  Trash2 
+  Trash2,
+  TrendingUp,
+  AlertTriangle 
 } from "lucide-react";
+import { Product, getProducts, deleteProduct, getMarginOptions } from "@/services/products";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const queryClient = useQueryClient();
 
-  // Sample product data for Winnet Metais
-  const products = [
-    {
-      id: 1,
-      name: 'Aço Carbono ASTM A36',
-      category: 'Aço Carbono',
-      price: 'R$ 1.850,00',
-      stock: 320,
-      status: 'Disponível'
-    },
-    {
-      id: 2,
-      name: 'Alumínio 6061',
-      category: 'Alumínio',
-      price: 'R$ 2.450,00',
-      stock: 150,
-      status: 'Disponível'
-    },
-    {
-      id: 3,
-      name: 'Bronze Fosforoso',
-      category: 'Bronze',
-      price: 'R$ 3.200,00',
-      stock: 75,
-      status: 'Baixo Estoque'
-    },
-    {
-      id: 4,
-      name: 'Aço Inox 304',
-      category: 'Aço Inox',
-      price: 'R$ 4.100,00',
-      stock: 90,
-      status: 'Disponível'
-    },
-    {
-      id: 5,
-      name: 'Latão CuZn37',
-      category: 'Latão',
-      price: 'R$ 2.800,00',
-      stock: 0,
-      status: 'Sem Estoque'
-    },
-    {
-      id: 6,
-      name: 'Cobre Eletrolítico',
-      category: 'Cobre',
-      price: 'R$ 3.950,00',
-      stock: 45,
-      status: 'Baixo Estoque'
-    },
-    {
-      id: 7,
-      name: 'Níquel 200',
-      category: 'Níquel',
-      price: 'R$ 5.600,00',
-      stock: 30,
-      status: 'Disponível'
-    },
-    {
-      id: 8,
-      name: 'Chapa Galvanizada',
-      category: 'Aço Galvanizado',
-      price: 'R$ 1.350,00',
-      stock: 200,
-      status: 'Disponível'
-    },
-  ];
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: getProducts,
+  });
+
+  const marginOptions = getMarginOptions();
 
   // Filter products based on search term and selected tab
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         product.category.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProducts = products.filter((product: Product) => {
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (selectedTab === 'all') return matchesSearch;
-    if (selectedTab === 'available') return matchesSearch && product.status === 'Disponível';
-    if (selectedTab === 'lowStock') return matchesSearch && product.status === 'Baixo Estoque';
-    if (selectedTab === 'outOfStock') return matchesSearch && product.status === 'Sem Estoque';
+    if (selectedTab === 'available') return matchesSearch && product.active && (product.inventory_count || 0) > (product.min_stock || 0);
+    if (selectedTab === 'lowStock') return matchesSearch && product.active && (product.inventory_count || 0) <= (product.min_stock || 0) && (product.inventory_count || 0) > 0;
+    if (selectedTab === 'outOfStock') return matchesSearch && ((product.inventory_count || 0) === 0);
     
     return matchesSearch;
   });
 
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (confirm(`Tem certeza que deseja remover o produto "${name}"?`)) {
+      const success = await deleteProduct(id);
+      if (success) {
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+      }
+    }
+  };
+
+  const getStockStatus = (product: Product) => {
+    const stock = product.inventory_count || 0;
+    const minStock = product.min_stock || 0;
+    
+    if (stock === 0) return { label: 'Sem Estoque', variant: 'destructive' as const };
+    if (stock <= minStock) return { label: 'Baixo Estoque', variant: 'outline' as const };
+    return { label: 'Disponível', variant: 'default' as const };
+  };
+
   // Categories summary for the cards
-  const categorySummary = [
-    { name: 'Aço Carbono', count: 120, value: 'R$ 220.000,00' },
-    { name: 'Aço Inox', count: 85, value: 'R$ 348.500,00' },
-    { name: 'Alumínio', count: 150, value: 'R$ 367.500,00' },
-    { name: 'Cobre e Latão', count: 45, value: 'R$ 177.300,00' },
-  ];
+  const categorySummary = products.reduce((acc: any, product: Product) => {
+    if (!product.category) return acc;
+    
+    if (!acc[product.category]) {
+      acc[product.category] = { count: 0, value: 0 };
+    }
+    
+    acc[product.category].count += 1;
+    acc[product.category].value += (product.cost_price || 0) * (product.inventory_count || 0);
+    
+    return acc;
+  }, {});
+
+  const categoryCards = Object.entries(categorySummary).map(([category, data]: [string, any]) => ({
+    name: category,
+    count: data.count,
+    value: `R$ ${data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+  }));
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -141,7 +115,7 @@ const Products = () => {
 
             {/* Category Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              {categorySummary.map((category, index) => (
+              {categoryCards.slice(0, 4).map((category, index) => (
                 <Card key={index}>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">{category.name}</CardTitle>
@@ -161,7 +135,7 @@ const Products = () => {
                   <div>
                     <CardTitle>Lista de Produtos</CardTitle>
                     <CardDescription>
-                      Gerencie seu catálogo de metais e ligas
+                      Gerencie seu catálogo de metais e ligas com margens de lucro automáticas
                     </CardDescription>
                   </div>
                   
@@ -193,153 +167,126 @@ const Products = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">ID</TableHead>
-                      <TableHead>Produto</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>
-                        <div className="flex items-center">
-                          Preço
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </div>
-                      </TableHead>
-                      <TableHead>
-                        <div className="flex items-center">
-                          Estoque
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </div>
-                      </TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredProducts.length === 0 ? (
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <p>Carregando produtos...</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-10">
-                          <Package className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                          <p className="text-muted-foreground">Nenhum produto encontrado</p>
-                        </TableCell>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Produto</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Fornecedor</TableHead>
+                        <TableHead>
+                          <div className="flex items-center">
+                            Custo
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </div>
+                        </TableHead>
+                        <TableHead>Margens</TableHead>
+                        <TableHead>
+                          <div className="flex items-center">
+                            Estoque
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </div>
+                        </TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
-                    ) : (
-                      filteredProducts.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell>{product.id}</TableCell>
-                          <TableCell className="font-medium">{product.name}</TableCell>
-                          <TableCell>{product.category}</TableCell>
-                          <TableCell>{product.price}</TableCell>
-                          <TableCell>{product.stock}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                product.status === 'Disponível'
-                                  ? 'default'
-                                  : product.status === 'Baixo Estoque'
-                                  ? 'outline'
-                                  : 'destructive'
-                              }
-                              className={
-                                product.status === 'Disponível'
-                                  ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                                  : product.status === 'Baixo Estoque'
-                                  ? 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100'
-                                  : ''
-                              }
-                            >
-                              {product.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button size="icon" variant="ghost">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button size="icon" variant="ghost">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredProducts.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={9} className="text-center py-10">
+                            <Package className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                            <p className="text-muted-foreground">Nenhum produto encontrado</p>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : (
+                        filteredProducts.map((product: Product) => {
+                          const stockStatus = getStockStatus(product);
+                          return (
+                            <TableRow key={product.id}>
+                              <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{product.name}</p>
+                                  {product.description && (
+                                    <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                      {product.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>{product.category}</TableCell>
+                              <TableCell className="text-sm">{product.supplier}</TableCell>
+                              <TableCell>
+                                {product.cost_price ? `R$ ${product.cost_price.toFixed(2)}` : '-'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1 text-xs">
+                                  {product.cost_price && (
+                                    <>
+                                      <div className="flex justify-between">
+                                        <span>60%:</span>
+                                        <span className="font-medium">R$ {(product.margin_60 || 0).toFixed(2)}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>70%:</span>
+                                        <span className="font-medium">R$ {(product.margin_70 || 0).toFixed(2)}</span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <span>{product.inventory_count || 0}</span>
+                                  <span className="text-xs text-muted-foreground">{product.unit}</span>
+                                  {(product.inventory_count || 0) <= (product.min_stock || 0) && (
+                                    <AlertTriangle className="h-4 w-4 text-orange-500" />
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={stockStatus.variant}
+                                  className={
+                                    stockStatus.variant === 'default'
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-100'
+                                      : stockStatus.variant === 'outline'
+                                      ? 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100'
+                                      : ''
+                                  }
+                                >
+                                  {stockStatus.label}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button size="icon" variant="ghost">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost"
+                                    onClick={() => handleDeleteProduct(product.id, product.name)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
-
-            {/* Quick Access Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    Pedidos Recentes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((item) => (
-                      <div key={item} className="flex justify-between items-center border-b pb-2">
-                        <div>
-                          <p className="font-medium">Pedido #{10548 + item}</p>
-                          <p className="text-sm text-muted-foreground">3 itens - R$ {(Math.random() * 10000).toFixed(2)}</p>
-                        </div>
-                        <Badge>Processando</Badge>
-                      </div>
-                    ))}
-                    <Button variant="outline" className="w-full">Ver Todos os Pedidos</Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Truck className="mr-2 h-5 w-5" />
-                    Entregas Programadas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((item) => (
-                      <div key={item} className="flex justify-between items-center border-b pb-2">
-                        <div>
-                          <p className="font-medium">Cliente {['ABC', 'XYZ', 'JKL'][item-1]} Ltda.</p>
-                          <p className="text-sm text-muted-foreground">Entrega para {['São Paulo', 'Rio de Janeiro', 'Belo Horizonte'][item-1]}</p>
-                        </div>
-                        <p className="text-sm">{['12/06', '15/06', '18/06'][item-1]}</p>
-                      </div>
-                    ))}
-                    <Button variant="outline" className="w-full">Ver Agenda de Entregas</Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Package className="mr-2 h-5 w-5" />
-                    Reposição de Estoque
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {['Latão CuZn37', 'Bronze Fosforoso', 'Cobre Eletrolítico'].map((item, index) => (
-                      <div key={index} className="flex justify-between items-center border-b pb-2">
-                        <div>
-                          <p className="font-medium">{item}</p>
-                          <p className="text-sm text-muted-foreground">Abaixo do mínimo</p>
-                        </div>
-                        <Button size="sm" variant="outline">Pedir</Button>
-                      </div>
-                    ))}
-                    <Button variant="outline" className="w-full">Gerenciar Estoque</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
       </div>
