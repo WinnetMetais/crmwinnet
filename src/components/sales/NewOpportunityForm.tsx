@@ -8,10 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, Download, Calculator } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Trash2, Download, Calculator, User, FileText, DollarSign } from "lucide-react";
+import { CustomerForm } from "@/components/customers/CustomerForm";
+import { QuoteForm } from "@/components/sales/QuoteForm";
+import { CustomerFormData } from "@/types/customer";
 import { toast } from "@/hooks/use-toast";
 
-interface QuoteItem {
+interface OpportunityItem {
   id: string;
   description: string;
   quantity: number;
@@ -21,34 +26,86 @@ interface QuoteItem {
 }
 
 interface OpportunityFormData {
+  // Cliente
+  customerId: string;
   clientName: string;
   clientEmail: string;
   clientPhone: string;
   clientAddress: string;
+  clientCnpj: string;
+  
+  // Oportunidade
   opportunityTitle: string;
   stage: string;
   probability: number;
-  validUntil: string;
+  expectedCloseDate: string;
+  
+  // Comercial
+  estimatedValue: number;
+  leadSource: string;
+  assignedTo: string;
+  
+  // Orçamento
+  generateQuote: boolean;
+  items: OpportunityItem[];
+  
+  // Observações
   notes: string;
-  items: QuoteItem[];
+  nextAction: string;
+  nextActionDate: string;
 }
 
 export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
+  const [activeTab, setActiveTab] = useState('client');
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [showQuoteForm, setShowQuoteForm] = useState(false);
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
+  
   const [formData, setFormData] = useState<OpportunityFormData>({
+    customerId: '',
     clientName: '',
     clientEmail: '',
     clientPhone: '',
     clientAddress: '',
+    clientCnpj: '',
     opportunityTitle: '',
     stage: 'prospecto',
     probability: 20,
-    validUntil: '',
+    expectedCloseDate: '',
+    estimatedValue: 0,
+    leadSource: '',
+    assignedTo: '',
+    generateQuote: false,
+    items: [],
     notes: '',
-    items: []
+    nextAction: '',
+    nextActionDate: ''
   });
 
+  const handleCustomerSubmit = (customerData: CustomerFormData) => {
+    // Integrar dados do cliente na oportunidade
+    setFormData(prev => ({
+      ...prev,
+      customerId: Date.now().toString(), // Simulando ID
+      clientName: customerData.name,
+      clientEmail: customerData.email,
+      clientPhone: customerData.phone,
+      clientAddress: customerData.address,
+      clientCnpj: customerData.cnpj,
+      leadSource: customerData.leadSource
+    }));
+    
+    setShowCustomerForm(false);
+    setIsNewCustomer(false);
+    
+    toast({
+      title: "Cliente Cadastrado",
+      description: "Cliente foi cadastrado e vinculado à oportunidade!",
+    });
+  };
+
   const addItem = () => {
-    const newItem: QuoteItem = {
+    const newItem: OpportunityItem = {
       id: Date.now().toString(),
       description: '',
       quantity: 1,
@@ -62,7 +119,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     }));
   };
 
-  const updateItem = (id: string, field: keyof QuoteItem, value: any) => {
+  const updateItem = (id: string, field: keyof OpportunityItem, value: any) => {
     setFormData(prev => ({
       ...prev,
       items: prev.items.map(item => {
@@ -76,6 +133,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
         return item;
       })
     }));
+    calculateEstimatedValue();
   };
 
   const removeItem = (id: string) => {
@@ -83,23 +141,27 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
       ...prev,
       items: prev.items.filter(item => item.id !== id)
     }));
+    calculateEstimatedValue();
   };
 
-  const calculateTotal = () => {
-    return formData.items.reduce((sum, item) => sum + item.total, 0);
-  };
-
-  const generatePDF = async () => {
-    // Implementação da geração de PDF
-    toast({
-      title: "PDF Gerado",
-      description: "O orçamento foi gerado com sucesso!",
-    });
+  const calculateEstimatedValue = () => {
+    setTimeout(() => {
+      setFormData(prev => {
+        const total = prev.items.reduce((sum, item) => sum + item.total, 0);
+        return { ...prev, estimatedValue: total };
+      });
+    }, 0);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Nova oportunidade:', formData);
+    
+    if (formData.generateQuote && formData.items.length > 0) {
+      setShowQuoteForm(true);
+      return;
+    }
+    
     toast({
       title: "Oportunidade Criada",
       description: "A nova oportunidade foi cadastrada com sucesso!",
@@ -107,213 +169,354 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     onClose();
   };
 
+  const generateQuote = () => {
+    setFormData(prev => ({ ...prev, generateQuote: true }));
+    setShowQuoteForm(true);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Nova Oportunidade de Venda
-            <Button variant="outline" onClick={onClose}>✕</Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Dados do Cliente */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Nome do Cliente *</Label>
-                <Input
-                  id="clientName"
-                  value={formData.clientName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
-                  required
-                />
+    <>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+          <CardHeader className="bg-gradient-to-r from-green-600 to-green-800 text-white">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Nova Oportunidade de Venda
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientEmail">E-mail</Label>
-                <Input
-                  id="clientEmail"
-                  type="email"
-                  value={formData.clientEmail}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientEmail: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientPhone">Telefone</Label>
-                <Input
-                  id="clientPhone"
-                  value={formData.clientPhone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientPhone: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientAddress">Endereço</Label>
-                <Input
-                  id="clientAddress"
-                  value={formData.clientAddress}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientAddress: e.target.value }))}
-                />
-              </div>
-            </div>
+              <Button variant="ghost" onClick={onClose} className="text-white hover:bg-white/10">✕</Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit}>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="client">Cliente</TabsTrigger>
+                  <TabsTrigger value="opportunity">Oportunidade</TabsTrigger>
+                  <TabsTrigger value="products">Produtos</TabsTrigger>
+                  <TabsTrigger value="actions">Ações</TabsTrigger>
+                </TabsList>
 
-            <Separator />
+                <TabsContent value="client" className="space-y-6 mt-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Dados do Cliente</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsNewCustomer(true);
+                          setShowCustomerForm(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Novo Cliente
+                      </Button>
+                      <Button type="button" variant="outline">
+                        Buscar Cliente
+                      </Button>
+                    </div>
+                  </div>
 
-            {/* Dados da Oportunidade */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="opportunityTitle">Título da Oportunidade *</Label>
-                <Input
-                  id="opportunityTitle"
-                  value={formData.opportunityTitle}
-                  onChange={(e) => setFormData(prev => ({ ...prev, opportunityTitle: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="stage">Estágio</Label>
-                <Select value={formData.stage} onValueChange={(value) => setFormData(prev => ({ ...prev, stage: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="prospecto">Prospecto</SelectItem>
-                    <SelectItem value="qualificacao">Qualificação</SelectItem>
-                    <SelectItem value="proposta">Proposta</SelectItem>
-                    <SelectItem value="negociacao">Negociação</SelectItem>
-                    <SelectItem value="fechamento">Fechamento</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="validUntil">Válido até</Label>
-                <Input
-                  id="validUntil"
-                  type="date"
-                  value={formData.validUntil}
-                  onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
-                />
-              </div>
-            </div>
+                  {formData.clientName ? (
+                    <Card className="p-4 bg-green-50 border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{formData.clientName}</h4>
+                          <p className="text-sm text-gray-600">{formData.clientEmail}</p>
+                          <p className="text-sm text-gray-600">{formData.clientPhone}</p>
+                        </div>
+                        <Badge variant="outline" className="bg-green-100 text-green-800">
+                          Cliente Selecionado
+                        </Badge>
+                      </div>
+                    </Card>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>Nenhum cliente selecionado</p>
+                      <p className="text-sm">Cadastre um novo cliente ou busque um existente</p>
+                    </div>
+                  )}
+                </TabsContent>
 
-            <Separator />
-
-            {/* Itens do Orçamento */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Itens do Orçamento</h3>
-                <Button type="button" onClick={addItem} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Item
-                </Button>
-              </div>
-
-              {formData.items.map((item) => (
-                <Card key={item.id} className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
-                    <div className="md:col-span-2 space-y-2">
-                      <Label>Descrição *</Label>
+                <TabsContent value="opportunity" className="space-y-6 mt-6">
+                  <h3 className="text-lg font-medium">Informações da Oportunidade</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="opportunityTitle">Título da Oportunidade *</Label>
                       <Input
-                        value={item.description}
-                        onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                        placeholder="Ex: Chapa de aço inox 304"
+                        id="opportunityTitle"
+                        value={formData.opportunityTitle}
+                        onChange={(e) => setFormData(prev => ({ ...prev, opportunityTitle: e.target.value }))}
+                        placeholder="Ex: Fornecimento de chapas de aço"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Quantidade</Label>
+                      <Label htmlFor="estimatedValue">Valor Estimado (R$)</Label>
                       <Input
+                        id="estimatedValue"
                         type="number"
                         min="0"
                         step="0.01"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                        value={formData.estimatedValue}
+                        onChange={(e) => setFormData(prev => ({ ...prev, estimatedValue: parseFloat(e.target.value) || 0 }))}
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label>Unidade</Label>
-                      <Select value={item.unit} onValueChange={(value) => updateItem(item.id, 'unit', value)}>
+                      <Label htmlFor="stage">Estágio</Label>
+                      <Select value={formData.stage} onValueChange={(value) => setFormData(prev => ({ ...prev, stage: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="kg">kg</SelectItem>
-                          <SelectItem value="ton">Tonelada</SelectItem>
-                          <SelectItem value="m">Metro</SelectItem>
-                          <SelectItem value="m2">Metro²</SelectItem>
-                          <SelectItem value="pc">Peça</SelectItem>
-                          <SelectItem value="un">Unidade</SelectItem>
+                          <SelectItem value="prospecto">Prospecto</SelectItem>
+                          <SelectItem value="qualificacao">Qualificação</SelectItem>
+                          <SelectItem value="proposta">Proposta</SelectItem>
+                          <SelectItem value="negociacao">Negociação</SelectItem>
+                          <SelectItem value="fechamento">Fechamento</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Preço Unit. (R$)</Label>
+                      <Label htmlFor="probability">Probabilidade (%)</Label>
                       <Input
+                        id="probability"
                         type="number"
                         min="0"
-                        step="0.01"
-                        value={item.unitPrice}
-                        onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        max="100"
+                        value={formData.probability}
+                        onChange={(e) => setFormData(prev => ({ ...prev, probability: parseInt(e.target.value) || 0 }))}
                       />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Badge variant="secondary">
-                          Total: R$ {item.total.toFixed(2)}
-                        </Badge>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeItem(item.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="expectedCloseDate">Data Prevista Fechamento</Label>
+                      <Input
+                        id="expectedCloseDate"
+                        type="date"
+                        value={formData.expectedCloseDate}
+                        onChange={(e) => setFormData(prev => ({ ...prev, expectedCloseDate: e.target.value }))}
+                      />
                     </div>
                   </div>
-                </Card>
-              ))}
 
-              {formData.items.length > 0 && (
-                <div className="flex justify-end">
-                  <Card className="p-4">
-                    <div className="text-right">
-                      <div className="text-lg font-medium flex items-center gap-2">
-                        <Calculator className="h-5 w-5" />
-                        Total Geral: R$ {calculateTotal().toFixed(2)}
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="leadSource">Origem do Lead</Label>
+                      <Select value={formData.leadSource} onValueChange={(value) => setFormData(prev => ({ ...prev, leadSource: value }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Como nos conheceu?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="site">Site</SelectItem>
+                          <SelectItem value="google">Google Ads</SelectItem>
+                          <SelectItem value="facebook">Facebook</SelectItem>
+                          <SelectItem value="instagram">Instagram</SelectItem>
+                          <SelectItem value="indicacao">Indicação</SelectItem>
+                          <SelectItem value="mercado-livre">Mercado Livre</SelectItem>
+                          <SelectItem value="visita-externa">Visita Externa</SelectItem>
+                          <SelectItem value="outros">Outros</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </Card>
-                </div>
-              )}
-            </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="assignedTo">Responsável</Label>
+                      <Select value={formData.assignedTo} onValueChange={(value) => setFormData(prev => ({ ...prev, assignedTo: value }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o responsável" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="carlos">Carlos Silva</SelectItem>
+                          <SelectItem value="ana">Ana Oliveira</SelectItem>
+                          <SelectItem value="joao">João Santos</SelectItem>
+                          <SelectItem value="maria">Maria Costa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Observações</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Informações adicionais sobre a oportunidade..."
-                rows={3}
-              />
-            </div>
+                <TabsContent value="products" className="space-y-6 mt-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Produtos/Serviços</h3>
+                    <Button type="button" onClick={addItem} variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Item
+                    </Button>
+                  </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1">
-                Criar Oportunidade
-              </Button>
-              <Button type="button" variant="outline" onClick={generatePDF}>
-                <Download className="h-4 w-4 mr-2" />
-                Gerar PDF
-              </Button>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancelar
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+                  {formData.items.map((item) => (
+                    <Card key={item.id} className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                        <div className="md:col-span-2 space-y-2">
+                          <Label>Descrição *</Label>
+                          <Input
+                            value={item.description}
+                            onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                            placeholder="Ex: Chapa de aço inox 304"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Quantidade</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item.quantity}
+                            onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Unidade</Label>
+                          <Select value={item.unit} onValueChange={(value) => updateItem(item.id, 'unit', value)}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="kg">kg</SelectItem>
+                              <SelectItem value="ton">Tonelada</SelectItem>
+                              <SelectItem value="m">Metro</SelectItem>
+                              <SelectItem value="m2">Metro²</SelectItem>
+                              <SelectItem value="pc">Peça</SelectItem>
+                              <SelectItem value="un">Unidade</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Preço Unit. (R$)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item.unitPrice}
+                            onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <Badge variant="secondary">
+                              Total: R$ {item.total.toFixed(2)}
+                            </Badge>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeItem(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+
+                  {formData.items.length > 0 && (
+                    <div className="flex justify-end">
+                      <Card className="p-4">
+                        <div className="text-right">
+                          <div className="text-lg font-medium flex items-center gap-2">
+                            <Calculator className="h-5 w-5" />
+                            Valor Total: R$ {formData.estimatedValue.toFixed(2)}
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="actions" className="space-y-6 mt-6">
+                  <h3 className="text-lg font-medium">Próximas Ações</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nextAction">Próxima Ação</Label>
+                      <Input
+                        id="nextAction"
+                        value={formData.nextAction}
+                        onChange={(e) => setFormData(prev => ({ ...prev, nextAction: e.target.value }))}
+                        placeholder="Ex: Enviar orçamento"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nextActionDate">Data da Próxima Ação</Label>
+                      <Input
+                        id="nextActionDate"
+                        type="date"
+                        value={formData.nextActionDate}
+                        onChange={(e) => setFormData(prev => ({ ...prev, nextActionDate: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Observações</Label>
+                    <Textarea
+                      id="notes"
+                      value={formData.notes}
+                      onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Informações adicionais sobre a oportunidade..."
+                      rows={4}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              <div className="flex gap-3 pt-6 mt-6 border-t">
+                <Button type="submit" className="flex-1">
+                  Criar Oportunidade
+                </Button>
+                {formData.items.length > 0 && (
+                  <Button type="button" variant="outline" onClick={generateQuote}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Gerar Orçamento
+                  </Button>
+                )}
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modal de Cadastro de Cliente */}
+      {showCustomerForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <CustomerForm
+              onSubmit={handleCustomerSubmit}
+              onCancel={() => setShowCustomerForm(false)}
+              mode="create"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Orçamento */}
+      {showQuoteForm && (
+        <QuoteForm
+          onClose={() => setShowQuoteForm(false)}
+          initialData={{
+            customerName: formData.clientName,
+            customerEmail: formData.clientEmail,
+            customerPhone: formData.clientPhone,
+            customerAddress: formData.clientAddress,
+            customerCnpj: formData.clientCnpj,
+            items: formData.items.map(item => ({
+              ...item,
+              code: ''
+            }))
+          }}
+        />
+      )}
+    </>
   );
 };
