@@ -17,6 +17,12 @@ export const CategorySection = ({ type, category, subcategory, onCategoryChange,
     return type === 'receita' ? revenueCategories : expenseCategories;
   };
 
+  const getSubcategories = () => {
+    if (!category) return [];
+    const categories = getCurrentCategories();
+    return categories[category as keyof typeof categories] || [];
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -48,7 +54,7 @@ export const CategorySection = ({ type, category, subcategory, onCategoryChange,
             <SelectValue placeholder="Selecione uma subcategoria" />
           </SelectTrigger>
           <SelectContent>
-            {category && getCurrentCategories()[category as keyof typeof getCurrentCategories()]?.map((subcat) => (
+            {getSubcategories().map((subcat) => (
               <SelectItem key={subcat} value={subcat}>
                 {subcat}
               </SelectItem>
