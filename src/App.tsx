@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider"
@@ -7,8 +8,11 @@ import Products from './pages/Products';
 import Customers from './pages/Customers';
 import Sales from './pages/Sales';
 import CRMOverview from './pages/CRMOverview';
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import ModuleAnalysis from "@/pages/ModuleAnalysis";
+import MarketingAutomation from "@/pages/MarketingAutomation";
+import TasksNotifications from "@/pages/TasksNotifications";
+import UserManagement from "@/pages/UserManagement";
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 function App() {
   return (
@@ -23,6 +27,9 @@ function App() {
             <Route path="/sales" element={<Sales />} />
             <Route path="/crm" element={<CRMOverview />} />
             <Route path="/module-analysis" element={<ModuleAnalysis />} />
+            <Route path="/marketing-automation" element={<MarketingAutomation />} />
+            <Route path="/tasks" element={<TasksNotifications />} />
+            <Route path="/users" element={<UserManagement />} />
           </Routes>
         </Router>
       </ThemeProvider>
