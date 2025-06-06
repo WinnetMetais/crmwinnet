@@ -97,7 +97,7 @@ export const ProductSelector = ({ onSelect, onClose }: ProductSelectorProps) => 
                           </div>
                           <div className="text-sm text-muted-foreground space-y-1">
                             <p>Categoria: {product.category}</p>
-                            <p>Estoque: {product.stock_quantity} {product.unit}</p>
+                            <p>Estoque: {product.inventory_count} {product.unit}</p>
                             <p>Custo: R$ {product.cost_price?.toFixed(2) || '0,00'}</p>
                           </div>
                         </div>
