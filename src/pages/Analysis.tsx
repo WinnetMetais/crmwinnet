@@ -16,10 +16,16 @@ import {
   BarChart3,
   PieChart,
   LineChart,
-  Download
+  Download,
+  GitCompare,
+  Snowflake
 } from "lucide-react";
 import { SalesStats } from "@/components/sales/SalesStats";
 import { SalesFunnelChart } from "@/components/sales/SalesFunnelChart";
+import { SalesDetailedDashboard } from "@/components/analysis/SalesDetailedDashboard";
+import { LeadsConversionReport } from "@/components/analysis/LeadsConversionReport";
+import { SeasonalityAnalysis } from "@/components/analysis/SeasonalityAnalysis";
+import { PeriodComparison } from "@/components/analysis/PeriodComparison";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart as RechartsLineChart, Line, PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const Analysis = () => {
@@ -97,16 +103,28 @@ const Analysis = () => {
             {/* KPIs Principais */}
             <SalesStats />
 
-            <Tabs defaultValue="vendas" className="space-y-6 mt-6">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="vendas">Vendas</TabsTrigger>
-                <TabsTrigger value="produtos">Produtos</TabsTrigger>
+            <Tabs defaultValue="dashboard" className="space-y-6 mt-6">
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="conversao">Conversão</TabsTrigger>
-                <TabsTrigger value="clientes">Clientes</TabsTrigger>
+                <TabsTrigger value="tendencias">Tendências</TabsTrigger>
+                <TabsTrigger value="sazonalidade">Sazonalidade</TabsTrigger>
+                <TabsTrigger value="comparativo">Comparativo</TabsTrigger>
                 <TabsTrigger value="roi">ROI</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="vendas" className="space-y-6">
+              <TabsContent value="dashboard" className="space-y-6">
+                <SalesDetailedDashboard 
+                  dateRange={dateRange} 
+                  onDateRangeChange={setDateRange} 
+                />
+              </TabsContent>
+
+              <TabsContent value="conversao" className="space-y-6">
+                <LeadsConversionReport />
+              </TabsContent>
+
+              <TabsContent value="tendencias" className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
@@ -145,9 +163,7 @@ const Analysis = () => {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
 
-              <TabsContent value="produtos" className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -172,63 +188,15 @@ const Analysis = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="conversao" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Taxa de Conversão por Origem</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                          <span>Site Winnet</span>
-                          <span className="font-bold text-green-600">24.8%</span>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
-                          <span>Google Ads</span>
-                          <span className="font-bold text-blue-600">18.5%</span>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-orange-50 rounded">
-                          <span>Indicação</span>
-                          <span className="font-bold text-orange-600">31.2%</span>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-purple-50 rounded">
-                          <span>Mercado Livre</span>
-                          <span className="font-bold text-purple-600">15.3%</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Tempo Médio de Fechamento</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                          <span>Lixeiras Pequenas (até 25L)</span>
-                          <span className="font-bold">8 dias</span>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                          <span>Lixeiras Médias (25-60L)</span>
-                          <span className="font-bold">12 dias</span>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                          <span>Lixeiras Grandes (60L+)</span>
-                          <span className="font-bold">18 dias</span>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                          <span>Projetos Customizados</span>
-                          <span className="font-bold">25 dias</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+              <TabsContent value="sazonalidade" className="space-y-6">
+                <SeasonalityAnalysis />
               </TabsContent>
 
-              <TabsContent value="clientes" className="space-y-6">
+              <TabsContent value="comparativo" className="space-y-6">
+                <PeriodComparison />
+              </TabsContent>
+
+              <TabsContent value="roi" className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
@@ -290,9 +258,7 @@ const Analysis = () => {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
 
-              <TabsContent value="roi" className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
