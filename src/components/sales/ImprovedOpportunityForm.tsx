@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -208,7 +207,7 @@ export const ImprovedOpportunityForm = ({ onClose }: { onClose: () => void }) =>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <DollarSign className="h-6 w-6" />
-                <h2 className="text-xl font-bold">Nova Oportunidade de Venda</h2>
+                <h2 className="text-xl font-bold">Nova Oportunidade - Winnet Metais</h2>
               </div>
               <Button variant="ghost" onClick={onClose} className="text-white hover:bg-white/10">
                 <X className="h-4 w-4" />

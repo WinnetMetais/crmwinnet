@@ -15,6 +15,7 @@ import { AnalysisGroup } from './SidebarGroups/AnalysisGroup';
 import { ContentGroup } from './SidebarGroups/ContentGroup';
 import { CommercialGroup } from './SidebarGroups/CommercialGroup';
 import { ToolsGroup } from './SidebarGroups/ToolsGroup';
+import { ConfigGroup } from './SidebarGroups/ConfigGroup';
 
 const DashboardSidebar = () => {
   const location = useLocation();
@@ -24,10 +25,13 @@ const DashboardSidebar = () => {
   const isActiveGroup = (paths: string[]) => paths.some(path => location.pathname.startsWith(path));
 
   return (
-    <Sidebar variant="inset" className="border-r">
+    <Sidebar variant="inset" className="border-r bg-slate-50">
       <SidebarHeader>
-        <div className="flex h-12 items-center px-4">
-          <span className="font-bold text-lg">Insight Hub</span>
+        <div className="flex h-16 items-center px-4 bg-blue-600 text-white rounded-lg mx-2 mt-2">
+          <div className="flex flex-col">
+            <span className="font-bold text-lg">Winnet Metais</span>
+            <span className="text-xs opacity-90">CRM & Gestão Comercial</span>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -35,6 +39,7 @@ const DashboardSidebar = () => {
         <ContentGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <CommercialGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ToolsGroup isActive={isActive} isActiveGroup={isActiveGroup} />
+        <ConfigGroup isActive={isActive} isActiveGroup={isActiveGroup} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
@@ -48,7 +53,7 @@ const DashboardSidebar = () => {
                 className="w-full flex items-center"
               >
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Configurações</span>
+                <span>Configurações Gerais</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

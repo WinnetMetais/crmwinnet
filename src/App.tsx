@@ -12,6 +12,8 @@ import ModuleAnalysis from "@/pages/ModuleAnalysis";
 import MarketingAutomation from "@/pages/MarketingAutomation";
 import TasksNotifications from "@/pages/TasksNotifications";
 import UserManagement from "@/pages/UserManagement";
+import Analysis from "@/pages/Analysis";
+import Content from "@/pages/Content";
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/content" element={<Content />} />
             <Route path="/products" element={<Products />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/sales" element={<Sales />} />

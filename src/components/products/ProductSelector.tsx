@@ -1,181 +1,119 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Plus, Package } from "lucide-react";
-import { Product, searchProducts, getMarginOptions } from "@/services/products";
-import { QuoteItem } from "@/types/quote";
+import { Search, X, Package } from 'lucide-react';
+import { getProducts, Product } from '@/services/products';
 
 interface ProductSelectorProps {
-  onSelectProduct: (product: Product, margin: number) => void;
+  onSelect: (product: Product, margin: number) => void;
   onClose: () => void;
 }
 
-export const ProductSelector = ({ onSelectProduct, onClose }: ProductSelectorProps) => {
+export const ProductSelector = ({ onSelect, onClose }: ProductSelectorProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedMargin, setSelectedMargin] = useState(60);
 
-  const marginOptions = getMarginOptions();
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: getProducts,
+  });
 
-  useEffect(() => {
-    if (searchTerm.length >= 2) {
-      handleSearch();
-    } else {
-      setProducts([]);
-    }
-  }, [searchTerm]);
-
-  const handleSearch = async () => {
-    setLoading(true);
-    try {
-      const results = await searchProducts(searchTerm);
-      setProducts(results);
-    } catch (error) {
-      console.error('Erro na busca:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const handleProductSelect = (product: Product) => {
-    onSelectProduct(product, selectedMargin);
-  };
-
-  const getMarginPrice = (product: Product, margin: number) => {
-    if (!product.cost_price) return 0;
-    return product.cost_price / (1 - margin / 100);
+    onSelect(product, selectedMargin);
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
         <CardHeader className="bg-blue-600 text-white">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Package className="h-6 w-6" />
-              <h2 className="text-xl font-bold">Selecionar Produto</h2>
+              <h2 className="text-xl font-bold">Selecionar Produto - Winnet Metais</h2>
             </div>
             <Button variant="ghost" onClick={onClose} className="text-white hover:bg-white/10">
-              ✕
+              <X className="h-4 w-4" />
             </Button>
           </CardTitle>
         </CardHeader>
-
+        
         <CardContent className="p-6">
-          <div className="space-y-4">
-            {/* Busca e Margem */}
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Label htmlFor="search">Buscar Produto</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Digite o nome, SKU ou categoria..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="w-40">
-                <Label htmlFor="margin">Margem de Lucro</Label>
-                <Select value={selectedMargin.toString()} onValueChange={(value) => setSelectedMargin(parseInt(value))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {marginOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value.toString()}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <div className="space-y-4 mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome ou SKU..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium">Margem de Lucro:</span>
+              <div className="flex gap-2">
+                {[50, 55, 60, 65, 70, 75].map((margin) => (
+                  <Button
+                    key={margin}
+                    variant={selectedMargin === margin ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedMargin(margin)}
+                  >
+                    {margin}%
+                  </Button>
+                ))}
               </div>
             </div>
+          </div>
 
-            {/* Resultados */}
-            {loading && (
-              <div className="text-center py-8">
-                <p>Buscando produtos...</p>
-              </div>
-            )}
-
-            {searchTerm.length < 2 && (
+          <div className="max-h-96 overflow-y-auto space-y-3">
+            {isLoading ? (
+              <div className="text-center py-8">Carregando produtos...</div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Package className="mx-auto h-12 w-12 mb-4" />
-                <p>Digite pelo menos 2 caracteres para buscar produtos</p>
+                Nenhum produto encontrado
               </div>
-            )}
-
-            {searchTerm.length >= 2 && products.length === 0 && !loading && (
-              <div className="text-center py-8 text-muted-foreground">
-                <Package className="mx-auto h-12 w-12 mb-4" />
-                <p>Nenhum produto encontrado</p>
-              </div>
-            )}
-
-            {products.length > 0 && (
-              <div className="border rounded-lg">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>Produto</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>Estoque</TableHead>
-                      <TableHead>Custo</TableHead>
-                      <TableHead>Preço com {selectedMargin}%</TableHead>
-                      <TableHead>Ação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-mono text-sm">{product.sku}</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            {product.description && (
-                              <p className="text-sm text-muted-foreground">{product.description}</p>
-                            )}
+            ) : (
+              filteredProducts.map((product) => {
+                const marginPrice = product.cost_price ? product.cost_price / (1 - selectedMargin / 100) : 0;
+                
+                return (
+                  <Card key={product.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleProductSelect(product)}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">{product.name}</h3>
+                            <Badge variant="outline">{product.sku}</Badge>
                           </div>
-                        </TableCell>
-                        <TableCell>{product.category}</TableCell>
-                        <TableCell>
-                          <Badge variant={product.inventory_count && product.inventory_count > (product.min_stock || 0) ? "default" : "destructive"}>
-                            {product.inventory_count} {product.unit}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {product.cost_price ? `R$ ${product.cost_price.toFixed(2)}` : '-'}
-                        </TableCell>
-                        <TableCell className="font-bold">
-                          {product.cost_price ? `R$ ${getMarginPrice(product, selectedMargin).toFixed(2)}` : '-'}
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleProductSelect(product)}
-                            disabled={!product.cost_price}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Adicionar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <p>Categoria: {product.category}</p>
+                            <p>Estoque: {product.stock_quantity} {product.unit}</p>
+                            <p>Custo: R$ {product.cost_price?.toFixed(2) || '0,00'}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-blue-600">
+                            R$ {marginPrice.toFixed(2)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Margem {selectedMargin}%
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
         </CardContent>

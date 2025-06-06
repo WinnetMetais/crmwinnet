@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Target, MessageSquare, Megaphone } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { FileText, Calendar, Megaphone, BookOpen } from 'lucide-react';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -19,37 +19,49 @@ export const ContentGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolea
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive('/content/plan')}
-              tooltip="Planejamento"
+              isActive={isActive('/content')}
+              tooltip="Gestão de Conteúdo"
               asChild
             >
-              <Link to="/content/plan">
-                <Target className="mr-2 h-4 w-4" />
-                <span>Planejamento</span>
+              <Link to="/content">
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Conteúdo</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive('/social')}
-              tooltip="Redes Sociais"
+              isActive={isActive('/content/calendar')}
+              tooltip="Calendário Editorial"
               asChild
             >
-              <Link to="/social">
-                <MessageSquare className="mr-2 h-4 w-4" />
-                <span>Redes Sociais</span>
+              <Link to="/content">
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>Calendário Editorial</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive('/ads')}
-              tooltip="Anúncios"
+              isActive={isActive('/marketing-automation')}
+              tooltip="Automação de Marketing"
               asChild
             >
-              <Link to="/ads">
+              <Link to="/marketing-automation">
                 <Megaphone className="mr-2 h-4 w-4" />
-                <span>Anúncios</span>
+                <span>Automação Marketing</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={isActive('/content/catalog')}
+              tooltip="Catálogo Digital"
+              asChild
+            >
+              <Link to="/content">
+                <BookOpen className="mr-2 h-4 w-4" />
+                <span>Catálogo Digital</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

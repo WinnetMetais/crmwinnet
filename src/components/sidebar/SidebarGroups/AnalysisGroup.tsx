@@ -1,99 +1,72 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, FileText, TrendingUp, Eye } from 'lucide-react';
+import { BarChart3, TrendingUp, PieChart, Target } from 'lucide-react';
 import {
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-interface AnalysisGroupProps {
-  isActive: (path: string) => boolean;
-  isActiveGroup: (paths: string[]) => boolean;
-}
-
-export const AnalysisGroup = ({ isActive, isActiveGroup }: AnalysisGroupProps) => {
-  const analysisPaths = ['/dashboard', '/reports', '/performance', '/crm-overview'];
-  
+export const AnalysisGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolean, isActive: (path: string) => boolean }> = ({ isActiveGroup, isActive }) => {
   return (
-    <Collapsible defaultOpen={isActiveGroup(analysisPaths)}>
-      <SidebarGroup>
-        <SidebarGroupLabel asChild>
-          <CollapsibleTrigger className="group/collapsible">
-            Análises
-          </CollapsibleTrigger>
-        </SidebarGroupLabel>
-        <CollapsibleContent>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isActive('/dashboard')}
-                  asChild
-                >
-                  <Link 
-                    to="/dashboard"
-                    className="w-full flex items-center"
-                  >
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isActive('/crm-overview')}
-                  asChild
-                >
-                  <Link 
-                    to="/crm-overview"
-                    className="w-full flex items-center"
-                  >
-                    <Eye className="mr-2 h-4 w-4" />
-                    <span>Visão Geral CRM</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isActive('/reports')}
-                  asChild
-                >
-                  <Link 
-                    to="/reports"
-                    className="w-full flex items-center"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    <span>Relatórios</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isActive('/performance')}
-                  asChild
-                >
-                  <Link 
-                    to="/performance"
-                    className="w-full flex items-center"
-                  >
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    <span>Performance</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </CollapsibleContent>
-      </SidebarGroup>
-    </Collapsible>
+    <SidebarGroup>
+      <SidebarGroupLabel>Análises</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={isActive('/')}
+              tooltip="Dashboard Principal"
+              asChild
+            >
+              <Link to="/">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={isActive('/analysis')}
+              tooltip="Análises Avançadas"
+              asChild
+            >
+              <Link to="/analysis">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                <span>Análises Avançadas</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={isActive('/crm')}
+              tooltip="Visão Geral CRM"
+              asChild
+            >
+              <Link to="/crm">
+                <PieChart className="mr-2 h-4 w-4" />
+                <span>Visão Geral CRM</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={isActive('/module-analysis')}
+              tooltip="Status dos Módulos"
+              asChild
+            >
+              <Link to="/module-analysis">
+                <Target className="mr-2 h-4 w-4" />
+                <span>Status Módulos</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 };
