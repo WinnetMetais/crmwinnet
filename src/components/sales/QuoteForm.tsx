@@ -501,7 +501,7 @@ export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormPr
       {/* Product Selector Modal */}
       {showProductSelector && (
         <ProductSelector
-          onSelectProduct={handleProductSelect}
+          onSelect={handleProductSelect}
           onClose={() => setShowProductSelector(false)}
         />
       )}
