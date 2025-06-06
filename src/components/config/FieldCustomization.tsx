@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -134,7 +133,6 @@ export const FieldCustomization = () => {
                 id={`visible-${field.id}`}
                 checked={field.visible}
                 onCheckedChange={() => handleToggleVisibility(module, field.id)}
-                size="sm"
               />
             </div>
             <div className="flex items-center space-x-1">
@@ -145,7 +143,6 @@ export const FieldCustomization = () => {
                 id={`required-${field.id}`}
                 checked={field.required}
                 onCheckedChange={() => handleToggleRequired(module, field.id)}
-                size="sm"
               />
             </div>
             <Button variant="ghost" size="sm">
