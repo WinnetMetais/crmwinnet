@@ -79,7 +79,7 @@ class AIService {
         throw new Error(`Unsupported provider: ${request.provider}`);
       }
 
-      // Log usage
+      // Log usage - usando tabela existente analytics_data
       await this.logUsage(request, response);
       
       return response;
@@ -174,13 +174,20 @@ class AIService {
 
   private async logUsage(request: AIRequest, response: AIResponse) {
     try {
-      await supabase.from('ai_usage_logs').insert({
-        provider: request.provider,
-        model: request.model,
-        tokens_used: response.tokens,
-        prompt_length: request.prompt.length,
-        response_length: response.content.length,
-        created_at: new Date().toISOString()
+      // Usando a tabela analytics_data existente para armazenar logs de IA
+      await supabase.from('analytics_data').insert({
+        category: 'ai_usage',
+        subcategory: request.provider,
+        metric_name: `${request.provider}_${request.model}`,
+        metric_value: response.tokens,
+        metric_date: new Date().toISOString().split('T')[0],
+        user_id: (await supabase.auth.getUser()).data.user?.id || '',
+        additional_data: {
+          prompt_length: request.prompt.length,
+          response_length: response.content.length,
+          model: request.model,
+          provider: request.provider
+        }
       });
     } catch (error) {
       console.error('Failed to log AI usage:', error);
