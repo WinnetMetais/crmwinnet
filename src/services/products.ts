@@ -91,6 +91,18 @@ export const productService = {
   }
 };
 
+// Função para opções de margem
+export const getMarginOptions = () => {
+  return [
+    { value: 50, label: '50%' },
+    { value: 55, label: '55%' },
+    { value: 60, label: '60%' },
+    { value: 65, label: '65%' },
+    { value: 70, label: '70%' },
+    { value: 75, label: '75%' }
+  ];
+};
+
 // Manter compatibilidade com código existente
 export const getProducts = productService.getProducts;
 export const getProductById = productService.getProductById;

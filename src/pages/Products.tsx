@@ -19,24 +19,20 @@ import {
   TrendingUp,
   AlertTriangle 
 } from "lucide-react";
-import { Product, getProducts, deleteProduct, getMarginOptions } from "@/services/products";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
+import { ProductForm } from "@/components/products/ProductForm";
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
-  const queryClient = useQueryClient();
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: getProducts,
-  });
-
-  const marginOptions = getMarginOptions();
+  const { data: products = [], isLoading } = useProducts();
+  const deleteProductMutation = useDeleteProduct();
 
   // Filter products based on search term and selected tab
-  const filteredProducts = products.filter((product: Product) => {
+  const filteredProducts = products.filter((product: any) => {
     const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -51,14 +47,16 @@ const Products = () => {
 
   const handleDeleteProduct = async (id: string, name: string) => {
     if (confirm(`Tem certeza que deseja remover o produto "${name}"?`)) {
-      const success = await deleteProduct(id);
-      if (success) {
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-      }
+      deleteProductMutation.mutate(id);
     }
   };
 
-  const getStockStatus = (product: Product) => {
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setShowProductForm(true);
+  };
+
+  const getStockStatus = (product: any) => {
     const stock = product.inventory_count || 0;
     const minStock = product.min_stock || 0;
     
@@ -68,7 +66,7 @@ const Products = () => {
   };
 
   // Categories summary for the cards
-  const categorySummary = products.reduce((acc: any, product: Product) => {
+  const categorySummary = products.reduce((acc: any, product: any) => {
     if (!product.category) return acc;
     
     if (!acc[product.category]) {
@@ -106,7 +104,7 @@ const Products = () => {
                   Filtros
                 </Button>
                 
-                <Button>
+                <Button onClick={() => setShowProductForm(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Novo Produto
                 </Button>
@@ -205,7 +203,7 @@ const Products = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        filteredProducts.map((product: Product) => {
+                        filteredProducts.map((product: any) => {
                           const stockStatus = getStockStatus(product);
                           return (
                             <TableRow key={product.id}>
@@ -266,7 +264,11 @@ const Products = () => {
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
-                                  <Button size="icon" variant="ghost">
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost"
+                                    onClick={() => handleEditProduct(product)}
+                                  >
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                   <Button 
@@ -290,6 +292,19 @@ const Products = () => {
           </div>
         </div>
       </div>
+
+      <ProductForm
+        open={showProductForm}
+        onClose={() => {
+          setShowProductForm(false);
+          setEditingProduct(null);
+        }}
+        onSubmit={(data) => {
+          // TODO: Implement create/update logic
+          console.log('Product data:', data);
+        }}
+        initialData={editingProduct}
+      />
     </SidebarProvider>
   );
 };

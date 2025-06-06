@@ -54,7 +54,7 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
             <Label htmlFor={fieldName}>{field.field_label}</Label>
             <Input
               id={fieldName}
-              {...form.register(fieldName)}
+              {...form.register(fieldName as any)}
               placeholder={field.field_label}
             />
           </div>
@@ -67,7 +67,7 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
             <Input
               id={fieldName}
               type="number"
-              {...form.register(fieldName, { valueAsNumber: true })}
+              {...form.register(fieldName as any, { valueAsNumber: true })}
               placeholder={field.field_label}
             />
           </div>
@@ -80,7 +80,7 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
             <Input
               id={fieldName}
               type="date"
-              {...form.register(fieldName)}
+              {...form.register(fieldName as any)}
             />
           </div>
         );
@@ -122,7 +122,7 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
             <Label htmlFor={fieldName}>{field.field_label}</Label>
             <Textarea
               id={fieldName}
-              {...form.register(fieldName)}
+              {...form.register(fieldName as any)}
               placeholder={field.field_label}
               rows={3}
             />
