@@ -1,16 +1,16 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { 
   Plus, 
   Edit, 
-  Trash2, 
-  Move,
+  Trash2,
   Type,
   Hash,
   Calendar,
@@ -18,29 +18,22 @@ import {
   List,
   FileText
 } from "lucide-react";
-import { toast } from "sonner";
+import { useCustomFieldsByModule, useUpdateCustomField, useDeleteCustomField, useCreateCustomField } from '@/hooks/useCustomFields';
+import { CustomFieldForm } from './CustomFieldForm';
 
 export const FieldCustomization = () => {
-  const [customerFields, setCustomerFields] = useState([
-    { id: 1, name: "Segmento", type: "select", required: false, visible: true, options: ["Industrial", "Construção", "Naval"] },
-    { id: 2, name: "Origem Lead", type: "select", required: true, visible: true, options: ["Site", "Indicação", "Telefone", "Email"] },
-    { id: 3, name: "Potencial Compra", type: "number", required: false, visible: true, options: [] },
-    { id: 4, name: "Data Próximo Contato", type: "date", required: false, visible: true, options: [] },
-  ]);
+  const [activeTab, setActiveTab] = useState('customers');
+  const [showForm, setShowForm] = useState(false);
+  const [editingField, setEditingField] = useState<any>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const [productFields, setProductFields] = useState([
-    { id: 1, name: "Certificação", type: "text", required: false, visible: true, options: [] },
-    { id: 2, name: "Origem", type: "select", required: false, visible: true, options: ["Nacional", "Importado"] },
-    { id: 3, name: "Prazo Entrega", type: "number", required: true, visible: true, options: [] },
-    { id: 4, name: "Temperatura Trabalho", type: "text", required: false, visible: false, options: [] },
-  ]);
+  const { data: customerFields = [], isLoading: loadingCustomers } = useCustomFieldsByModule('customers');
+  const { data: productFields = [], isLoading: loadingProducts } = useCustomFieldsByModule('products');
+  const { data: quoteFields = [], isLoading: loadingQuotes } = useCustomFieldsByModule('quotes');
 
-  const [quoteFields, setQuoteFields] = useState([
-    { id: 1, name: "Prazo Pagamento", type: "select", required: true, visible: true, options: ["À vista", "30 dias", "60 dias", "90 dias"] },
-    { id: 2, name: "Condições Especiais", type: "textarea", required: false, visible: true, options: [] },
-    { id: 3, name: "Desconto Máximo", type: "number", required: false, visible: true, options: [] },
-    { id: 4, name: "Observações Internas", type: "textarea", required: false, visible: false, options: [] },
-  ]);
+  const createMutation = useCreateCustomField();
+  const updateMutation = useUpdateCustomField();
+  const deleteMutation = useDeleteCustomField();
 
   const fieldTypes = [
     { value: "text", label: "Texto", icon: Type },
@@ -51,42 +44,58 @@ export const FieldCustomization = () => {
     { value: "textarea", label: "Texto Longo", icon: FileText },
   ];
 
-  const handleToggleVisibility = (module: string, fieldId: number) => {
-    const updateFields = (fields: any[]) => 
-      fields.map(field => 
-        field.id === fieldId 
-          ? { ...field, visible: !field.visible }
-          : field
-      );
-
-    if (module === "customers") {
-      setCustomerFields(updateFields(customerFields));
-    } else if (module === "products") {
-      setProductFields(updateFields(productFields));
-    } else if (module === "quotes") {
-      setQuoteFields(updateFields(quoteFields));
+  const getCurrentFields = () => {
+    switch (activeTab) {
+      case 'customers':
+        return customerFields;
+      case 'products':
+        return productFields;
+      case 'quotes':
+        return quoteFields;
+      default:
+        return [];
     }
-
-    toast.success("Visibilidade do campo atualizada!");
   };
 
-  const handleToggleRequired = (module: string, fieldId: number) => {
-    const updateFields = (fields: any[]) => 
-      fields.map(field => 
-        field.id === fieldId 
-          ? { ...field, required: !field.required }
-          : field
-      );
-
-    if (module === "customers") {
-      setCustomerFields(updateFields(customerFields));
-    } else if (module === "products") {
-      setProductFields(updateFields(productFields));
-    } else if (module === "quotes") {
-      setQuoteFields(updateFields(quoteFields));
+  const isLoading = () => {
+    switch (activeTab) {
+      case 'customers':
+        return loadingCustomers;
+      case 'products':
+        return loadingProducts;
+      case 'quotes':
+        return loadingQuotes;
+      default:
+        return false;
     }
+  };
 
-    toast.success("Campo obrigatório atualizado!");
+  const handleToggleVisibility = (fieldId: string, visible: boolean) => {
+    updateMutation.mutate({ id: fieldId, updates: { visible } });
+  };
+
+  const handleToggleRequired = (fieldId: string, required: boolean) => {
+    updateMutation.mutate({ id: fieldId, updates: { required } });
+  };
+
+  const handleCreateField = (data: any) => {
+    createMutation.mutate({
+      ...data,
+      user_id: '00000000-0000-0000-0000-000000000000', // Será substituído pela autenticação real
+      field_order: getCurrentFields().length + 1,
+    });
+  };
+
+  const handleEditField = (data: any) => {
+    if (editingField) {
+      updateMutation.mutate({ id: editingField.id, updates: data });
+      setEditingField(null);
+    }
+  };
+
+  const handleDeleteField = (fieldId: string) => {
+    deleteMutation.mutate(fieldId);
+    setDeleteConfirm(null);
   };
 
   const getFieldIcon = (type: string) => {
@@ -94,8 +103,8 @@ export const FieldCustomization = () => {
     return fieldType ? fieldType.icon : Type;
   };
 
-  const FieldCard = ({ field, module }: { field: any, module: string }) => {
-    const IconComponent = getFieldIcon(field.type);
+  const FieldCard = ({ field }: { field: any }) => {
+    const IconComponent = getFieldIcon(field.field_type);
     
     return (
       <Card className="p-4">
@@ -105,10 +114,10 @@ export const FieldCustomization = () => {
               <IconComponent className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-medium">{field.name}</h3>
+              <h3 className="font-medium">{field.field_label}</h3>
               <div className="flex items-center space-x-2 mt-1">
                 <Badge variant="outline" className="text-xs">
-                  {fieldTypes.find(ft => ft.value === field.type)?.label}
+                  {fieldTypes.find(ft => ft.value === field.field_type)?.label}
                 </Badge>
                 {field.required && (
                   <Badge className="bg-red-100 text-red-800 text-xs">
@@ -132,7 +141,7 @@ export const FieldCustomization = () => {
               <Switch
                 id={`visible-${field.id}`}
                 checked={field.visible}
-                onCheckedChange={() => handleToggleVisibility(module, field.id)}
+                onCheckedChange={(checked) => handleToggleVisibility(field.id, checked)}
               />
             </div>
             <div className="flex items-center space-x-1">
@@ -142,19 +151,30 @@ export const FieldCustomization = () => {
               <Switch
                 id={`required-${field.id}`}
                 checked={field.required}
-                onCheckedChange={() => handleToggleRequired(module, field.id)}
+                onCheckedChange={(checked) => handleToggleRequired(field.id, checked)}
               />
             </div>
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                setEditingField(field);
+                setShowForm(true);
+              }}
+            >
               <Edit className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setDeleteConfirm(field.id)}
+            >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
         
-        {field.options.length > 0 && (
+        {field.options && field.options.length > 0 && (
           <div className="mt-3 pt-3 border-t">
             <p className="text-xs text-muted-foreground mb-2">Opções:</p>
             <div className="flex flex-wrap gap-1">
@@ -172,7 +192,7 @@ export const FieldCustomization = () => {
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="customers" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="customers">Clientes</TabsTrigger>
           <TabsTrigger value="products">Produtos</TabsTrigger>
@@ -189,18 +209,22 @@ export const FieldCustomization = () => {
                     Personalize os campos do formulário de clientes
                   </CardDescription>
                 </div>
-                <Button>
+                <Button onClick={() => setShowForm(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Campo
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {customerFields.map((field) => (
-                  <FieldCard key={field.id} field={field} module="customers" />
-                ))}
-              </div>
+              {isLoading() ? (
+                <div className="text-center py-8">Carregando campos...</div>
+              ) : (
+                <div className="space-y-4">
+                  {getCurrentFields().map((field) => (
+                    <FieldCard key={field.id} field={field} />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -215,18 +239,22 @@ export const FieldCustomization = () => {
                     Personalize os campos do formulário de produtos
                   </CardDescription>
                 </div>
-                <Button>
+                <Button onClick={() => setShowForm(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Campo
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {productFields.map((field) => (
-                  <FieldCard key={field.id} field={field} module="products" />
-                ))}
-              </div>
+              {isLoading() ? (
+                <div className="text-center py-8">Carregando campos...</div>
+              ) : (
+                <div className="space-y-4">
+                  {getCurrentFields().map((field) => (
+                    <FieldCard key={field.id} field={field} />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -241,18 +269,22 @@ export const FieldCustomization = () => {
                     Personalize os campos do formulário de orçamentos
                   </CardDescription>
                 </div>
-                <Button>
+                <Button onClick={() => setShowForm(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Campo
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {quoteFields.map((field) => (
-                  <FieldCard key={field.id} field={field} module="quotes" />
-                ))}
-              </div>
+              {isLoading() ? (
+                <div className="text-center py-8">Carregando campos...</div>
+              ) : (
+                <div className="space-y-4">
+                  {getCurrentFields().map((field) => (
+                    <FieldCard key={field.id} field={field} />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -276,6 +308,36 @@ export const FieldCustomization = () => {
           </div>
         </CardContent>
       </Card>
+
+      <CustomFieldForm
+        open={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditingField(null);
+        }}
+        onSubmit={editingField ? handleEditField : handleCreateField}
+        initialData={editingField}
+        module={activeTab}
+      />
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este campo customizado? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirm && handleDeleteField(deleteConfirm)}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

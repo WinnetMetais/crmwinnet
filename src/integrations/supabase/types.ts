@@ -260,12 +260,103 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_fields: {
+        Row: {
+          created_at: string | null
+          field_label: string
+          field_name: string
+          field_order: number | null
+          field_type: string
+          id: string
+          module: string
+          options: Json | null
+          required: boolean | null
+          updated_at: string | null
+          user_id: string
+          validation_rules: Json | null
+          visible: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          field_label: string
+          field_name: string
+          field_order?: number | null
+          field_type: string
+          id?: string
+          module: string
+          options?: Json | null
+          required?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          validation_rules?: Json | null
+          visible?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          field_label?: string
+          field_name?: string
+          field_order?: number | null
+          field_type?: string
+          id?: string
+          module?: string
+          options?: Json | null
+          required?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          validation_rules?: Json | null
+          visible?: boolean | null
+        }
+        Relationships: []
+      }
+      custom_reports: {
+        Row: {
+          columns: Json | null
+          created_at: string | null
+          description: string | null
+          filters: Json | null
+          id: string
+          name: string
+          report_type: string
+          schedule_config: Json | null
+          scheduled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          columns?: Json | null
+          created_at?: string | null
+          description?: string | null
+          filters?: Json | null
+          id?: string
+          name: string
+          report_type: string
+          schedule_config?: Json | null
+          scheduled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          columns?: Json | null
+          created_at?: string | null
+          description?: string | null
+          filters?: Json | null
+          id?: string
+          name?: string
+          report_type?: string
+          schedule_config?: Json | null
+          scheduled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
           city: string | null
           company: string | null
           created_at: string
+          custom_data: Json | null
           email: string | null
           id: string
           last_contact_date: string | null
@@ -284,6 +375,7 @@ export type Database = {
           city?: string | null
           company?: string | null
           created_at?: string
+          custom_data?: Json | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
@@ -302,6 +394,7 @@ export type Database = {
           city?: string | null
           company?: string | null
           created_at?: string
+          custom_data?: Json | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
@@ -363,6 +456,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketing_campaigns: {
+        Row: {
+          budget: number | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          metrics: Json | null
+          name: string
+          platform: string
+          start_date: string | null
+          status: string
+          target_audience: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metrics?: Json | null
+          name: string
+          platform: string
+          start_date?: string | null
+          status?: string
+          target_audience?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metrics?: Json | null
+          name?: string
+          platform?: string
+          start_date?: string | null
+          status?: string
+          target_audience?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       negotiations: {
         Row: {
@@ -497,6 +638,7 @@ export type Database = {
           category: string | null
           cost_price: number | null
           created_at: string
+          custom_data: Json | null
           description: string | null
           dimensions: string | null
           id: string
@@ -521,6 +663,7 @@ export type Database = {
           category?: string | null
           cost_price?: number | null
           created_at?: string
+          custom_data?: Json | null
           description?: string | null
           dimensions?: string | null
           id?: string
@@ -545,6 +688,7 @@ export type Database = {
           category?: string | null
           cost_price?: number | null
           created_at?: string
+          custom_data?: Json | null
           description?: string | null
           dimensions?: string | null
           id?: string
@@ -625,6 +769,7 @@ export type Database = {
           approved_at: string | null
           contact_person: string | null
           created_at: string | null
+          custom_data: Json | null
           customer_address: string | null
           customer_cnpj: string | null
           customer_email: string | null
@@ -653,6 +798,7 @@ export type Database = {
           approved_at?: string | null
           contact_person?: string | null
           created_at?: string | null
+          custom_data?: Json | null
           customer_address?: string | null
           customer_cnpj?: string | null
           customer_email?: string | null
@@ -681,6 +827,7 @@ export type Database = {
           approved_at?: string | null
           contact_person?: string | null
           created_at?: string | null
+          custom_data?: Json | null
           customer_address?: string | null
           customer_cnpj?: string | null
           customer_email?: string | null

@@ -1,202 +1,99 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-export interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price?: number;
-  category?: string;
-  sku?: string;
-  inventory_count?: number;
-  active?: boolean;
-  supplier?: string;
-  cost_price?: number;
-  unit?: string;
-  weight?: number;
-  dimensions?: string;
-  min_stock?: number;
-  margin_50?: number;
-  margin_55?: number;
-  margin_60?: number;
-  margin_65?: number;
-  margin_70?: number;
-  margin_75?: number;
-  created_at?: string;
-  updated_at?: string;
-}
+export type Product = Tables<'products'>;
+export type ProductInsert = TablesInsert<'products'>;
+export type ProductUpdate = TablesUpdate<'products'>;
 
-export async function getProducts() {
-  try {
+export const productService = {
+  // Buscar todos os produtos
+  async getProducts() {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (error) throw error;
+      .order('name');
     
-    return data || [];
-  } catch (error: any) {
-    toast({
-      title: "Erro ao buscar produtos",
-      description: error.message,
-      variant: "destructive",
-    });
-    return [];
-  }
-}
+    if (error) throw error;
+    return data;
+  },
 
-export async function getProductById(id: string) {
-  try {
+  // Buscar produto por ID
+  async getProductById(id: string) {
     const { data, error } = await supabase
       .from('products')
       .select('*')
       .eq('id', id)
-      .maybeSingle();
-      
-    if (error) throw error;
+      .single();
     
+    if (error) throw error;
     return data;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao buscar produto",
-      description: error.message,
-      variant: "destructive",
-    });
-    return null;
-  }
-}
+  },
 
-export async function getProductBySku(sku: string) {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('sku', sku)
-      .maybeSingle();
-      
-    if (error) throw error;
-    
-    return data;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao buscar produto",
-      description: error.message,
-      variant: "destructive",
-    });
-    return null;
-  }
-}
-
-export async function searchProducts(searchTerm: string) {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%`)
-      .eq('active', true)
-      .order('name');
-      
-    if (error) throw error;
-    
-    return data || [];
-  } catch (error: any) {
-    console.error('Erro ao buscar produtos:', error);
-    return [];
-  }
-}
-
-export async function createProduct(product: Omit<Product, 'id'>) {
-  try {
+  // Criar novo produto
+  async createProduct(product: ProductInsert) {
     const { data, error } = await supabase
       .from('products')
       .insert(product)
       .select()
       .single();
-      
+    
     if (error) throw error;
-    
-    toast({
-      title: "Produto criado",
-      description: "O produto foi criado com sucesso.",
-    });
-    
     return data;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao criar produto",
-      description: error.message,
-      variant: "destructive",
-    });
-    return null;
-  }
-}
+  },
 
-export async function updateProduct(id: string, product: Partial<Product>) {
-  try {
+  // Atualizar produto
+  async updateProduct(id: string, updates: ProductUpdate) {
     const { data, error } = await supabase
       .from('products')
-      .update(product)
+      .update(updates)
       .eq('id', id)
       .select()
       .single();
-      
+    
     if (error) throw error;
-    
-    toast({
-      title: "Produto atualizado",
-      description: "O produto foi atualizado com sucesso.",
-    });
-    
     return data;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao atualizar produto",
-      description: error.message,
-      variant: "destructive",
-    });
-    return null;
-  }
-}
+  },
 
-export async function deleteProduct(id: string) {
-  try {
+  // Deletar produto
+  async deleteProduct(id: string) {
     const { error } = await supabase
       .from('products')
       .delete()
       .eq('id', id);
-      
+    
     if (error) throw error;
+  },
+
+  // Buscar produtos ativos
+  async getActiveProducts() {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('active', true)
+      .order('name');
     
-    toast({
-      title: "Produto removido",
-      description: "O produto foi removido com sucesso.",
-    });
+    if (error) throw error;
+    return data;
+  },
+
+  // Buscar produtos com estoque baixo
+  async getLowStockProducts() {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .filter('inventory_count', 'lte', 'min_stock')
+      .eq('active', true)
+      .order('name');
     
-    return true;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao remover produto",
-      description: error.message,
-      variant: "destructive",
-    });
-    return false;
+    if (error) throw error;
+    return data;
   }
-}
+};
 
-export function calculateMarginPrice(costPrice: number, marginPercent: number): number {
-  if (!costPrice || costPrice <= 0 || !marginPercent || marginPercent <= 0) return 0;
-  return costPrice / (1 - marginPercent / 100);
-}
-
-export function getMarginOptions() {
-  return [
-    { value: 50, label: '50%' },
-    { value: 55, label: '55%' },
-    { value: 60, label: '60%' },
-    { value: 65, label: '65%' },
-    { value: 70, label: '70%' },
-    { value: 75, label: '75%' }
-  ];
-}
+// Manter compatibilidade com código existente
+export const getProducts = productService.getProducts;
+export const getProductById = productService.getProductById;
+export const createProduct = productService.createProduct;
+export const updateProduct = productService.updateProduct;
+export const deleteProduct = productService.deleteProduct;
