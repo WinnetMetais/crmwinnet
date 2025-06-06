@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider"
@@ -17,6 +16,9 @@ import TasksNotifications from "@/pages/TasksNotifications";
 import UserManagement from "@/pages/UserManagement";
 import Analysis from "@/pages/Analysis";
 import Content from "@/pages/Content";
+import Config from "@/pages/Config";
+import Backup from "@/pages/Backup";
+import Templates from "@/pages/Templates";
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 function App() {
@@ -40,6 +42,9 @@ function App() {
             <Route path="/users" element={<UserManagement />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/filters" element={<Filters />} />
+            <Route path="/config" element={<Config />} />
+            <Route path="/backup" element={<Backup />} />
+            <Route path="/templates" element={<Templates />} />
           </Routes>
         </Router>
       </ThemeProvider>
