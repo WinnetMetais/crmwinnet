@@ -14,6 +14,7 @@ import {
 import { AnalysisGroup } from './SidebarGroups/AnalysisGroup';
 import { ContentGroup } from './SidebarGroups/ContentGroup';
 import { CommercialGroup } from './SidebarGroups/CommercialGroup';
+import { FinancialGroup } from './SidebarGroups/FinancialGroup';
 import { ToolsGroup } from './SidebarGroups/ToolsGroup';
 import { ConfigGroup } from './SidebarGroups/ConfigGroup';
 
@@ -38,6 +39,7 @@ const DashboardSidebar = () => {
         <AnalysisGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ContentGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <CommercialGroup isActive={isActive} isActiveGroup={isActiveGroup} />
+        <FinancialGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ToolsGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ConfigGroup isActive={isActive} isActiveGroup={isActiveGroup} />
       </SidebarContent>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider"
@@ -7,6 +8,7 @@ import Products from './pages/Products';
 import Customers from './pages/Customers';
 import Sales from './pages/Sales';
 import Financial from './pages/Financial';
+import Commercial from './pages/Commercial';
 import Reports from './pages/Reports';
 import Filters from './pages/Filters';
 import CRMOverview from './pages/CRMOverview';
@@ -34,6 +36,7 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/sales" element={<Sales />} />
+            <Route path="/commercial" element={<Commercial />} />
             <Route path="/financial" element={<Financial />} />
             <Route path="/crm" element={<CRMOverview />} />
             <Route path="/module-analysis" element={<ModuleAnalysis />} />

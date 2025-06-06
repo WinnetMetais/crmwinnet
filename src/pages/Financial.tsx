@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WhatsAppIntegration } from "@/components/commercial/WhatsAppIntegration";
-import { QuoteEmailSender } from "@/components/commercial/QuoteEmailSender";
-import { CommissionSystem } from "@/components/commercial/CommissionSystem";
-import { SalesGoalsControl } from "@/components/commercial/SalesGoalsControl";
-import { NegotiationHistory } from "@/components/commercial/NegotiationHistory";
+import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
+import { CashFlowManager } from "@/components/financial/CashFlowManager";
+import { ExpenseControl } from "@/components/financial/ExpenseControl";
+import { RevenueAnalysis } from "@/components/financial/RevenueAnalysis";
+import { ChannelAnalysis } from "@/components/financial/ChannelAnalysis";
 
 const Financial = () => {
   return (
@@ -20,38 +20,38 @@ const Financial = () => {
             <div className="flex items-center space-x-4 mb-6">
               <SidebarTrigger />
               <div>
-                <h1 className="text-3xl font-bold">Módulo Comercial Avançado</h1>
-                <p className="text-muted-foreground">Gestão completa do processo comercial da Winnet Metais</p>
+                <h1 className="text-3xl font-bold">Módulo Financeiro</h1>
+                <p className="text-muted-foreground">Gestão completa das finanças da Winnet Metais</p>
               </div>
             </div>
 
-            <Tabs defaultValue="whatsapp" className="space-y-6">
+            <Tabs defaultValue="dashboard" className="space-y-6">
               <TabsList className="grid grid-cols-5 w-full">
-                <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
-                <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="commission">Comissões</TabsTrigger>
-                <TabsTrigger value="goals">Metas</TabsTrigger>
-                <TabsTrigger value="negotiations">Negociações</TabsTrigger>
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="cashflow">Fluxo de Caixa</TabsTrigger>
+                <TabsTrigger value="expenses">Despesas</TabsTrigger>
+                <TabsTrigger value="revenue">Receitas</TabsTrigger>
+                <TabsTrigger value="channels">Canais</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="whatsapp">
-                <WhatsAppIntegration />
+              <TabsContent value="dashboard">
+                <FinancialDashboard data={{}} />
               </TabsContent>
 
-              <TabsContent value="email">
-                <QuoteEmailSender />
+              <TabsContent value="cashflow">
+                <CashFlowManager />
               </TabsContent>
 
-              <TabsContent value="commission">
-                <CommissionSystem />
+              <TabsContent value="expenses">
+                <ExpenseControl />
               </TabsContent>
 
-              <TabsContent value="goals">
-                <SalesGoalsControl />
+              <TabsContent value="revenue">
+                <RevenueAnalysis />
               </TabsContent>
 
-              <TabsContent value="negotiations">
-                <NegotiationHistory />
+              <TabsContent value="channels">
+                <ChannelAnalysis />
               </TabsContent>
             </Tabs>
           </div>
