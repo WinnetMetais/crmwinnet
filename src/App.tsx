@@ -7,6 +7,9 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Customers from './pages/Customers';
 import Sales from './pages/Sales';
+import Financial from './pages/Financial';
+import Reports from './pages/Reports';
+import Filters from './pages/Filters';
 import CRMOverview from './pages/CRMOverview';
 import ModuleAnalysis from "@/pages/ModuleAnalysis";
 import MarketingAutomation from "@/pages/MarketingAutomation";
@@ -29,11 +32,14 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/sales" element={<Sales />} />
+            <Route path="/financial" element={<Financial />} />
             <Route path="/crm" element={<CRMOverview />} />
             <Route path="/module-analysis" element={<ModuleAnalysis />} />
             <Route path="/marketing-automation" element={<MarketingAutomation />} />
             <Route path="/tasks" element={<TasksNotifications />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/filters" element={<Filters />} />
           </Routes>
         </Router>
       </ThemeProvider>
