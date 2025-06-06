@@ -1,58 +1,111 @@
 
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { ThemeProvider } from "@/components/ui/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import Dashboard from './pages/Dashboard';
-import Products from './pages/Products';
-import Customers from './pages/Customers';
-import Sales from './pages/Sales';
-import Financial from './pages/Financial';
-import Commercial from './pages/Commercial';
-import Reports from './pages/Reports';
-import Filters from './pages/Filters';
-import CRMOverview from './pages/CRMOverview';
-import ModuleAnalysis from "@/pages/ModuleAnalysis";
-import MarketingAutomation from "@/pages/MarketingAutomation";
-import TasksNotifications from "@/pages/TasksNotifications";
-import UserManagement from "@/pages/UserManagement";
-import Analysis from "@/pages/Analysis";
-import Content from "@/pages/Content";
-import Config from "@/pages/Config";
-import Backup from "@/pages/Backup";
-import Templates from "@/pages/Templates";
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
+import Customers from "./pages/Customers";
+import Products from "./pages/Products";
+import Sales from "./pages/Sales";
+import Commercial from "./pages/Commercial";
+import Financial from "./pages/Financial";
+import Content from "./pages/Content";
+import Config from "./pages/Config";
+import Auth from "./pages/Auth";
+import AIDashboard from "./pages/AIDashboard";
 
-function App() {
-  return (
-    <QueryClientProvider client={new QueryClient()}>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <Toaster />
-        <Router>
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/analysis" element={<Analysis />} />
-            <Route path="/content" element={<Content />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/sales" element={<Sales />} />
-            <Route path="/commercial" element={<Commercial />} />
-            <Route path="/financial" element={<Financial />} />
-            <Route path="/crm" element={<CRMOverview />} />
-            <Route path="/module-analysis" element={<ModuleAnalysis />} />
-            <Route path="/marketing-automation" element={<MarketingAutomation />} />
-            <Route path="/tasks" element={<TasksNotifications />} />
-            <Route path="/users" element={<UserManagement />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/filters" element={<Filters />} />
-            <Route path="/config" element={<Config />} />
-            <Route path="/backup" element={<Backup />} />
-            <Route path="/templates" element={<Templates />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/customers"
+              element={
+                <ProtectedRoute>
+                  <Customers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <ProtectedRoute>
+                  <Products />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sales"
+              element={
+                <ProtectedRoute>
+                  <Sales />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/commercial"
+              element={
+                <ProtectedRoute>
+                  <Commercial />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/financial"
+              element={
+                <ProtectedRoute>
+                  <Financial />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/content"
+              element={
+                <ProtectedRoute>
+                  <Content />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai"
+              element={
+                <ProtectedRoute>
+                  <AIDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/config"
+              element={
+                <ProtectedRoute>
+                  <Config />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Router>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-}
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
