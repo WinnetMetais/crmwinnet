@@ -36,6 +36,42 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_data: {
+        Row: {
+          additional_data: Json | null
+          category: string
+          created_at: string | null
+          id: string
+          metric_date: string
+          metric_name: string
+          metric_value: number
+          subcategory: string | null
+          user_id: string
+        }
+        Insert: {
+          additional_data?: Json | null
+          category: string
+          created_at?: string | null
+          id?: string
+          metric_date: string
+          metric_name: string
+          metric_value: number
+          subcategory?: string | null
+          user_id: string
+        }
+        Update: {
+          additional_data?: Json | null
+          category?: string
+          created_at?: string | null
+          id?: string
+          metric_date?: string
+          metric_name?: string
+          metric_value?: number
+          subcategory?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
           budget: number | null
@@ -78,6 +114,149 @@ export type Database = {
           status?: string | null
           target_audience?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      commissions: {
+        Row: {
+          base_amount: number
+          commission_amount: number
+          commission_rate: number
+          created_at: string | null
+          deal_id: string | null
+          id: string
+          paid_at: string | null
+          quote_id: string | null
+          salesperson: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          base_amount: number
+          commission_amount: number
+          commission_rate: number
+          created_at?: string | null
+          deal_id?: string | null
+          id?: string
+          paid_at?: string | null
+          quote_id?: string | null
+          salesperson: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          base_amount?: number
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string | null
+          deal_id?: string | null
+          id?: string
+          paid_at?: string | null
+          quote_id?: string | null
+          salesperson?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_calendar: {
+        Row: {
+          campaign_id: string | null
+          content_text: string | null
+          content_type: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          platform: string
+          scheduled_date: string
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          content_text?: string | null
+          content_type: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          platform: string
+          scheduled_date: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          content_text?: string | null
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          platform?: string
+          scheduled_date?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_calendar_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_templates: {
+        Row: {
+          active: boolean | null
+          category: string
+          created_at: string | null
+          id: string
+          name: string
+          template_content: string
+          user_id: string
+          variables: Json | null
+        }
+        Insert: {
+          active?: boolean | null
+          category: string
+          created_at?: string | null
+          id?: string
+          name: string
+          template_content: string
+          user_id: string
+          variables?: Json | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          template_content?: string
+          user_id?: string
+          variables?: Json | null
         }
         Relationships: []
       }
@@ -185,6 +364,133 @@ export type Database = {
           },
         ]
       }
+      negotiations: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          deal_id: string | null
+          description: string
+          id: string
+          interaction_type: string
+          next_action: string | null
+          next_action_date: string | null
+          quote_id: string | null
+          responsible: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          deal_id?: string | null
+          description: string
+          id?: string
+          interaction_type: string
+          next_action?: string | null
+          next_action_date?: string | null
+          quote_id?: string | null
+          responsible?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          deal_id?: string | null
+          description?: string
+          id?: string
+          interaction_type?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          quote_id?: string | null
+          responsible?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negotiations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negotiations_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negotiations_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          related_id: string | null
+          related_type: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          related_id?: string | null
+          related_type?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          related_id?: string | null
+          related_type?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_methods: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name: string
+          type: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean | null
@@ -257,6 +563,336 @@ export type Database = {
           unit?: string | null
           updated_at?: string
           weight?: number | null
+        }
+        Relationships: []
+      }
+      quote_items: {
+        Row: {
+          code: string
+          created_at: string | null
+          description: string
+          id: string
+          product_id: string | null
+          quantity: number
+          quote_id: string
+          total: number
+          unit: string
+          unit_price: number
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          description: string
+          id?: string
+          product_id?: string | null
+          quantity: number
+          quote_id: string
+          total: number
+          unit: string
+          unit_price: number
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          quote_id?: string
+          total?: number
+          unit?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          approved_at: string | null
+          contact_person: string | null
+          created_at: string | null
+          customer_address: string | null
+          customer_cnpj: string | null
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string | null
+          date: string
+          delivery_terms: string | null
+          discount: number | null
+          id: string
+          internal_notes: string | null
+          notes: string | null
+          payment_terms: string | null
+          quote_number: string
+          requested_by: string | null
+          sent_at: string | null
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string | null
+          user_id: string
+          valid_until: string
+          warranty: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          customer_address?: string | null
+          customer_cnpj?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          date: string
+          delivery_terms?: string | null
+          discount?: number | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          quote_number: string
+          requested_by?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string | null
+          user_id: string
+          valid_until: string
+          warranty?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          customer_address?: string | null
+          customer_cnpj?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          date?: string
+          delivery_terms?: string | null
+          discount?: number | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          quote_number?: string
+          requested_by?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string | null
+          user_id?: string
+          valid_until?: string
+          warranty?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_goals: {
+        Row: {
+          created_at: string | null
+          current_amount: number | null
+          goal_amount: number
+          id: string
+          period_end: string
+          period_start: string
+          period_type: string
+          salesperson: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_amount?: number | null
+          goal_amount: number
+          id?: string
+          period_end: string
+          period_start: string
+          period_type: string
+          salesperson: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_amount?: number | null
+          goal_amount?: number
+          id?: string
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          salesperson?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          customer_id: string | null
+          deal_id: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          quote_id: string | null
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          quote_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          quote_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string
+          channel: string | null
+          client_name: string | null
+          created_at: string | null
+          date: string
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string | null
+          payment_method: string | null
+          recurring: boolean | null
+          recurring_period: string | null
+          status: string
+          subcategory: string | null
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          channel?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          date: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          payment_method?: string | null
+          recurring?: boolean | null
+          recurring_period?: string | null
+          status?: string
+          subcategory?: string | null
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          channel?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          payment_method?: string | null
+          recurring?: boolean | null
+          recurring_period?: string | null
+          status?: string
+          subcategory?: string | null
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

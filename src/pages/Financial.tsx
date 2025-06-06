@@ -10,6 +10,15 @@ import { RevenueAnalysis } from "@/components/financial/RevenueAnalysis";
 import { ChannelAnalysis } from "@/components/financial/ChannelAnalysis";
 
 const Financial = () => {
+  // Dados de exemplo para os canais
+  const channelsData = {
+    site: { revenue: 86728.00, transactions: 265 },
+    mercadoLivre: { revenue: 64739.00, transactions: 193 },
+    madeiraMadeira: { revenue: 7971.67, transactions: 4 },
+    via: { revenue: 2495.42, transactions: 3 },
+    comercial: { revenue: 22093.86, transactions: 8 }
+  };
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
@@ -51,7 +60,7 @@ const Financial = () => {
               </TabsContent>
 
               <TabsContent value="channels">
-                <ChannelAnalysis />
+                <ChannelAnalysis channels={channelsData} />
               </TabsContent>
             </Tabs>
           </div>
