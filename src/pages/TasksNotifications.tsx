@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -270,9 +271,12 @@ const TasksNotifications = () => {
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                               <Badge variant="secondary">{notification.type}</Badge>
-                              {notification.metadata?.module && (
+                              {notification.metadata && 
+                               typeof notification.metadata === 'object' && 
+                               notification.metadata !== null &&
+                               'module' in notification.metadata && (
                                 <Badge variant="outline">
-                                  {notification.metadata.module}
+                                  {String(notification.metadata.module)}
                                 </Badge>
                               )}
                             </div>
