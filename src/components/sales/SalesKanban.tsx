@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,245 +8,195 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { KanbanSquare, Plus, Edit, Trash2 } from "lucide-react";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: 'low' | 'medium' | 'high';
-  assignedTo: string;
-  column: string;
-}
-
-const initialColumns = [
-  { id: 'todo', title: 'A Fazer', color: 'border-slate-200' },
-  { id: 'inprogress', title: 'Em Progresso', color: 'border-amber-300' },
-  { id: 'review', title: 'Em Revisão', color: 'border-blue-400' },
-  { id: 'done', title: 'Concluído', color: 'border-green-500' },
-];
-
-const initialTasks: Task[] = [
-  { id: '1', title: 'Contato inicial com Ferragens São Paulo', description: 'Fazer contato por telefone para agendar apresentação', priority: 'high', assignedTo: 'Carlos Silva', column: 'todo' },
-  { id: '2', title: 'Preparar proposta para Metalúrgica Nacional', description: 'Revisar valores e condições de entrega', priority: 'high', assignedTo: 'Ana Oliveira', column: 'todo' },
-  { id: '3', title: 'Reunião com Construtora ABC', description: 'Apresentar catálogo de produtos', priority: 'medium', assignedTo: 'Carlos Silva', column: 'inprogress' },
-  { id: '4', title: 'Orçamento para Indústria MetalMax', description: 'Preparar orçamento para pedido especial', priority: 'medium', assignedTo: 'Ana Oliveira', column: 'inprogress' },
-  { id: '5', title: 'Follow-up com Ferragem Central', description: 'Verificar feedback após envio da proposta', priority: 'low', assignedTo: 'Carlos Silva', column: 'review' },
-  { id: '6', title: 'Fechar contrato com Metalúrgica DF', description: 'Finalizar termos e assinar contrato', priority: 'high', assignedTo: 'Ana Oliveira', column: 'done' },
-];
+import { KanbanSquare, Plus, Edit, Trash2, User, Building, MapPin, Phone } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  getDealsWithRelations, 
+  getPipelineStages, 
+  updateDealStage,
+  Deal,
+  PipelineStage 
+} from "@/services/pipeline";
 
 export const SalesKanban = () => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [columns, setColumns] = useState(initialColumns);
   const [searchTerm, setSearchTerm] = useState('');
-  const [newTask, setNewTask] = useState<Partial<Task>>({ priority: 'medium', column: 'todo' });
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [draggedDeal, setDraggedDeal] = useState<string | null>(null);
 
-  const filteredTasks = searchTerm
-    ? tasks.filter(task => 
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.assignedTo.toLowerCase().includes(searchTerm.toLowerCase())
+  const queryClient = useQueryClient();
+
+  const { data: deals = [], isLoading: dealsLoading } = useQuery({
+    queryKey: ['deals-kanban'],
+    queryFn: getDealsWithRelations
+  });
+
+  const { data: stages = [] } = useQuery({
+    queryKey: ['pipeline-stages-kanban'],
+    queryFn: getPipelineStages
+  });
+
+  const updateStageMutation = useMutation({
+    mutationFn: ({ dealId, stageId }: { dealId: string; stageId: string }) => 
+      updateDealStage(dealId, stageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
+    }
+  });
+
+  const filteredDeals = searchTerm
+    ? deals.filter((deal: Deal) => 
+        deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (deal.customers?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (deal.customers?.company || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (deal.assigned_to || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : tasks;
+    : deals;
 
-  const handleDragStart = (e: React.DragEvent, taskId: string) => {
-    e.dataTransfer.setData('taskId', taskId);
+  const handleDragStart = (e: React.DragEvent, dealId: string) => {
+    e.dataTransfer.setData('dealId', dealId);
+    setDraggedDeal(dealId);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, columnId: string) => {
+  const handleDrop = (e: React.DragEvent, stageId: string) => {
     e.preventDefault();
-    const taskId = e.dataTransfer.getData('taskId');
+    const dealId = e.dataTransfer.getData('dealId');
     
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, column: columnId } : task
-    ));
-  };
-
-  const handleAddOrUpdateTask = () => {
-    if (isEditMode && newTask.id) {
-      setTasks(tasks.map(task => 
-        task.id === newTask.id ? { ...task, ...newTask as Task } : task
-      ));
-    } else {
-      const task: Task = {
-        id: Date.now().toString(),
-        title: newTask.title || '',
-        description: newTask.description || '',
-        priority: newTask.priority as 'low' | 'medium' | 'high',
-        assignedTo: newTask.assignedTo || '',
-        column: newTask.column || 'todo',
-      };
-      setTasks([...tasks, task]);
+    if (dealId && stageId) {
+      updateStageMutation.mutate({ dealId, stageId });
     }
-
-    setNewTask({ priority: 'medium', column: 'todo' });
-    setIsDialogOpen(false);
-    setIsEditMode(false);
+    setDraggedDeal(null);
   };
 
-  const handleEditTask = (task: Task) => {
-    setNewTask({ ...task });
-    setIsEditMode(true);
-    setIsDialogOpen(true);
+  const formatCurrency = (value?: number) => {
+    if (!value) return 'R$ 0,00';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   };
 
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+  const getPriorityColor = (priority?: { color: string }) => {
+    return priority?.color || '#6B7280';
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-amber-400';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-slate-400';
-    }
-  };
+  if (dealsLoading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <KanbanSquare className="h-6 w-6" />
-          <h2 className="text-2xl font-bold">Kanban de Vendas</h2>
+          <h2 className="text-2xl font-bold">Kanban Comercial Winnet</h2>
         </div>
         <div className="flex gap-2">
           <Input 
-            placeholder="Buscar tarefas..." 
+            placeholder="Buscar negócios..." 
             className="w-60"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => {
-                setNewTask({ priority: 'medium', column: 'todo' });
-                setIsEditMode(false);
-              }}>
-                <Plus className="mr-1 h-4 w-4" /> Nova Tarefa
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{isEditMode ? 'Editar Tarefa' : 'Nova Tarefa'}</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Título</Label>
-                  <Input 
-                    id="title" 
-                    value={newTask.title || ''} 
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} 
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <Textarea 
-                    id="description" 
-                    value={newTask.description || ''} 
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })} 
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="priority">Prioridade</Label>
-                    <Select 
-                      value={newTask.priority} 
-                      onValueChange={(val) => setNewTask({ ...newTask, priority: val as 'low' | 'medium' | 'high' })}
-                    >
-                      <SelectTrigger id="priority">
-                        <SelectValue placeholder="Prioridade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Baixa</SelectItem>
-                        <SelectItem value="medium">Média</SelectItem>
-                        <SelectItem value="high">Alta</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="column">Status</Label>
-                    <Select 
-                      value={newTask.column} 
-                      onValueChange={(val) => setNewTask({ ...newTask, column: val })}
-                    >
-                      <SelectTrigger id="column">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {columns.map(column => (
-                          <SelectItem key={column.id} value={column.id}>{column.title}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="assignedTo">Responsável</Label>
-                  <Input 
-                    id="assignedTo" 
-                    value={newTask.assignedTo || ''} 
-                    onChange={(e) => setNewTask({ ...newTask, assignedTo: e.target.value })} 
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                <Button onClick={handleAddOrUpdateTask}>{isEditMode ? 'Atualizar' : 'Adicionar'}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button>
+            <Plus className="mr-1 h-4 w-4" /> Nova Oportunidade
+          </Button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {columns.map(column => (
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        {stages.map((stage: PipelineStage) => (
           <div 
-            key={column.id} 
-            className={`border rounded-lg ${column.color} border-t-4`}
+            key={stage.id} 
+            className="border rounded-lg border-t-4"
+            style={{ borderTopColor: stage.color }}
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, column.id)}
+            onDrop={(e) => handleDrop(e, stage.id)}
           >
             <div className="p-3 border-b bg-muted/10 flex justify-between items-center">
-              <h3 className="font-medium">{column.title}</h3>
+              <h3 className="font-medium">{stage.name}</h3>
               <Badge variant="outline">
-                {filteredTasks.filter(task => task.column === column.id).length}
+                {filteredDeals.filter((deal: Deal) => deal.pipeline_stage_id === stage.id).length}
               </Badge>
             </div>
-            <div className="p-3 space-y-3 min-h-[400px]">
-              {filteredTasks
-                .filter(task => task.column === column.id)
-                .map(task => (
+            <div className="p-3 space-y-3 min-h-[500px]">
+              {filteredDeals
+                .filter((deal: Deal) => deal.pipeline_stage_id === stage.id)
+                .map((deal: Deal) => (
                   <Card 
-                    key={task.id}
-                    className="shadow-sm"
+                    key={deal.id}
+                    className={`shadow-sm cursor-move transition-all ${
+                      draggedDeal === deal.id ? 'opacity-50 scale-95' : 'hover:shadow-md'
+                    }`}
                     draggable
-                    onDragStart={(e) => handleDragStart(e, task.id)}
+                    onDragStart={(e) => handleDragStart(e, deal.id)}
                   >
                     <CardContent className="p-3">
                       <div className="flex justify-between items-start mb-2">
-                        <div className={`${getPriorityColor(task.priority)} h-2 w-2 mt-1.5 rounded-full`} />
-                        <h4 className="font-medium flex-1 ml-2">{task.title}</h4>
+                        <div 
+                          className="h-2 w-2 mt-1.5 rounded-full" 
+                          style={{ backgroundColor: getPriorityColor(deal.priorities) }}
+                        />
+                        <h4 className="font-medium flex-1 ml-2 text-sm">{deal.customers?.name || 'Cliente não informado'}</h4>
                         <div className="flex space-x-1 ml-2">
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleEditTask(task)}>
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => handleDeleteTask(task.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Edit className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                      {task.assignedTo && (
-                        <Badge variant="outline" className="mt-2">
-                          {task.assignedTo}
-                        </Badge>
+                      
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">{deal.title}</p>
+                      
+                      {deal.customers?.company && (
+                        <div className="flex items-center text-xs text-gray-500 mb-1">
+                          <Building className="h-3 w-3 mr-1" />
+                          <span className="truncate">{deal.customers.company}</span>
+                        </div>
+                      )}
+                      
+                      {deal.customers?.city && (
+                        <div className="flex items-center text-xs text-gray-500 mb-2">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          <span className="truncate">{deal.customers.city}, {deal.customers.state}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium text-green-600 text-sm">
+                          {formatCurrency(deal.estimated_value)}
+                        </span>
+                        {deal.qualification_status && (
+                          <Badge variant="outline" className="text-xs">
+                            {deal.qualification_status.name}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        {deal.assigned_to && (
+                          <Badge variant="outline" className="text-xs">
+                            <User className="h-3 w-3 mr-1" />
+                            {deal.assigned_to}
+                          </Badge>
+                        )}
+                        
+                        {deal.customers?.phone && (
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Phone className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {deal.follow_up_date && new Date(deal.follow_up_date) > new Date() && (
+                        <div className="mt-2 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                          Follow-up: {new Date(deal.follow_up_date).toLocaleDateString('pt-BR')}
+                        </div>
                       )}
                     </CardContent>
                   </Card>
@@ -254,6 +204,48 @@ export const SalesKanban = () => {
             </div>
           </div>
         ))}
+      </div>
+      
+      {/* Estatísticas do Kanban */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-lg font-bold text-blue-600">{filteredDeals.length}</div>
+              <div className="text-sm text-gray-600">Total de Negócios</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-lg font-bold text-green-600">
+                {formatCurrency(filteredDeals.reduce((sum: number, deal: Deal) => sum + (deal.estimated_value || 0), 0))}
+              </div>
+              <div className="text-sm text-gray-600">Valor Total</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-lg font-bold text-orange-600">
+                {filteredDeals.filter((deal: Deal) => deal.pipeline_stages?.name === 'Negociação').length}
+              </div>
+              <div className="text-sm text-gray-600">Em Negociação</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-lg font-bold text-purple-600">
+                {filteredDeals.filter((deal: Deal) => deal.active_follow_up).length}
+              </div>
+              <div className="text-sm text-gray-600">Follow-ups Ativos</div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

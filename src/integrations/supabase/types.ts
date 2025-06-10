@@ -350,20 +350,76 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_segments: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      customer_types: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
           city: string | null
+          cnpj: string | null
           company: string | null
+          contact_person: string | null
           created_at: string
           custom_data: Json | null
+          customer_type_id: string | null
           email: string | null
           id: string
           last_contact_date: string | null
           lead_source: string | null
+          lead_source_id: string | null
           name: string
           notes: string | null
           phone: string | null
+          priority_id: string | null
+          qualification_status_id: string | null
+          segment_id: string | null
+          social_reason: string | null
           state: string | null
           status: string | null
           updated_at: string
@@ -373,16 +429,24 @@ export type Database = {
         Insert: {
           address?: string | null
           city?: string | null
+          cnpj?: string | null
           company?: string | null
+          contact_person?: string | null
           created_at?: string
           custom_data?: Json | null
+          customer_type_id?: string | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
           lead_source?: string | null
+          lead_source_id?: string | null
           name: string
           notes?: string | null
           phone?: string | null
+          priority_id?: string | null
+          qualification_status_id?: string | null
+          segment_id?: string | null
+          social_reason?: string | null
           state?: string | null
           status?: string | null
           updated_at?: string
@@ -392,56 +456,136 @@ export type Database = {
         Update: {
           address?: string | null
           city?: string | null
+          cnpj?: string | null
           company?: string | null
+          contact_person?: string | null
           created_at?: string
           custom_data?: Json | null
+          customer_type_id?: string | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
           lead_source?: string | null
+          lead_source_id?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
+          priority_id?: string | null
+          qualification_status_id?: string | null
+          segment_id?: string | null
+          social_reason?: string | null
           state?: string | null
           status?: string | null
           updated_at?: string
           website?: string | null
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_customer_type_id_fkey"
+            columns: ["customer_type_id"]
+            isOneToOne: false
+            referencedRelation: "customer_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_lead_source_id_fkey"
+            columns: ["lead_source_id"]
+            isOneToOne: false
+            referencedRelation: "lead_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_priority_id_fkey"
+            columns: ["priority_id"]
+            isOneToOne: false
+            referencedRelation: "priorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_qualification_status_id_fkey"
+            columns: ["qualification_status_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "customer_segments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       deals: {
         Row: {
+          active_follow_up: boolean | null
+          actual_value: number | null
           assigned_to: string | null
           close_date: string | null
           created_at: string
           customer_id: string
           description: string | null
+          estimated_value: number | null
+          follow_up_date: string | null
           id: string
+          last_contact_date: string | null
+          observations: string | null
+          pipeline_stage_id: string | null
+          presentation_sent_date: string | null
+          priority_id: string | null
+          proposal_sent_date: string | null
+          proposal_value: number | null
+          qualification_status_id: string | null
           status: string | null
           title: string
           updated_at: string
           value: number | null
         }
         Insert: {
+          active_follow_up?: boolean | null
+          actual_value?: number | null
           assigned_to?: string | null
           close_date?: string | null
           created_at?: string
           customer_id: string
           description?: string | null
+          estimated_value?: number | null
+          follow_up_date?: string | null
           id?: string
+          last_contact_date?: string | null
+          observations?: string | null
+          pipeline_stage_id?: string | null
+          presentation_sent_date?: string | null
+          priority_id?: string | null
+          proposal_sent_date?: string | null
+          proposal_value?: number | null
+          qualification_status_id?: string | null
           status?: string | null
           title: string
           updated_at?: string
           value?: number | null
         }
         Update: {
+          active_follow_up?: boolean | null
+          actual_value?: number | null
           assigned_to?: string | null
           close_date?: string | null
           created_at?: string
           customer_id?: string
           description?: string | null
+          estimated_value?: number | null
+          follow_up_date?: string | null
           id?: string
+          last_contact_date?: string | null
+          observations?: string | null
+          pipeline_stage_id?: string | null
+          presentation_sent_date?: string | null
+          priority_id?: string | null
+          proposal_sent_date?: string | null
+          proposal_value?: number | null
+          qualification_status_id?: string | null
           status?: string | null
           title?: string
           updated_at?: string
@@ -455,7 +599,52 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "deals_pipeline_stage_id_fkey"
+            columns: ["pipeline_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_priority_id_fkey"
+            columns: ["priority_id"]
+            isOneToOne: false
+            referencedRelation: "priorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_qualification_status_id_fkey"
+            columns: ["qualification_status_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_status"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      lead_sources: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       marketing_campaigns: {
         Row: {
@@ -632,6 +821,175 @@ export type Database = {
         }
         Relationships: []
       }
+      pipeline_activities: {
+        Row: {
+          activity_type: string
+          completed_date: string | null
+          created_at: string | null
+          created_by: string | null
+          customer_id: string | null
+          deal_id: string
+          description: string | null
+          id: string
+          scheduled_date: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          activity_type: string
+          completed_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string | null
+          deal_id: string
+          description?: string | null
+          id?: string
+          scheduled_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          activity_type?: string
+          completed_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string | null
+          deal_id?: string
+          description?: string | null
+          id?: string
+          scheduled_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_activities_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string | null
+          deal_id: string
+          from_stage_id: string | null
+          id: string
+          reason: string | null
+          to_stage_id: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string | null
+          deal_id: string
+          from_stage_id?: string | null
+          id?: string
+          reason?: string | null
+          to_stage_id?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string | null
+          deal_id?: string
+          from_stage_id?: string | null
+          id?: string
+          reason?: string | null
+          to_stage_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_history_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_history_from_stage_id_fkey"
+            columns: ["from_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_history_to_stage_id_fkey"
+            columns: ["to_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_stages: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          order_position: number
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          order_position: number
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          order_position?: number
+        }
+        Relationships: []
+      }
+      priorities: {
+        Row: {
+          active: boolean | null
+          color: string
+          created_at: string | null
+          id: string
+          level: number
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          color: string
+          created_at?: string | null
+          id?: string
+          level: number
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          color?: string
+          created_at?: string | null
+          id?: string
+          level?: number
+          name?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean | null
@@ -707,6 +1065,30 @@ export type Database = {
           unit?: string | null
           updated_at?: string
           weight?: number | null
+        }
+        Relationships: []
+      }
+      qualification_status: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
