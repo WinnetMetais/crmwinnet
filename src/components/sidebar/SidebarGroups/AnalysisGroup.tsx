@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, TrendingUp, PieChart, Target } from 'lucide-react';
+import { BarChart3, TrendingUp, PieChart, Target, Brain } from 'lucide-react';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -62,6 +62,18 @@ export const AnalysisGroup: React.FC<{ isActiveGroup: (paths: string[]) => boole
               <Link to="/module-analysis">
                 <Target className="mr-2 h-4 w-4" />
                 <span>Status Módulos</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={isActive('/ai')}
+              tooltip="Assistente IA"
+              asChild
+            >
+              <Link to="/ai">
+                <Brain className="mr-2 h-4 w-4" />
+                <span>Assistente IA</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

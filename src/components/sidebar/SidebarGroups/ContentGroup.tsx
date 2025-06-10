@@ -31,11 +31,11 @@ export const ContentGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolea
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive('/content/calendar')}
+              isActive={isActive('/calendar')}
               tooltip="Calendário Editorial"
               asChild
             >
-              <Link to="/content">
+              <Link to="/calendar">
                 <Calendar className="mr-2 h-4 w-4" />
                 <span>Calendário Editorial</span>
               </Link>
@@ -50,18 +50,6 @@ export const ContentGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolea
               <Link to="/marketing-automation">
                 <Megaphone className="mr-2 h-4 w-4" />
                 <span>Automação Marketing</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={isActive('/content/catalog')}
-              tooltip="Catálogo Digital"
-              asChild
-            >
-              <Link to="/content">
-                <BookOpen className="mr-2 h-4 w-4" />
-                <span>Catálogo Digital</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

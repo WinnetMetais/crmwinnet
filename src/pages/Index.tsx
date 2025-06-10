@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -58,7 +57,7 @@ const Index = () => {
               <div className="flex items-center gap-2">
                 <SidebarTrigger />
                 <Button asChild>
-                  <Link to="/content/plan">
+                  <Link to="/calendar">
                     <Calendar className="mr-2 h-4 w-4" />
                     Ver Agenda
                   </Link>

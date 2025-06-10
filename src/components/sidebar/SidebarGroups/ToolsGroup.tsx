@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FileBarChart, Filter, CalendarIcon, CheckSquare, Bell, Zap } from 'lucide-react';
+import { FileBarChart, Filter, CalendarIcon, CheckSquare, Bell } from 'lucide-react';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -62,18 +62,6 @@ export const ToolsGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolean,
               <Link to="/tasks">
                 <CheckSquare className="mr-2 h-4 w-4" />
                 <span>Tarefas</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={isActive('/marketing-automation')}
-              tooltip="Automação de Marketing"
-              asChild
-            >
-              <Link to="/marketing-automation">
-                <Zap className="mr-2 h-4 w-4" />
-                <span>Automação Marketing</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import Index from "./pages/Index";
 import Customers from "./pages/Customers";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
@@ -16,6 +17,17 @@ import Content from "./pages/Content";
 import Config from "./pages/Config";
 import Auth from "./pages/Auth";
 import AIDashboard from "./pages/AIDashboard";
+import Analysis from "./pages/Analysis";
+import ModuleAnalysis from "./pages/ModuleAnalysis";
+import CRMOverview from "./pages/CRMOverview";
+import MarketingAutomation from "./pages/MarketingAutomation";
+import Reports from "./pages/Reports";
+import Filters from "./pages/Filters";
+import Calendar from "./pages/Calendar";
+import TasksNotifications from "./pages/TasksNotifications";
+import UserManagement from "./pages/UserManagement";
+import Backup from "./pages/Backup";
+import Templates from "./pages/Templates";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +44,55 @@ const App = () => (
               path="/"
               element={
                 <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analysis"
+              element={
+                <ProtectedRoute>
+                  <Analysis />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crm"
+              element={
+                <ProtectedRoute>
+                  <CRMOverview />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/module-analysis"
+              element={
+                <ProtectedRoute>
+                  <ModuleAnalysis />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/content"
+              element={
+                <ProtectedRoute>
+                  <Content />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/marketing-automation"
+              element={
+                <ProtectedRoute>
+                  <MarketingAutomation />
                 </ProtectedRoute>
               }
             />
@@ -77,10 +137,34 @@ const App = () => (
               }
             />
             <Route
-              path="/content"
+              path="/reports"
               element={
                 <ProtectedRoute>
-                  <Content />
+                  <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/filters"
+              element={
+                <ProtectedRoute>
+                  <Filters />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <Calendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <ProtectedRoute>
+                  <TasksNotifications />
                 </ProtectedRoute>
               }
             />
@@ -93,10 +177,34 @@ const App = () => (
               }
             />
             <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/config"
               element={
                 <ProtectedRoute>
                   <Config />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/backup"
+              element={
+                <ProtectedRoute>
+                  <Backup />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <ProtectedRoute>
+                  <Templates />
                 </ProtectedRoute>
               }
             />
