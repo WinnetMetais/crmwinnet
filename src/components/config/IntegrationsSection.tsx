@@ -19,8 +19,8 @@ export const IntegrationsSection: React.FC = () => {
   
   const connectionStatus = {
     google: googleAuthStatus,
-    facebook: facebookAdsToken ? "success" : null,
-    linkedin: linkedinAdsToken ? "success" : null,
+    facebook: facebookAdsToken ? "success" as const : null,
+    linkedin: linkedinAdsToken ? "success" as const : null,
   };
 
   const googleRedirectUri = `${window.location.origin}/config?provider=google`;
