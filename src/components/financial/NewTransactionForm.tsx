@@ -15,6 +15,7 @@ import { AdditionalInfoSection } from "./AdditionalInfoSection";
 import { RecurrenceSection } from "./RecurrenceSection";
 import { TagsSection } from "./TagsSection";
 import { useCreateTransaction, useUpdateTransaction } from "@/hooks/useTransactions";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NewTransactionFormProps {
   onClose: () => void;
@@ -57,7 +58,7 @@ export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransacti
         date: editingTransaction.date || new Date().toISOString().split('T')[0],
         dueDate: editingTransaction.due_date || '',
         paymentMethod: editingTransaction.payment_method || '',
-        status: editingTransaction.status || 'pendente',
+        status: editingTransaction.status as 'pendente' | 'pago' | 'vencido' || 'pendente',
         recurring: editingTransaction.recurring || false,
         recurringPeriod: editingTransaction.recurring_period || 'mensal',
         description: editingTransaction.description || '',
@@ -80,6 +81,18 @@ export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransacti
       return;
     }
 
+    // Obter o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const transactionData = {
       type: formData.type,
       title: formData.title,
@@ -90,13 +103,14 @@ export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransacti
       date: formData.date,
       due_date: formData.dueDate || null,
       payment_method: formData.paymentMethod,
-      status: formData.status,
+      status: formData.status as 'pendente' | 'pago' | 'vencido',
       recurring: formData.recurring,
       recurring_period: formData.recurringPeriod,
       description: formData.description,
       tags: formData.tags,
       client_name: formData.clientName,
-      invoice_number: formData.invoiceNumber
+      invoice_number: formData.invoiceNumber,
+      user_id: user.id
     };
 
     try {
@@ -174,7 +188,7 @@ export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransacti
               status={formData.status}
               onDateChange={(date) => updateFormData({ date })}
               onDueDateChange={(dueDate) => updateFormData({ dueDate })}
-              onStatusChange={(status) => updateFormData({ status })}
+              onStatusChange={(status) => updateFormData({ status: status as 'pendente' | 'pago' | 'vencido' })}
             />
 
             <AdditionalInfoSection
