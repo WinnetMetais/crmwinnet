@@ -17,7 +17,11 @@ export function NavbarUserMenu() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
-  const email = user?.email || "";
+  if (!user) {
+    return null;
+  }
+  
+  const email = user.email || "";
   const initials = email
     ? email
         .split("@")[0]
@@ -27,6 +31,14 @@ export function NavbarUserMenu() {
         .toUpperCase()
         .substring(0, 2)
     : "U";
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -50,7 +62,7 @@ export function NavbarUserMenu() {
           <span>Configurações</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sair</span>
         </DropdownMenuItem>

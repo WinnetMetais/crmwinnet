@@ -5,7 +5,6 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Settings, Users, Database, Shield, Bell, Palette, Mail, DollarSign } from "lucide-react";
 import PreferencesSection from "@/components/config/PreferencesSection";
 import { TeamSection } from "@/components/config/TeamSection";
@@ -34,40 +33,42 @@ const Config = () => {
             </div>
 
             <Tabs defaultValue="preferences" className="space-y-6" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-8 w-full">
-                <TabsTrigger value="preferences" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Preferências
-                </TabsTrigger>
-                <TabsTrigger value="team" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Equipe
-                </TabsTrigger>
-                <TabsTrigger value="segments" className="flex items-center gap-2">
-                  <Database className="h-4 w-4" />
-                  Segmentos
-                </TabsTrigger>
-                <TabsTrigger value="fields" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Campos
-                </TabsTrigger>
-                <TabsTrigger value="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email
-                </TabsTrigger>
-                <TabsTrigger value="taxes" className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Impostos
-                </TabsTrigger>
-                <TabsTrigger value="margins" className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  Margens
-                </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex items-center gap-2">
-                  <Bell className="h-4 w-4" />
-                  Notificações
-                </TabsTrigger>
-              </TabsList>
+              <div className="w-full overflow-x-auto">
+                <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full min-w-max">
+                  <TabsTrigger value="preferences" className="flex items-center gap-2 text-xs">
+                    <Settings className="h-3 w-3" />
+                    <span className="hidden sm:inline">Preferências</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="team" className="flex items-center gap-2 text-xs">
+                    <Users className="h-3 w-3" />
+                    <span className="hidden sm:inline">Equipe</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="segments" className="flex items-center gap-2 text-xs">
+                    <Database className="h-3 w-3" />
+                    <span className="hidden sm:inline">Segmentos</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="fields" className="flex items-center gap-2 text-xs">
+                    <Shield className="h-3 w-3" />
+                    <span className="hidden sm:inline">Campos</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="email" className="flex items-center gap-2 text-xs">
+                    <Mail className="h-3 w-3" />
+                    <span className="hidden sm:inline">Email</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="taxes" className="flex items-center gap-2 text-xs">
+                    <DollarSign className="h-3 w-3" />
+                    <span className="hidden sm:inline">Impostos</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="margins" className="flex items-center gap-2 text-xs">
+                    <Palette className="h-3 w-3" />
+                    <span className="hidden sm:inline">Margens</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="notifications" className="flex items-center gap-2 text-xs">
+                    <Bell className="h-3 w-3" />
+                    <span className="hidden sm:inline">Notificações</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value="preferences">
                 <PreferencesSection />

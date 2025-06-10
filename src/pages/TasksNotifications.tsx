@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -23,7 +22,7 @@ import {
 import { NotificationBanner, useNotifications, useModuleNotifications } from "@/components/notifications";
 
 const TasksNotifications = () => {
-  const { notifications: systemNotifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const { createTaskNotification } = useModuleNotifications();
   
   const [tasks] = useState([
@@ -96,16 +95,7 @@ const TasksNotifications = () => {
     }
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "warning": return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case "success": return <CheckSquare className="h-4 w-4 text-green-600" />;
-      case "info": return <Bell className="h-4 w-4 text-blue-600" />;
-      default: return <Bell className="h-4 w-4" />;
-    }
-  };
-
-  const unreadNotifications = systemNotifications.filter(n => !n.read).length;
+  const unreadNotifications = notifications.filter(n => !n.read).length;
   const pendingTasks = tasks.filter(t => t.status === "pendente").length;
   const overdueTasks = tasks.filter(t => new Date(t.dueDate) < new Date() && t.status !== "concluida").length;
 
@@ -259,7 +249,7 @@ const TasksNotifications = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {systemNotifications.map((notification) => (
+                  {notifications.map((notification) => (
                     <Card key={notification.id} className={notification.read ? "opacity-60" : ""}>
                       <CardContent className="p-4">
                         <div className="flex items-start space-x-3">
@@ -268,7 +258,7 @@ const TasksNotifications = () => {
                               <h4 className="font-medium">{notification.title}</h4>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(notification.created_at || '').toLocaleString('pt-BR')}
+                                  {new Date(notification.created_at).toLocaleString('pt-BR')}
                                 </span>
                                 {!notification.read && (
                                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
@@ -280,9 +270,9 @@ const TasksNotifications = () => {
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                               <Badge variant="secondary">{notification.type}</Badge>
-                              {notification.metadata && (notification.metadata as any)?.module && (
+                              {notification.metadata?.module && (
                                 <Badge variant="outline">
-                                  {(notification.metadata as any).module}
+                                  {notification.metadata.module}
                                 </Badge>
                               )}
                             </div>
