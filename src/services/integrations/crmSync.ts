@@ -16,6 +16,7 @@ export interface IntegrationData {
     clicks?: number;
     conversions?: number;
   };
+  token?: string; // Adicionando token opcional
 }
 
 export class CRMSyncService {
@@ -47,10 +48,17 @@ export class CRMSyncService {
    * Atualiza a tabela ad_tokens com informações da integração
    */
   private async updateAdTokensTable(integration: IntegrationData) {
+    // Se não há token, não podemos atualizar a tabela ad_tokens
+    if (!integration.token) {
+      console.warn(`Token não disponível para ${integration.platform}, pulando atualização ad_tokens`);
+      return;
+    }
+
     const { error } = await supabase
       .from('ad_tokens')
       .upsert({
         platform: integration.platform,
+        token: integration.token,
         active: integration.status === 'connected',
         updated_at: new Date().toISOString()
       }, {
@@ -110,8 +118,11 @@ export class CRMSyncService {
 
     // Atualizar informações dos clientes baseadas na integração
     for (const customer of customers || []) {
+      // Garantir que custom_data seja um objeto válido
+      const existingCustomData = customer.custom_data || {};
+      
       const updatedCustomData = {
-        ...customer.custom_data,
+        ...existingCustomData,
         [`${integration.platform}_integration`]: {
           connected: true,
           last_sync: new Date().toISOString(),
