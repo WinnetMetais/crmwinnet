@@ -1,179 +1,22 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
-import { Loader } from "lucide-react";
-import { exchangeGoogleAuthCode, validateGoogleAuthConfig } from "@/utils/googleAuth";
-import { AdPlatformTabs } from "@/components/config/AdPlatformTabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Settings, Users, Database, Shield, Bell, Palette, Mail, DollarSign } from "lucide-react";
+import { PreferencesSection } from "@/components/config/PreferencesSection";
 import { TeamSection } from "@/components/config/TeamSection";
-import PreferencesSection from "@/components/config/PreferencesSection";
-import { MarginConfiguration } from "@/components/config/MarginConfiguration";
-import { FieldCustomization } from "@/components/config/FieldCustomization";
 import { EmailConfiguration } from "@/components/config/EmailConfiguration";
 import { TaxConfiguration } from "@/components/config/TaxConfiguration";
-
-// Define constant for the redirect URI - Updated to match Google Cloud Console
-const APP_URL = "https://ad-connect-config.lovable.app";
+import { MarginConfiguration } from "@/components/config/MarginConfiguration";
+import { FieldCustomization } from "@/components/config/FieldCustomization";
+import { SegmentManagement } from "@/components/config/SegmentManagement";
 
 const Config = () => {
-  const [googleAdsToken, setGoogleAdsToken] = useState('');
-  const [googleClientId, setGoogleClientId] = useState('');
-  const [googleClientSecret, setGoogleClientSecret] = useState('');
-  const [googleAuthStatus, setGoogleAuthStatus] = useState<"success" | "error" | "pending" | null>(null);
-  const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
-  const [facebookAdsToken, setFacebookAdsToken] = useState('');
-  const [linkedinAdsToken, setLinkedinAdsToken] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('tokens');
-  const [googleRedirectUri, setGoogleRedirectUri] = useState('');
-  
-  const [connectionStatus, setConnectionStatus] = useState<{
-    google?: "success" | "error" | "pending" | null,
-    facebook?: "success" | "error" | "pending" | null,
-    linkedin?: "success" | "error" | "pending" | null,
-  }>({});
-
-  useEffect(() => {
-    const redirectUri = `${APP_URL}/config?provider=google`;
-    setGoogleRedirectUri(redirectUri);
-    
-    console.log("Configurando URI de redirecionamento:", redirectUri);
-    console.log("APP_URL definido como:", APP_URL);
-    console.log("URL atual:", window.location.href);
-    
-    const url = new URL(window.location.href);
-    const provider = url.searchParams.get('provider');
-    const code = url.searchParams.get('code');
-    const error = url.searchParams.get('error');
-    
-    console.log("Parâmetros na URL:", {
-      provider,
-      hasCode: !!code,
-      codeLength: code ? code.length : 0,
-      error
-    });
-    
-    if (provider === 'google' && code) {
-      console.log("Auth code detected in URL. Processing Google authentication...");
-      handleGoogleAuthCode(code);
-    } else if (error) {
-      console.error("Authentication error detected in URL:", error);
-      setGoogleAuthStatus('error');
-      setGoogleAuthError(error);
-      toast.error("Falha na autenticação com Google", {
-        description: error
-      });
-    }
-    
-    const loadSavedTokens = () => {
-      try {
-        const savedTokens = localStorage.getItem('adTokens');
-        if (savedTokens) {
-          const tokens = JSON.parse(savedTokens);
-          setGoogleAdsToken(tokens.googleAdsToken || '');
-          setFacebookAdsToken(tokens.facebookAdsToken || '');
-          setLinkedinAdsToken(tokens.linkedinAdsToken || '');
-          
-          if (tokens.googleAdsToken) {
-            setConnectionStatus(prev => ({...prev, google: "success"}));
-          }
-        }
-      } catch (error) {
-        console.error("Erro ao carregar tokens salvos", error);
-      }
-    };
-    
-    loadSavedTokens();
-  }, []);
-
-  useEffect(() => {
-    if (googleClientId || googleRedirectUri) {
-      const validation = validateGoogleAuthConfig(googleClientId, googleRedirectUri);
-      if (!validation.isValid) {
-        console.log("Problemas na configuração Google:", validation.issues);
-      }
-    }
-  }, [googleClientId, googleRedirectUri]);
-
-  const handleGoogleAuthCode = async (code: string) => {
-    setGoogleAuthStatus("pending");
-    try {
-      console.log("Processando código de autenticação Google:", {
-        codeLength: code.length,
-        redirectUri: googleRedirectUri,
-        clientIdPresent: !!googleClientId,
-        clientSecretPresent: !!googleClientSecret,
-        timestamp: new Date().toISOString()
-      });
-      
-      window.history.replaceState({}, document.title, "/config");
-      
-      const token = await exchangeGoogleAuthCode(
-        code, 
-        googleRedirectUri, 
-        googleClientId, 
-        googleClientSecret
-      );
-      
-      const newTokens = {
-        googleAdsToken: token,
-        facebookAdsToken,
-        linkedinAdsToken
-      };
-      
-      localStorage.setItem('adTokens', JSON.stringify(newTokens));
-      setGoogleAdsToken(token);
-      setConnectionStatus(prev => ({...prev, google: "success"}));
-      setGoogleAuthStatus("success");
-      
-      toast.success("Conectado ao Google Ads com sucesso!");
-    } catch (error: any) {
-      console.error("Erro na autenticação Google:", error);
-      setConnectionStatus(prev => ({...prev, google: "error"}));
-      setGoogleAuthStatus("error");
-      setGoogleAuthError(error.message || "Erro desconhecido");
-      toast.error("Falha na conexão com Google Ads", {
-        description: error.message
-      });
-    }
-  };
-
-  const handleSaveConfig = () => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      localStorage.setItem('adTokens', JSON.stringify({
-        googleAdsToken,
-        facebookAdsToken,
-        linkedinAdsToken,
-      }));
-      
-      toast.success("Configurações salvas com sucesso!");
-      setIsLoading(false);
-    }, 1500);
-  };
-
-  const handleTestConnection = async () => {
-    setIsLoading(true);
-    setConnectionStatus({
-      google: "pending",
-      facebook: "pending", 
-      linkedin: "pending"
-    });
-    
-    setTimeout(() => {
-      setConnectionStatus({
-        google: Math.random() > 0.3 ? "success" : "error",
-        facebook: Math.random() > 0.3 ? "success" : "error",
-        linkedin: Math.random() > 0.3 ? "success" : "error",
-      });
-      setIsLoading(false);
-    }, 2000);
-  };
+  const [activeTab, setActiveTab] = useState('preferences');
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -186,164 +29,90 @@ const Config = () => {
               <SidebarTrigger />
               <div>
                 <h1 className="text-3xl font-bold">Configurações</h1>
-                <p className="text-muted-foreground">Configure todos os aspectos do sistema</p>
+                <p className="text-muted-foreground">Gerencie as configurações do sistema</p>
               </div>
             </div>
-            
-            <Tabs defaultValue="tokens" value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
-              <TabsList className="grid grid-cols-7 w-full">
-                <TabsTrigger value="tokens">Tokens de API</TabsTrigger>
-                <TabsTrigger value="team">Equipe</TabsTrigger>
-                <TabsTrigger value="preferences">Preferências</TabsTrigger>
-                <TabsTrigger value="margins">Margens</TabsTrigger>
-                <TabsTrigger value="fields">Campos</TabsTrigger>
-                <TabsTrigger value="email">Email SMTP</TabsTrigger>
-                <TabsTrigger value="taxes">Impostos</TabsTrigger>
+
+            <Tabs defaultValue="preferences" className="space-y-6" onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-8 w-full">
+                <TabsTrigger value="preferences" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Preferências
+                </TabsTrigger>
+                <TabsTrigger value="team" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Equipe
+                </TabsTrigger>
+                <TabsTrigger value="segments" className="flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  Segmentos
+                </TabsTrigger>
+                <TabsTrigger value="fields" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Campos
+                </TabsTrigger>
+                <TabsTrigger value="email" className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email
+                </TabsTrigger>
+                <TabsTrigger value="taxes" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Impostos
+                </TabsTrigger>
+                <TabsTrigger value="margins" className="flex items-center gap-2">
+                  <Palette className="h-4 w-4" />
+                  Margens
+                </TabsTrigger>
+                <TabsTrigger value="notifications" className="flex items-center gap-2">
+                  <Bell className="h-4 w-4" />
+                  Notificações
+                </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="preferences">
+                <PreferencesSection />
+              </TabsContent>
+
+              <TabsContent value="team">
+                <TeamSection />
+              </TabsContent>
+
+              <TabsContent value="segments">
+                <SegmentManagement />
+              </TabsContent>
+
+              <TabsContent value="fields">
+                <FieldCustomization />
+              </TabsContent>
+
+              <TabsContent value="email">
+                <EmailConfiguration />
+              </TabsContent>
+
+              <TabsContent value="taxes">
+                <TaxConfiguration />
+              </TabsContent>
+
+              <TabsContent value="margins">
+                <MarginConfiguration />
+              </TabsContent>
+
+              <TabsContent value="notifications">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Configurações de Notificações</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">
+                        As configurações de notificações serão implementadas em breve.
+                      </p>
+                      <Badge variant="outline">Em desenvolvimento</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
             </Tabs>
-            
-            {activeTab === 'tokens' && (
-              <Card className="w-full mb-8">
-                <CardHeader>
-                  <CardTitle>Tokens de API</CardTitle>
-                  <CardDescription>
-                    Configure seus tokens de acesso para integração com plataformas de anúncios
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <AdPlatformTabs 
-                    googleAdsToken={googleAdsToken}
-                    setGoogleAdsToken={setGoogleAdsToken}
-                    googleClientId={googleClientId}
-                    setGoogleClientId={setGoogleClientId}
-                    googleClientSecret={googleClientSecret}
-                    setGoogleClientSecret={setGoogleClientSecret}
-                    googleAuthStatus={googleAuthStatus}
-                    setGoogleAuthStatus={setGoogleAuthStatus}
-                    googleAuthError={googleAuthError}
-                    setGoogleAuthError={setGoogleAuthError}
-                    facebookAdsToken={facebookAdsToken}
-                    setFacebookAdsToken={setFacebookAdsToken}
-                    linkedinAdsToken={linkedinAdsToken}
-                    setLinkedinAdsToken={setLinkedinAdsToken}
-                    connectionStatus={connectionStatus}
-                    isLoading={isLoading}
-                    googleRedirectUri={googleRedirectUri}
-                  />
-                </CardContent>
-                
-                <Separator />
-                
-                <CardFooter className="flex justify-between pt-6">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleTestConnection}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    Testar Conexões
-                  </Button>
-                  <Button 
-                    onClick={handleSaveConfig}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    Salvar Configuração
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
-            
-            {activeTab === 'team' && (
-              <Card className="w-full mb-8">
-                <CardHeader>
-                  <CardTitle>Gerenciar Equipe</CardTitle>
-                  <CardDescription>
-                    Adicione e gerencie membros da equipe que terão acesso ao dashboard
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <TeamSection appUrl={APP_URL} />
-                </CardContent>
-              </Card>
-            )}
-            
-            {activeTab === 'preferences' && (
-              <Card className="w-full mb-8">
-                <CardHeader>
-                  <CardTitle>Preferências do Dashboard</CardTitle>
-                  <CardDescription>
-                    Personalize sua experiência no dashboard
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <PreferencesSection />
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === 'margins' && (
-              <Card className="w-full mb-8">
-                <CardHeader>
-                  <CardTitle>Configuração de Margens</CardTitle>
-                  <CardDescription>
-                    Configure margens padrão e personalizadas para os produtos
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <MarginConfiguration />
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === 'fields' && (
-              <Card className="w-full mb-8">
-                <CardHeader>
-                  <CardTitle>Personalização de Campos</CardTitle>
-                  <CardDescription>
-                    Customize os campos dos formulários de acordo com suas necessidades
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <FieldCustomization />
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === 'email' && (
-              <Card className="w-full mb-8">
-                <CardHeader>
-                  <CardTitle>Configuração de Email SMTP</CardTitle>
-                  <CardDescription>
-                    Configure o servidor de email para envio automático de orçamentos e notificações
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <EmailConfiguration />
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === 'taxes' && (
-              <Card className="w-full mb-8">
-                <CardHeader>
-                  <CardTitle>Configuração de Impostos</CardTitle>
-                  <CardDescription>
-                    Configure alíquotas de impostos e perfis tributários
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <TaxConfiguration />
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
       </div>
