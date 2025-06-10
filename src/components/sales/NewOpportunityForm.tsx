@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Download, Calculator, User, FileText, DollarSign } from "lucide-react";
+import { Plus, Trash2, Download, Calculator, User, FileText, DollarSign, Truck } from "lucide-react";
 import { CustomerForm } from "@/components/customers/CustomerForm";
 import { QuoteForm } from "@/components/sales/QuoteForm";
 import { CustomerFormData } from "@/types/customer";
@@ -48,6 +47,10 @@ interface OpportunityFormData {
   // Orçamento
   generateQuote: boolean;
   items: OpportunityItem[];
+  subtotal: number;
+  freight: number;
+  discount: number;
+  total: number;
   
   // Observações
   notes: string;
@@ -77,6 +80,10 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     assignedTo: '',
     generateQuote: false,
     items: [],
+    subtotal: 0,
+    freight: 0,
+    discount: 0,
+    total: 0,
     notes: '',
     nextAction: '',
     nextActionDate: ''
@@ -133,7 +140,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
         return item;
       })
     }));
-    calculateEstimatedValue();
+    calculateTotals();
   };
 
   const removeItem = (id: string) => {
@@ -141,16 +148,34 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
       ...prev,
       items: prev.items.filter(item => item.id !== id)
     }));
-    calculateEstimatedValue();
+    calculateTotals();
   };
 
-  const calculateEstimatedValue = () => {
+  const calculateTotals = () => {
     setTimeout(() => {
       setFormData(prev => {
-        const total = prev.items.reduce((sum, item) => sum + item.total, 0);
-        return { ...prev, estimatedValue: total };
+        const subtotal = prev.items.reduce((sum, item) => sum + item.total, 0);
+        const discountAmount = subtotal * (prev.discount / 100);
+        const total = subtotal - discountAmount + prev.freight;
+        
+        return {
+          ...prev,
+          subtotal,
+          total,
+          estimatedValue: total
+        };
       });
     }, 0);
+  };
+
+  const handleFreightChange = (freight: number) => {
+    setFormData(prev => ({ ...prev, freight }));
+    calculateTotals();
+  };
+
+  const handleDiscountChange = (discount: number) => {
+    setFormData(prev => ({ ...prev, discount }));
+    calculateTotals();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -417,17 +442,67 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
                     </Card>
                   ))}
 
-                  {formData.items.length > 0 && (
-                    <div className="flex justify-end">
-                      <Card className="p-4">
-                        <div className="text-right">
-                          <div className="text-lg font-medium flex items-center gap-2">
-                            <Calculator className="h-5 w-5" />
-                            Valor Total: R$ {formData.estimatedValue.toFixed(2)}
-                          </div>
-                        </div>
-                      </Card>
+                  {/* Seção de Frete e Desconto */}
+                  <Card className="p-4 bg-gray-50">
+                    <h4 className="font-medium mb-4 flex items-center gap-2">
+                      <Truck className="h-4 w-4" />
+                      Frete e Desconto
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Valor do Frete (R$)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formData.freight}
+                          onChange={(e) => handleFreightChange(parseFloat(e.target.value) || 0)}
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Desconto (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={formData.discount}
+                          onChange={(e) => handleDiscountChange(parseFloat(e.target.value) || 0)}
+                          placeholder="0,00"
+                        />
+                      </div>
                     </div>
+                  </Card>
+
+                  {/* Resumo dos Valores */}
+                  {formData.items.length > 0 && (
+                    <Card className="p-4 bg-blue-50 border-blue-200">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span>Subtotal dos Produtos:</span>
+                          <span className="font-medium">R$ {formData.subtotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Frete:</span>
+                          <span className="font-medium">R$ {formData.freight.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Desconto ({formData.discount}%):</span>
+                          <span className="font-medium text-red-600">
+                            - R$ {(formData.subtotal * (formData.discount / 100)).toFixed(2)}
+                          </span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between text-lg font-bold text-blue-900">
+                          <span className="flex items-center gap-2">
+                            <Calculator className="h-5 w-5" />
+                            Valor Total:
+                          </span>
+                          <span>R$ {formData.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </Card>
                   )}
                 </TabsContent>
 
@@ -500,7 +575,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
         </div>
       )}
 
-      {/* Modal de Orçamento */}
+      {/* Modal de Orçamento com dados atualizados */}
       {showQuoteForm && (
         <QuoteForm
           onClose={() => setShowQuoteForm(false)}
@@ -513,7 +588,11 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
             items: formData.items.map(item => ({
               ...item,
               code: ''
-            }))
+            })),
+            subtotal: formData.subtotal,
+            discount: formData.discount,
+            total: formData.total,
+            notes: `Frete: R$ ${formData.freight.toFixed(2)}\n${formData.notes}`.trim()
           }}
         />
       )}
