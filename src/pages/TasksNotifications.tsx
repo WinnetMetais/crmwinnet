@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -20,8 +19,12 @@ import {
   Filter,
   Search
 } from "lucide-react";
+import { NotificationBanner, useNotifications, useModuleNotifications } from "@/components/notifications";
 
 const TasksNotifications = () => {
+  const { notifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { createTaskNotification } = useModuleNotifications();
+  
   const [tasks] = useState([
     {
       id: 1,
@@ -68,6 +71,10 @@ const TasksNotifications = () => {
       type: "interna"
     }
   ]);
+
+  const handleCreateNotification = (title: string, message: string, type: 'info' | 'warning' | 'success' = 'info') => {
+    createTaskNotification('', message, type);
+  };
 
   const [notifications] = useState([
     {
@@ -143,6 +150,8 @@ const TasksNotifications = () => {
         
         <div className="flex-1">
           <div className="container mx-auto py-6 px-4">
+            <NotificationBanner />
+            
             <div className="flex items-center space-x-4 mb-6">
               <SidebarTrigger />
               <div>
@@ -205,7 +214,7 @@ const TasksNotifications = () => {
             <Tabs defaultValue="tarefas" className="space-y-6">
               <TabsList>
                 <TabsTrigger value="tarefas">Minhas Tarefas</TabsTrigger>
-                <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
+                <TabsTrigger value="notificacoes">Central de Notificações</TabsTrigger>
                 <TabsTrigger value="criar">Criar Tarefa</TabsTrigger>
               </TabsList>
 
@@ -277,8 +286,8 @@ const TasksNotifications = () => {
 
               <TabsContent value="notificacoes" className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Central de Notificações</h2>
-                  <Button variant="outline" size="sm">
+                  <h2 className="text-xl font-semibold">Central de Notificações do Sistema</h2>
+                  <Button variant="outline" size="sm" onClick={() => markAllAsRead()}>
                     Marcar todas como lidas
                   </Button>
                 </div>
@@ -288,19 +297,48 @@ const TasksNotifications = () => {
                     <Card key={notification.id} className={notification.read ? "opacity-60" : ""}>
                       <CardContent className="p-4">
                         <div className="flex items-start space-x-3">
-                          {getNotificationIcon(notification.type)}
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <h4 className="font-medium">{notification.title}</h4>
-                              <span className="text-xs text-muted-foreground">{notification.time}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(notification.created_at).toLocaleString('pt-BR')}
+                                </span>
+                                {!notification.read && (
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                )}
+                              </div>
                             </div>
                             <p className="text-sm text-muted-foreground mt-1">
                               {notification.message}
                             </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="secondary">{notification.type}</Badge>
+                              {notification.metadata?.module && (
+                                <Badge variant="outline">
+                                  {notification.metadata.module}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          {!notification.read && (
-                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                          )}
+                          <div className="flex gap-2">
+                            {!notification.read && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => markAsRead(notification.id)}
+                              >
+                                Marcar como lida
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteNotification(notification.id)}
+                            >
+                              Excluir
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -372,3 +410,5 @@ const TasksNotifications = () => {
 };
 
 export default TasksNotifications;
+
+}
