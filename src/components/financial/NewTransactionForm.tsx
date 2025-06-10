@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,8 +14,14 @@ import { DateStatusSection } from "./DateStatusSection";
 import { AdditionalInfoSection } from "./AdditionalInfoSection";
 import { RecurrenceSection } from "./RecurrenceSection";
 import { TagsSection } from "./TagsSection";
+import { useCreateTransaction, useUpdateTransaction } from "@/hooks/useTransactions";
 
-export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
+interface NewTransactionFormProps {
+  onClose: () => void;
+  editingTransaction?: any;
+}
+
+export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransactionFormProps) => {
   const [formData, setFormData] = useState<TransactionFormData>({
     type: 'receita',
     title: '',
@@ -35,14 +41,89 @@ export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
     invoiceNumber: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
+
+  // Preencher formulário se estiver editando
+  useEffect(() => {
+    if (editingTransaction) {
+      setFormData({
+        type: editingTransaction.type || 'receita',
+        title: editingTransaction.title || editingTransaction.description || '',
+        amount: Number(editingTransaction.amount) || 0,
+        category: editingTransaction.category || '',
+        subcategory: editingTransaction.subcategory || '',
+        channel: editingTransaction.channel || '',
+        date: editingTransaction.date || new Date().toISOString().split('T')[0],
+        dueDate: editingTransaction.due_date || '',
+        paymentMethod: editingTransaction.payment_method || '',
+        status: editingTransaction.status || 'pendente',
+        recurring: editingTransaction.recurring || false,
+        recurringPeriod: editingTransaction.recurring_period || 'mensal',
+        description: editingTransaction.description || '',
+        tags: editingTransaction.tags || [],
+        clientName: editingTransaction.client_name || '',
+        invoiceNumber: editingTransaction.invoice_number || ''
+      });
+    }
+  }, [editingTransaction]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Nova transação:', formData);
-    toast({
-      title: "Transação Criada",
-      description: `${formData.type === 'receita' ? 'Receita' : 'Despesa'} de R$ ${formData.amount.toFixed(2)} foi registrada com sucesso!`,
-    });
-    onClose();
+    
+    if (!formData.title || !formData.amount || !formData.category) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const transactionData = {
+      type: formData.type,
+      title: formData.title,
+      amount: formData.amount,
+      category: formData.category,
+      subcategory: formData.subcategory,
+      channel: formData.channel,
+      date: formData.date,
+      due_date: formData.dueDate || null,
+      payment_method: formData.paymentMethod,
+      status: formData.status,
+      recurring: formData.recurring,
+      recurring_period: formData.recurringPeriod,
+      description: formData.description,
+      tags: formData.tags,
+      client_name: formData.clientName,
+      invoice_number: formData.invoiceNumber
+    };
+
+    try {
+      if (editingTransaction) {
+        await updateTransaction.mutateAsync({
+          id: editingTransaction.id,
+          updates: transactionData
+        });
+        toast({
+          title: "Sucesso",
+          description: "Transação atualizada com sucesso!",
+        });
+      } else {
+        await createTransaction.mutateAsync(transactionData);
+        toast({
+          title: "Sucesso",
+          description: `${formData.type === 'receita' ? 'Receita' : 'Despesa'} criada com sucesso!`,
+        });
+      }
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: editingTransaction ? "Erro ao atualizar transação" : "Erro ao criar transação",
+        variant: "destructive",
+      });
+    }
   };
 
   const updateFormData = (updates: Partial<TransactionFormData>) => {
@@ -56,7 +137,7 @@ export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
-              Nova Transação Financeira
+              {editingTransaction ? 'Editar Transação' : 'Nova Transação Financeira'}
             </div>
             <Button variant="outline" onClick={onClose}>✕</Button>
           </CardTitle>
@@ -130,9 +211,13 @@ export const NewTransactionForm = ({ onClose }: { onClose: () => void }) => {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1">
+              <Button 
+                type="submit" 
+                className="flex-1"
+                disabled={createTransaction.isPending || updateTransaction.isPending}
+              >
                 <DollarSign className="h-4 w-4 mr-2" />
-                Criar Transação
+                {editingTransaction ? 'Atualizar Transação' : 'Criar Transação'}
               </Button>
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar

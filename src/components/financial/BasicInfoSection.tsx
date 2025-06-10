@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 interface BasicInfoSectionProps {
   title: string;
   amount: number;
-  onTitleChange: (value: string) => void;
-  onAmountChange: (value: number) => void;
+  onTitleChange: (title: string) => void;
+  onAmountChange: (amount: number) => void;
 }
 
 export const BasicInfoSection = ({ title, amount, onTitleChange, onAmountChange }: BasicInfoSectionProps) => {
@@ -19,7 +19,7 @@ export const BasicInfoSection = ({ title, amount, onTitleChange, onAmountChange 
           id="title"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="Ex: Venda de chapas de aço"
+          placeholder="Ex: Venda de produto, Pagamento de fornecedor..."
           required
         />
       </div>
@@ -28,10 +28,11 @@ export const BasicInfoSection = ({ title, amount, onTitleChange, onAmountChange 
         <Input
           id="amount"
           type="number"
-          min="0"
+          value={amount || ''}
+          onChange={(e) => onAmountChange(Number(e.target.value))}
+          placeholder="0,00"
           step="0.01"
-          value={amount}
-          onChange={(e) => onAmountChange(parseFloat(e.target.value) || 0)}
+          min="0"
           required
         />
       </div>

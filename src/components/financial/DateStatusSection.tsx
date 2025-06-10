@@ -7,13 +7,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface DateStatusSectionProps {
   date: string;
   dueDate: string;
-  status: 'pendente' | 'pago' | 'vencido';
-  onDateChange: (value: string) => void;
-  onDueDateChange: (value: string) => void;
-  onStatusChange: (value: 'pendente' | 'pago' | 'vencido') => void;
+  status: string;
+  onDateChange: (date: string) => void;
+  onDueDateChange: (dueDate: string) => void;
+  onStatusChange: (status: string) => void;
 }
 
-export const DateStatusSection = ({ date, dueDate, status, onDateChange, onDueDateChange, onStatusChange }: DateStatusSectionProps) => {
+export const DateStatusSection = ({ 
+  date, 
+  dueDate, 
+  status, 
+  onDateChange, 
+  onDueDateChange, 
+  onStatusChange 
+}: DateStatusSectionProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="space-y-2">
@@ -26,6 +33,7 @@ export const DateStatusSection = ({ date, dueDate, status, onDateChange, onDueDa
           required
         />
       </div>
+      
       <div className="space-y-2">
         <Label htmlFor="dueDate">Data de Vencimento</Label>
         <Input
@@ -35,11 +43,12 @@ export const DateStatusSection = ({ date, dueDate, status, onDateChange, onDueDa
           onChange={(e) => onDueDateChange(e.target.value)}
         />
       </div>
+      
       <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
+        <Label htmlFor="status">Status *</Label>
         <Select value={status} onValueChange={onStatusChange}>
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Selecione o status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="pendente">Pendente</SelectItem>

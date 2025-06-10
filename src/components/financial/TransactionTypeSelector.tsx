@@ -1,32 +1,39 @@
 
 import React from 'react';
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { TransactionFormData } from "@/types/transaction";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface TransactionTypeSelectorProps {
   value: 'receita' | 'despesa';
-  onChange: (value: 'receita' | 'despesa') => void;
+  onChange: (type: 'receita' | 'despesa') => void;
 }
 
 export const TransactionTypeSelector = ({ value, onChange }: TransactionTypeSelectorProps) => {
   return (
-    <div className="space-y-3">
-      <Label>Tipo de Transação *</Label>
-      <RadioGroup
-        value={value}
-        onValueChange={onChange}
-        className="flex gap-6"
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="receita" id="receita" />
-          <Label htmlFor="receita" className="text-green-600 font-medium">Receita</Label>
+    <Card>
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            type="button"
+            variant={value === 'receita' ? 'default' : 'outline'}
+            onClick={() => onChange('receita')}
+            className={`h-16 ${value === 'receita' ? 'bg-green-600 hover:bg-green-700' : 'border-green-300 text-green-600 hover:bg-green-50'}`}
+          >
+            <TrendingUp className="h-5 w-5 mr-2" />
+            Receita / Entrada
+          </Button>
+          <Button
+            type="button"
+            variant={value === 'despesa' ? 'default' : 'outline'}
+            onClick={() => onChange('despesa')}
+            className={`h-16 ${value === 'despesa' ? 'bg-red-600 hover:bg-red-700' : 'border-red-300 text-red-600 hover:bg-red-50'}`}
+          >
+            <TrendingDown className="h-5 w-5 mr-2" />
+            Despesa / Saída
+          </Button>
         </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="despesa" id="despesa" />
-          <Label htmlFor="despesa" className="text-red-600 font-medium">Despesa</Label>
-        </div>
-      </RadioGroup>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

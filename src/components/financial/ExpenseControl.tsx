@@ -2,16 +2,23 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Plus, Filter, AlertTriangle, TrendingDown } from "lucide-react";
+import { Plus, Filter, AlertTriangle, TrendingDown, Edit, Trash2 } from "lucide-react";
+import { NewTransactionForm } from "./NewTransactionForm";
+import { useTransactionsByType, useDeleteTransaction } from "@/hooks/useTransactions";
+import { toast } from "@/hooks/use-toast";
 
 export const ExpenseControl = () => {
   const [period, setPeriod] = useState('month');
+  const [showNewExpenseForm, setShowNewExpenseForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
+
+  const { data: expenses = [], isLoading } = useTransactionsByType('despesa');
+  const deleteTransaction = useDeleteTransaction();
 
   // Dados de despesas categorizadas
   const expensesByCategory = [
@@ -83,10 +90,13 @@ export const ExpenseControl = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Pago':
+      case 'pago':
         return 'bg-green-100 text-green-800';
       case 'Pendente':
+      case 'pendente':
         return 'bg-yellow-100 text-yellow-800';
       case 'Atrasado':
+      case 'vencido':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -101,6 +111,39 @@ export const ExpenseControl = () => {
       'Marketing': 'bg-green-100 text-green-800'
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
+  const handleEdit = (expense: any) => {
+    setEditingExpense(expense);
+    setShowNewExpenseForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
+      try {
+        await deleteTransaction.mutateAsync(id);
+        toast({
+          title: "Sucesso",
+          description: "Despesa excluída com sucesso!",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao excluir despesa",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const closeForm = () => {
+    setShowNewExpenseForm(false);
+    setEditingExpense(null);
+  };
+
+  const handleNewExpense = () => {
+    setEditingExpense({ type: 'despesa' }); // Pre-definir como despesa
+    setShowNewExpenseForm(true);
   };
 
   return (
@@ -248,7 +291,7 @@ export const ExpenseControl = () => {
                 <Filter className="h-4 w-4 mr-2" />
                 Filtros
               </Button>
-              <Button>
+              <Button onClick={handleNewExpense}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Despesa
               </Button>
@@ -270,6 +313,7 @@ export const ExpenseControl = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {/* Dados simulados */}
               {detailedExpenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="font-medium">{expense.date || '-'}</TableCell>
@@ -297,11 +341,54 @@ export const ExpenseControl = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm">
-                        Editar
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(expense)}>
+                        <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        Pagar
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(expense.id.toString())}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              
+              {/* Dados do Supabase */}
+              {expenses.map((expense) => (
+                <TableRow key={expense.id}>
+                  <TableCell className="font-medium">
+                    {new Date(expense.date).toLocaleDateString('pt-BR')}
+                  </TableCell>
+                  <TableCell>{expense.title}</TableCell>
+                  <TableCell>
+                    <Badge className={getCategoryColor(expense.category)}>
+                      {expense.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-red-600 font-semibold">
+                    R$ {Number(expense.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </TableCell>
+                  <TableCell>
+                    {expense.due_date ? new Date(expense.due_date).toLocaleDateString('pt-BR') : '-'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(expense.status)}>
+                      {expense.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {expense.recurring ? (
+                      <Badge className="bg-purple-100 text-purple-800">Sim</Badge>
+                    ) : (
+                      <Badge variant="outline">Não</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(expense)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(expense.id)}>
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -312,64 +399,13 @@ export const ExpenseControl = () => {
         </CardContent>
       </Card>
 
-      {/* Formulário de Nova Despesa */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Adicionar Nova Despesa</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium">Descrição</label>
-              <Input placeholder="Ex: Aluguel do escritório" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Categoria</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fixa">Despesa Fixa</SelectItem>
-                  <SelectItem value="variavel">Despesa Variável</SelectItem>
-                  <SelectItem value="operacional">Despesa Operacional</SelectItem>
-                  <SelectItem value="marketing">Marketing</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Valor</label>
-              <Input type="number" placeholder="0,00" step="0.01" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Data de Vencimento</label>
-              <Input type="date" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Status</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="pago">Pago</SelectItem>
-                  <SelectItem value="atrasado">Atrasado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input type="checkbox" id="recurring" className="rounded" />
-              <label htmlFor="recurring" className="text-sm font-medium">
-                Despesa recorrente
-              </label>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <Button>Adicionar Despesa</Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Modal de Nova Despesa */}
+      {showNewExpenseForm && (
+        <NewTransactionForm 
+          onClose={closeForm}
+          editingTransaction={editingExpense}
+        />
+      )}
     </div>
   );
 };
