@@ -5,7 +5,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Users, Database, Shield, Bell, Palette, Mail, DollarSign } from "lucide-react";
+import { Settings, Users, Database, Shield, Bell, Palette, Mail, DollarSign, Zap } from "lucide-react";
 import PreferencesSection from "@/components/config/PreferencesSection";
 import { TeamSection } from "@/components/config/TeamSection";
 import { EmailConfiguration } from "@/components/config/EmailConfiguration";
@@ -13,6 +13,7 @@ import { TaxConfiguration } from "@/components/config/TaxConfiguration";
 import { MarginConfiguration } from "@/components/config/MarginConfiguration";
 import { FieldCustomization } from "@/components/config/FieldCustomization";
 import { SegmentManagement } from "@/components/config/SegmentManagement";
+import { IntegrationsSection } from "@/components/config/IntegrationsSection";
 
 const Config = () => {
   const [activeTab, setActiveTab] = useState('preferences');
@@ -34,7 +35,7 @@ const Config = () => {
 
             <Tabs defaultValue="preferences" className="space-y-6" onValueChange={setActiveTab}>
               <div className="w-full overflow-x-auto">
-                <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full min-w-max">
+                <TabsList className="grid grid-cols-4 lg:grid-cols-9 w-full min-w-max">
                   <TabsTrigger value="preferences" className="flex items-center gap-2 text-xs">
                     <Settings className="h-3 w-3" />
                     <span className="hidden sm:inline">Preferências</span>
@@ -50,6 +51,10 @@ const Config = () => {
                   <TabsTrigger value="fields" className="flex items-center gap-2 text-xs">
                     <Shield className="h-3 w-3" />
                     <span className="hidden sm:inline">Campos</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="integrations" className="flex items-center gap-2 text-xs">
+                    <Zap className="h-3 w-3" />
+                    <span className="hidden sm:inline">Integrações</span>
                   </TabsTrigger>
                   <TabsTrigger value="email" className="flex items-center gap-2 text-xs">
                     <Mail className="h-3 w-3" />
@@ -84,6 +89,10 @@ const Config = () => {
 
               <TabsContent value="fields">
                 <FieldCustomization />
+              </TabsContent>
+
+              <TabsContent value="integrations">
+                <IntegrationsSection />
               </TabsContent>
 
               <TabsContent value="email">
