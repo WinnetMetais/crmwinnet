@@ -118,8 +118,10 @@ export class CRMSyncService {
 
     // Atualizar informações dos clientes baseadas na integração
     for (const customer of customers || []) {
-      // Garantir que custom_data seja um objeto válido
-      const existingCustomData = customer.custom_data || {};
+      // Garantir que custom_data seja um objeto válido - fix para TypeScript
+      const existingCustomData = customer.custom_data && typeof customer.custom_data === 'object' 
+        ? customer.custom_data as Record<string, any>
+        : {};
       
       const updatedCustomData = {
         ...existingCustomData,
