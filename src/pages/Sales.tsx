@@ -5,16 +5,39 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, LineChart, GitBranch, KanbanSquare } from "lucide-react";
+import { ArrowRight, LineChart, GitBranch, KanbanSquare, Plus } from "lucide-react";
 import { SalesFunnelChart } from "@/components/sales/SalesFunnelChart";
 import { SalesPipeline } from "@/components/sales/SalesPipeline";
 import { SalesKanban } from "@/components/sales/SalesKanban";
 import { SalesStats } from "@/components/sales/SalesStats";
 import { NewOpportunityForm } from "@/components/sales/NewOpportunityForm";
+import { DealEditModal } from "@/components/sales/DealEditModal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createDeal } from "@/services/pipeline";
 
 const Sales = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showNewOpportunityForm, setShowNewOpportunityForm] = useState(false);
+  const [showSimpleModal, setShowSimpleModal] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  const createDealMutation = useMutation({
+    mutationFn: createDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
+      queryClient.invalidateQueries({ queryKey: ['deals-pipeline'] });
+      setShowSimpleModal(false);
+    }
+  });
+
+  const handleQuickCreate = () => {
+    setShowSimpleModal(true);
+  };
+
+  const handleSaveDeal = (dealData: any) => {
+    createDealMutation.mutate(dealData);
+  };
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -30,9 +53,15 @@ const Sales = () => {
                   <h1 className="text-3xl font-bold">Gestão de Vendas</h1>
                   <p className="text-muted-foreground">Gerencie o processo comercial da Winnet Metais</p>
                 </div>
-                <Button onClick={() => setShowNewOpportunityForm(true)}>
-                  Nova Oportunidade <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleQuickCreate} variant="outline">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Criar Rápido
+                  </Button>
+                  <Button onClick={() => setShowNewOpportunityForm(true)}>
+                    Nova Oportunidade <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -122,6 +151,16 @@ const Sales = () => {
               </TabsContent>
             </Tabs>
 
+            {/* Modal de Criação Rápida */}
+            <DealEditModal
+              deal={null}
+              open={showSimpleModal}
+              onClose={() => setShowSimpleModal(false)}
+              onSave={handleSaveDeal}
+              mode="create"
+            />
+
+            {/* Formulário Completo de Nova Oportunidade */}
             {showNewOpportunityForm && (
               <NewOpportunityForm onClose={() => setShowNewOpportunityForm(false)} />
             )}

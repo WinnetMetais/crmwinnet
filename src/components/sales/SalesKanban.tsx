@@ -4,23 +4,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { KanbanSquare, Plus, Edit, Trash2, User, Building, MapPin, Phone } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   getDealsWithRelations, 
   getPipelineStages, 
   updateDealStage,
+  createDeal,
+  updateDeal,
+  deleteDeal,
   Deal,
   PipelineStage 
 } from "@/services/pipeline";
+import { DealEditModal } from "./DealEditModal";
 
 export const SalesKanban = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [draggedDeal, setDraggedDeal] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [dealToDelete, setDealToDelete] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -39,6 +45,33 @@ export const SalesKanban = () => {
       updateDealStage(dealId, stageId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
+    }
+  });
+
+  const createDealMutation = useMutation({
+    mutationFn: createDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
+      setEditModalOpen(false);
+      setSelectedDeal(null);
+    }
+  });
+
+  const updateDealMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateDeal(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
+      setEditModalOpen(false);
+      setSelectedDeal(null);
+    }
+  });
+
+  const deleteDealMutation = useMutation({
+    mutationFn: deleteDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
+      setDeleteDialogOpen(false);
+      setDealToDelete(null);
     }
   });
 
@@ -68,6 +101,37 @@ export const SalesKanban = () => {
       updateStageMutation.mutate({ dealId, stageId });
     }
     setDraggedDeal(null);
+  };
+
+  const handleCreateDeal = () => {
+    setModalMode('create');
+    setSelectedDeal(null);
+    setEditModalOpen(true);
+  };
+
+  const handleEditDeal = (deal: Deal) => {
+    setModalMode('edit');
+    setSelectedDeal(deal);
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteDeal = (dealId: string) => {
+    setDealToDelete(dealId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSaveDeal = (dealData: any) => {
+    if (modalMode === 'create') {
+      createDealMutation.mutate(dealData);
+    } else if (selectedDeal) {
+      updateDealMutation.mutate({ id: selectedDeal.id, data: dealData });
+    }
+  };
+
+  const confirmDelete = () => {
+    if (dealToDelete) {
+      deleteDealMutation.mutate(dealToDelete);
+    }
   };
 
   const formatCurrency = (value?: number) => {
@@ -104,7 +168,7 @@ export const SalesKanban = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button>
+          <Button onClick={handleCreateDeal}>
             <Plus className="mr-1 h-4 w-4" /> Nova Oportunidade
           </Button>
         </div>
@@ -145,8 +209,21 @@ export const SalesKanban = () => {
                         />
                         <h4 className="font-medium flex-1 ml-2 text-sm">{deal.customers?.name || 'Cliente não informado'}</h4>
                         <div className="flex space-x-1 ml-2">
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-6 w-6 p-0"
+                            onClick={() => handleEditDeal(deal)}
+                          >
                             <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                            onClick={() => handleDeleteDeal(deal.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
@@ -247,6 +324,36 @@ export const SalesKanban = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de Edição/Criação */}
+      <DealEditModal
+        deal={selectedDeal}
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedDeal(null);
+        }}
+        onSave={handleSaveDeal}
+        mode={modalMode}
+      />
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta oportunidade? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -265,6 +265,94 @@ export async function getDealsWithRelations() {
   }
 }
 
+// Criar nova oportunidade/deal
+export async function createDeal(dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at'>) {
+  try {
+    const { data, error } = await supabase
+      .from('deals')
+      .insert({
+        ...dealData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    toast({
+      title: "Oportunidade criada",
+      description: "A oportunidade foi criada com sucesso.",
+    });
+    
+    return data;
+  } catch (error: any) {
+    toast({
+      title: "Erro ao criar oportunidade",
+      description: error.message,
+      variant: "destructive",
+    });
+    return null;
+  }
+}
+
+// Atualizar deal
+export async function updateDeal(dealId: string, dealData: Partial<Deal>) {
+  try {
+    const { data, error } = await supabase
+      .from('deals')
+      .update({
+        ...dealData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', dealId)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    toast({
+      title: "Oportunidade atualizada",
+      description: "A oportunidade foi atualizada com sucesso.",
+    });
+    
+    return data;
+  } catch (error: any) {
+    toast({
+      title: "Erro ao atualizar oportunidade",
+      description: error.message,
+      variant: "destructive",
+    });
+    return null;
+  }
+}
+
+// Excluir deal
+export async function deleteDeal(dealId: string) {
+  try {
+    const { error } = await supabase
+      .from('deals')
+      .delete()
+      .eq('id', dealId);
+      
+    if (error) throw error;
+    
+    toast({
+      title: "Oportunidade excluída",
+      description: "A oportunidade foi excluída com sucesso.",
+    });
+    
+    return true;
+  } catch (error: any) {
+    toast({
+      title: "Erro ao excluir oportunidade",
+      description: error.message,
+      variant: "destructive",
+    });
+    return false;
+  }
+}
+
 // Atualizar estágio do deal
 export async function updateDealStage(dealId: string, stageId: string, reason?: string) {
   try {
@@ -358,6 +446,27 @@ export async function getDealActivities(dealId: string) {
   } catch (error: any) {
     toast({
       title: "Erro ao buscar atividades",
+      description: error.message,
+      variant: "destructive",
+    });
+    return [];
+  }
+}
+
+// Buscar clientes para seleção
+export async function getCustomers() {
+  try {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('id, name, company, email, phone')
+      .eq('status', 'active')
+      .order('name');
+      
+    if (error) throw error;
+    return data || [];
+  } catch (error: any) {
+    toast({
+      title: "Erro ao buscar clientes",
       description: error.message,
       variant: "destructive",
     });

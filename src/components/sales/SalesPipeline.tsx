@@ -5,25 +5,34 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Input } from "@/components/ui/input";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, ArrowRight, Phone, Mail, Calendar, User, Building, MapPin } from "lucide-react";
+import { Edit, ArrowRight, Phone, Mail, Calendar, User, Building, MapPin, Plus, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   getDealsWithRelations, 
   getPipelineStages, 
   updateDealStage, 
   createPipelineActivity,
+  createDeal,
+  updateDeal,
+  deleteDeal,
   Deal,
   PipelineStage 
 } from "@/services/pipeline";
+import { DealEditModal } from "./DealEditModal";
 import { toast } from "@/hooks/use-toast";
 
 export const SalesPipeline = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [activityDialog, setActivityDialog] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [dealToDelete, setDealToDelete] = useState<string | null>(null);
   const [newActivity, setNewActivity] = useState({
     title: '',
     description: '',
@@ -60,6 +69,33 @@ export const SalesPipeline = () => {
     }
   });
 
+  const createDealMutation = useMutation({
+    mutationFn: createDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-pipeline'] });
+      setEditModalOpen(false);
+      setSelectedDeal(null);
+    }
+  });
+
+  const updateDealMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateDeal(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-pipeline'] });
+      setEditModalOpen(false);
+      setSelectedDeal(null);
+    }
+  });
+
+  const deleteDealMutation = useMutation({
+    mutationFn: deleteDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals-pipeline'] });
+      setDeleteDialogOpen(false);
+      setDealToDelete(null);
+    }
+  });
+
   const filteredDeals = searchTerm
     ? deals.filter((deal: Deal) => 
         deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,6 +121,37 @@ export const SalesPipeline = () => {
       status: 'pending',
       created_by: 'Usuário Atual'
     });
+  };
+
+  const handleCreateDeal = () => {
+    setModalMode('create');
+    setSelectedDeal(null);
+    setEditModalOpen(true);
+  };
+
+  const handleEditDeal = (deal: Deal) => {
+    setModalMode('edit');
+    setSelectedDeal(deal);
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteDeal = (dealId: string) => {
+    setDealToDelete(dealId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSaveDeal = (dealData: any) => {
+    if (modalMode === 'create') {
+      createDealMutation.mutate(dealData);
+    } else if (selectedDeal) {
+      updateDealMutation.mutate({ id: selectedDeal.id, data: dealData });
+    }
+  };
+
+  const confirmDelete = () => {
+    if (dealToDelete) {
+      deleteDealMutation.mutate(dealToDelete);
+    }
   };
 
   const formatCurrency = (value?: number) => {
@@ -114,7 +181,9 @@ export const SalesPipeline = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button>Nova Oportunidade</Button>
+          <Button onClick={handleCreateDeal}>
+            <Plus className="mr-1 h-4 w-4" /> Nova Oportunidade
+          </Button>
         </div>
       </div>
 
@@ -229,9 +298,17 @@ export const SalesPipeline = () => {
                                 size="sm" 
                                 variant="ghost" 
                                 className="h-7 w-7 p-0"
-                                onClick={() => setSelectedDeal(deal)}
+                                onClick={() => handleEditDeal(deal)}
                               >
                                 <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                                onClick={() => handleDeleteDeal(deal.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                               {deal.customers?.phone && (
                                 <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
@@ -275,6 +352,36 @@ export const SalesPipeline = () => {
           </React.Fragment>
         ))}
       </ResizablePanelGroup>
+
+      {/* Modal de Edição/Criação */}
+      <DealEditModal
+        deal={selectedDeal}
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedDeal(null);
+        }}
+        onSave={handleSaveDeal}
+        mode={modalMode}
+      />
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta oportunidade? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog para adicionar atividade */}
       <Dialog open={activityDialog} onOpenChange={setActivityDialog}>
