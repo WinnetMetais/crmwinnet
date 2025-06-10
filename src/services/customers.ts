@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -19,6 +18,9 @@ export interface Customer {
   last_contact_date?: string;
   created_at?: string;
   updated_at?: string;
+  segment_id?: string;
+  cnpj?: string;
+  contact_person?: string;
 }
 
 export async function getCustomers() {

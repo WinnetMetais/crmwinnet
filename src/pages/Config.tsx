@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Settings, Users, Database, Shield, Bell, Palette, Mail, DollarSign } from "lucide-react";
-import { PreferencesSection } from "@/components/config/PreferencesSection";
+import PreferencesSection from "@/components/config/PreferencesSection";
 import { TeamSection } from "@/components/config/TeamSection";
 import { EmailConfiguration } from "@/components/config/EmailConfiguration";
 import { TaxConfiguration } from "@/components/config/TaxConfiguration";
@@ -74,7 +74,7 @@ const Config = () => {
               </TabsContent>
 
               <TabsContent value="team">
-                <TeamSection />
+                <TeamSection appUrl={window.location.origin} />
               </TabsContent>
 
               <TabsContent value="segments">
