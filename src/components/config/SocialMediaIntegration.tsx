@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,10 @@ import {
   ExternalLink,
   Check,
   AlertTriangle,
-  Info
+  Info,
+  Copy,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import {
   Accordion,
@@ -23,6 +26,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { QuickSetupGuide } from './QuickSetupGuide';
 
 export const SocialMediaIntegration: React.FC = () => {
   const [tokens, setTokens] = useState({
@@ -41,22 +45,74 @@ export const SocialMediaIntegration: React.FC = () => {
     youtube: false,
   });
 
+  const [showTokens, setShowTokens] = useState({
+    instagram: false,
+    facebook: false,
+    twitter: false,
+    linkedin: false,
+    youtube: false,
+  });
+
+  const [isConnecting, setIsConnecting] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Carregar tokens salvos
+    Object.keys(tokens).forEach(platform => {
+      const savedToken = localStorage.getItem(`${platform}_token`);
+      if (savedToken) {
+        setTokens(prev => ({ ...prev, [platform]: savedToken }));
+        setConnected(prev => ({ ...prev, [platform]: true }));
+      }
+    });
+  }, []);
+
   const handleTokenChange = (platform: string, value: string) => {
     setTokens(prev => ({ ...prev, [platform]: value }));
   };
 
+  const toggleTokenVisibility = (platform: string) => {
+    setShowTokens(prev => ({ ...prev, [platform]: !prev[platform as keyof typeof prev] }));
+  };
+
+  const copyToken = (platform: string) => {
+    const token = tokens[platform as keyof typeof tokens];
+    if (token) {
+      navigator.clipboard.writeText(token);
+      toast.success(`Token do ${platform} copiado!`);
+    }
+  };
+
   const handleConnect = async (platform: string) => {
-    if (!tokens[platform as keyof typeof tokens]) {
+    const token = tokens[platform as keyof typeof tokens];
+    if (!token) {
       toast.error(`Token do ${platform} é obrigatório`);
       return;
     }
 
-    // Simular conexão
-    setConnected(prev => ({ ...prev, [platform]: true }));
-    toast.success(`${platform} conectado com sucesso!`);
+    setIsConnecting(platform);
     
-    // Salvar no localStorage
-    localStorage.setItem(`${platform}_token`, tokens[platform as keyof typeof tokens]);
+    try {
+      // Simular validação do token
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Validação básica do formato do token
+      if (token.length < 20) {
+        throw new Error("Token parece ser muito curto");
+      }
+      
+      setConnected(prev => ({ ...prev, [platform]: true }));
+      localStorage.setItem(`${platform}_token`, token);
+      
+      toast.success(`${platform} conectado com sucesso!`, {
+        description: "A integração está ativa e pronta para uso"
+      });
+    } catch (error: any) {
+      toast.error(`Erro ao conectar ${platform}`, {
+        description: error.message || "Verifique se o token está correto"
+      });
+    } finally {
+      setIsConnecting(null);
+    }
   };
 
   const handleDisconnect = (platform: string) => {
@@ -66,6 +122,14 @@ export const SocialMediaIntegration: React.FC = () => {
     toast.info(`${platform} desconectado`);
   };
 
+  const handleQuickSetup = (platform: string) => {
+    // Scroll para a seção específica da plataforma
+    const element = document.getElementById(`platform-${platform}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const platformConfigs = [
     {
       name: 'Instagram',
@@ -73,7 +137,8 @@ export const SocialMediaIntegration: React.FC = () => {
       icon: Instagram,
       color: 'text-pink-600',
       description: 'Conecte sua conta Instagram Business para publicação automática',
-      helpUrl: 'https://developers.facebook.com/docs/instagram-api/'
+      helpUrl: 'https://developers.facebook.com/docs/instagram-api/',
+      tokenFormat: 'Token de acesso de longa duração do Instagram Business'
     },
     {
       name: 'Facebook',
@@ -81,7 +146,8 @@ export const SocialMediaIntegration: React.FC = () => {
       icon: Facebook,
       color: 'text-blue-600',
       description: 'Conecte suas páginas do Facebook para gerenciar posts',
-      helpUrl: 'https://developers.facebook.com/docs/pages-api/'
+      helpUrl: 'https://developers.facebook.com/docs/pages-api/',
+      tokenFormat: 'Token de página do Facebook'
     },
     {
       name: 'Twitter/X',
@@ -89,7 +155,8 @@ export const SocialMediaIntegration: React.FC = () => {
       icon: Twitter,
       color: 'text-black',
       description: 'Conecte sua conta do Twitter/X para publicações',
-      helpUrl: 'https://developer.twitter.com/en/docs/twitter-api'
+      helpUrl: 'https://developer.twitter.com/en/docs/twitter-api',
+      tokenFormat: 'Bearer Token ou OAuth 2.0 Token'
     },
     {
       name: 'LinkedIn',
@@ -97,7 +164,8 @@ export const SocialMediaIntegration: React.FC = () => {
       icon: Linkedin,
       color: 'text-blue-700',
       description: 'Conecte seu perfil ou página LinkedIn para conteúdo profissional',
-      helpUrl: 'https://developer.linkedin.com/docs/'
+      helpUrl: 'https://developer.linkedin.com/docs/',
+      tokenFormat: 'OAuth 2.0 Access Token com escopos apropriados'
     },
     {
       name: 'YouTube',
@@ -105,7 +173,8 @@ export const SocialMediaIntegration: React.FC = () => {
       icon: Youtube,
       color: 'text-red-600',
       description: 'Conecte seu canal YouTube para upload de vídeos',
-      helpUrl: 'https://developers.google.com/youtube/v3'
+      helpUrl: 'https://developers.google.com/youtube/v3',
+      tokenFormat: 'OAuth 2.0 Token com permissão de upload'
     },
   ];
 
@@ -118,13 +187,18 @@ export const SocialMediaIntegration: React.FC = () => {
         </p>
       </div>
 
+      <QuickSetupGuide onStartSetup={handleQuickSetup} />
+
       <div className="grid gap-6">
         {platformConfigs.map((platform) => {
           const isConnected = connected[platform.key as keyof typeof connected];
+          const token = tokens[platform.key as keyof typeof tokens];
+          const showToken = showTokens[platform.key as keyof typeof showTokens];
+          const isConnectingThis = isConnecting === platform.key;
           const Icon = platform.icon;
           
           return (
-            <Card key={platform.key}>
+            <Card key={platform.key} id={`platform-${platform.key}`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -153,18 +227,63 @@ export const SocialMediaIntegration: React.FC = () => {
                 {!isConnected ? (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor={`${platform.key}-token`}>Access Token</Label>
-                      <Input
-                        id={`${platform.key}-token`}
-                        type="password"
-                        value={tokens[platform.key as keyof typeof tokens]}
-                        onChange={(e) => handleTokenChange(platform.key, e.target.value)}
-                        placeholder={`Cole aqui seu token do ${platform.name}`}
-                      />
+                      <Label htmlFor={`${platform.key}-token`}>
+                        Access Token
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({platform.tokenFormat})
+                        </span>
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id={`${platform.key}-token`}
+                          type={showToken ? "text" : "password"}
+                          value={token}
+                          onChange={(e) => handleTokenChange(platform.key, e.target.value)}
+                          placeholder={`Cole aqui seu token do ${platform.name}`}
+                          className="pr-20"
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleTokenVisibility(platform.key)}
+                            className="h-6 w-6 p-0"
+                          >
+                            {showToken ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                          </Button>
+                          {token && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToken(platform.key)}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                    
                     <div className="flex gap-2">
-                      <Button onClick={() => handleConnect(platform.key)}>
-                        Conectar {platform.name}
+                      <Button 
+                        onClick={() => handleConnect(platform.key)}
+                        disabled={!token || isConnectingThis}
+                        className="flex-1"
+                      >
+                        {isConnectingThis ? (
+                          <>
+                            <AlertTriangle className="h-4 w-4 mr-2 animate-spin" />
+                            Conectando...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4 mr-2" />
+                            Conectar {platform.name}
+                          </>
+                        )}
                       </Button>
                       <Button variant="outline" asChild>
                         <a href={platform.helpUrl} target="_blank" rel="noopener noreferrer">
@@ -178,9 +297,14 @@ export const SocialMediaIntegration: React.FC = () => {
                   <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-800">
-                        {platform.name} conectado com sucesso
-                      </span>
+                      <div>
+                        <span className="text-sm font-medium text-green-800">
+                          {platform.name} conectado com sucesso
+                        </span>
+                        <p className="text-xs text-green-700">
+                          Token: {token.substring(0, 10)}...{token.substring(token.length - 4)}
+                        </p>
+                      </div>
                     </div>
                     <Button 
                       variant="outline" 
