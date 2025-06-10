@@ -764,6 +764,7 @@ export type Database = {
           created_at: string | null
           id: string
           message: string
+          metadata: Json | null
           read: boolean | null
           related_id: string | null
           related_type: string | null
@@ -776,6 +777,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           message: string
+          metadata?: Json | null
           read?: boolean | null
           related_id?: string | null
           related_type?: string | null
@@ -788,6 +790,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           message?: string
+          metadata?: Json | null
           read?: boolean | null
           related_id?: string | null
           related_type?: string | null

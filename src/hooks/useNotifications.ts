@@ -85,6 +85,7 @@ export const useModuleNotifications = () => {
       type,
       title: 'Atualização de Cliente',
       message,
+      user_id: '', // Será preenchido pelo backend
       metadata: { module: 'customers', customerId },
     });
   };
@@ -94,6 +95,7 @@ export const useModuleNotifications = () => {
       type,
       title: 'Atualização de Vendas',
       message,
+      user_id: '', // Será preenchido pelo backend
       metadata: { module: 'sales', dealId },
     });
   };
@@ -103,6 +105,7 @@ export const useModuleNotifications = () => {
       type,
       title: 'Atualização de Tarefa',
       message,
+      user_id: '', // Será preenchido pelo backend
       metadata: { module: 'tasks', taskId },
     });
   };
@@ -112,6 +115,7 @@ export const useModuleNotifications = () => {
       type,
       title: 'Atualização Financeira',
       message,
+      user_id: '', // Será preenchido pelo backend
       metadata: { module: 'financial', transactionId },
     });
   };
@@ -121,6 +125,7 @@ export const useModuleNotifications = () => {
       type,
       title: 'Atualização de Produto',
       message,
+      user_id: '', // Será preenchido pelo backend
       metadata: { module: 'products', productId },
     });
   };

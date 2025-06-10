@@ -1,21 +1,13 @@
+
 import React from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarItem,
   SidebarMenu,
-  SidebarNav,
-  SidebarTrigger,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +20,7 @@ import {
   Settings,
   HelpCircle,
   Activity,
-  FileBarGraph,
+  BarChart3,
   MessageSquare,
   UserPlus,
   FileText,
@@ -48,12 +40,14 @@ interface SidebarItemProps {
 }
 
 const SidebarItemComponent: React.FC<SidebarItemProps> = ({ href, icon: Icon, label }) => (
-  <SidebarItem>
-    <Link to={href} className="flex items-center gap-3 p-3 rounded-md hover:bg-secondary">
-      <Icon className="h-4 w-4" />
-      <span>{label}</span>
-    </Link>
-  </SidebarItem>
+  <SidebarMenuItem>
+    <SidebarMenuButton asChild>
+      <Link to={href} className="flex items-center gap-3 p-3 rounded-md hover:bg-secondary">
+        <Icon className="h-4 w-4" />
+        <span>{label}</span>
+      </Link>
+    </SidebarMenuButton>
+  </SidebarMenuItem>
 );
 
 const DashboardSidebar = () => {
@@ -75,10 +69,10 @@ const DashboardSidebar = () => {
         </div>
         <SidebarHeader>
           <p className="text-sm text-muted-foreground">
-            Bem-vindo(a) de volta, {user?.name}!
+            Bem-vindo(a) de volta, {user?.email}!
           </p>
         </SidebarHeader>
-        <SidebarNav>
+        <SidebarMenu>
           <SidebarItemComponent href="/dashboard" icon={LayoutDashboard} label="Dashboard" />
           <SidebarItemComponent href="/analysis" icon={BarChart} label="Análise" />
           <SidebarItemComponent href="/crm" icon={UserPlus} label="CRM" />
@@ -88,38 +82,18 @@ const DashboardSidebar = () => {
           <SidebarItemComponent href="/products" icon={Package} label="Produtos" />
           <SidebarItemComponent href="/sales" icon={ShoppingBag} label="Vendas" />
           <SidebarItemComponent href="/commercial" icon={MessageSquare} label="Comercial" />
-          <SidebarItemComponent href="/financial" icon={FileBarGraph} label="Financeiro" />
+          <SidebarItemComponent href="/financial" icon={BarChart3} label="Financeiro" />
           <SidebarItemComponent href="/reports" icon={BarChart} label="Relatórios" />
           <SidebarItemComponent href="/filters" icon={Settings} label="Filtros" />
           <SidebarItemComponent href="/calendar" icon={Calendar} label="Calendário" />
           <SidebarItemComponent href="/tasks" icon={Bell} label="Tarefas" />
           <SidebarItemComponent href="/ai" icon={HelpCircle} label="IA Dashboard" />
-        </SidebarNav>
+        </SidebarMenu>
         <SidebarMenu>
-          <SidebarItem>
-            <Link to="/config" className="flex items-center gap-3 p-3 rounded-md hover:bg-secondary">
-              <Settings className="h-4 w-4" />
-              Configurações
-            </Link>
-          </SidebarItem>
-          <SidebarItem>
-            <Link to="/users" className="flex items-center gap-3 p-3 rounded-md hover:bg-secondary">
-              <Users className="h-4 w-4" />
-              Usuários
-            </Link>
-          </SidebarItem>
-          <SidebarItem>
-            <Link to="/templates" className="flex items-center gap-3 p-3 rounded-md hover:bg-secondary">
-              <FileText className="h-4 w-4" />
-              Templates
-            </Link>
-          </SidebarItem>
-          <SidebarItem>
-            <Link to="/backup" className="flex items-center gap-3 p-3 rounded-md hover:bg-secondary">
-              <HelpCircle className="h-4 w-4" />
-              Backup
-            </Link>
-          </SidebarItem>
+          <SidebarItemComponent href="/config" icon={Settings} label="Configurações" />
+          <SidebarItemComponent href="/users" icon={Users} label="Usuários" />
+          <SidebarItemComponent href="/templates" icon={FileText} label="Templates" />
+          <SidebarItemComponent href="/backup" icon={HelpCircle} label="Backup" />
         </SidebarMenu>
         <SidebarFooter className="mt-auto">
           <Button variant="outline" className="w-full" onClick={() => signOut()}>

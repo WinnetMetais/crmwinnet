@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -22,7 +23,7 @@ import {
 import { NotificationBanner, useNotifications, useModuleNotifications } from "@/components/notifications";
 
 const TasksNotifications = () => {
-  const { notifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications: systemNotifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const { createTaskNotification } = useModuleNotifications();
   
   const [tasks] = useState([
@@ -76,41 +77,6 @@ const TasksNotifications = () => {
     createTaskNotification('', message, type);
   };
 
-  const [notifications] = useState([
-    {
-      id: 1,
-      type: "warning",
-      title: "Estoque baixo",
-      message: "Lixeira L1618 com apenas 3 unidades",
-      time: "5 min atrás",
-      read: false
-    },
-    {
-      id: 2,
-      type: "success",
-      title: "Oportunidade fechada",
-      message: "Cliente ABC aprovou proposta de R$ 15.000",
-      time: "1 hora atrás",
-      read: false
-    },
-    {
-      id: 3,
-      type: "info",
-      title: "Novo lead",
-      message: "Empresa DEF solicitou orçamento via site",
-      time: "2 horas atrás",
-      read: true
-    },
-    {
-      id: 4,
-      type: "warning",
-      title: "Tarefa atrasada",
-      message: "Follow-up com Metalúrgica XYZ está atrasado",
-      time: "3 horas atrás",
-      read: true
-    }
-  ]);
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "alta": return "bg-red-100 text-red-800";
@@ -139,7 +105,7 @@ const TasksNotifications = () => {
     }
   };
 
-  const unreadNotifications = notifications.filter(n => !n.read).length;
+  const unreadNotifications = systemNotifications.filter(n => !n.read).length;
   const pendingTasks = tasks.filter(t => t.status === "pendente").length;
   const overdueTasks = tasks.filter(t => new Date(t.dueDate) < new Date() && t.status !== "concluida").length;
 
@@ -293,7 +259,7 @@ const TasksNotifications = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {notifications.map((notification) => (
+                  {systemNotifications.map((notification) => (
                     <Card key={notification.id} className={notification.read ? "opacity-60" : ""}>
                       <CardContent className="p-4">
                         <div className="flex items-start space-x-3">
@@ -302,7 +268,7 @@ const TasksNotifications = () => {
                               <h4 className="font-medium">{notification.title}</h4>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(notification.created_at).toLocaleString('pt-BR')}
+                                  {new Date(notification.created_at || '').toLocaleString('pt-BR')}
                                 </span>
                                 {!notification.read && (
                                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
@@ -314,9 +280,9 @@ const TasksNotifications = () => {
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                               <Badge variant="secondary">{notification.type}</Badge>
-                              {notification.metadata?.module && (
+                              {notification.metadata && (notification.metadata as any)?.module && (
                                 <Badge variant="outline">
-                                  {notification.metadata.module}
+                                  {(notification.metadata as any).module}
                                 </Badge>
                               )}
                             </div>

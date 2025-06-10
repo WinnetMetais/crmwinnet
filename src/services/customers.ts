@@ -85,6 +85,7 @@ export async function createCustomer(customer: Omit<Customer, 'id'>) {
       type: 'success',
       title: 'Novo Cliente Cadastrado',
       message: `Cliente ${customer.name} foi cadastrado com sucesso.`,
+      user_id: '', // Será preenchido pelo backend baseado no auth
       metadata: { module: 'customers', customerId: data.id }
     });
     
@@ -120,6 +121,7 @@ export async function updateCustomer(id: string, customer: Partial<Customer>) {
       type: 'info',
       title: 'Cliente Atualizado',
       message: `Dados do cliente ${data.name} foram atualizados.`,
+      user_id: '', // Será preenchido pelo backend baseado no auth
       metadata: { module: 'customers', customerId: id }
     });
     
@@ -160,6 +162,7 @@ export async function deleteCustomer(id: string) {
       type: 'warning',
       title: 'Cliente Removido',
       message: `Cliente ${customerData?.name || 'Desconhecido'} foi removido do sistema.`,
+      user_id: '', // Será preenchido pelo backend baseado no auth
       metadata: { module: 'customers', customerId: id }
     });
     
