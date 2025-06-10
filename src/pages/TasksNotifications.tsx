@@ -410,5 +410,3 @@ const TasksNotifications = () => {
 };
 
 export default TasksNotifications;
-
-}
