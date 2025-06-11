@@ -1,49 +1,90 @@
 
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { ArrowUp, ArrowDown, TrendingUp, Award, Target, Activity, Calendar } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { 
+  TrendingUp, 
+  Activity, 
+  Users, 
+  DollarSign,
+  Target,
+  Clock,
+  Zap,
+  RefreshCw
+} from "lucide-react";
 
 const Performance = () => {
   const [dateRange, setDateRange] = useState('30d');
-  const [activeTab, setActiveTab] = useState('overview');
 
-  // Sample data for charts
-  const salesPerformanceData = [
-    { month: 'Jan', meta: 100, real: 120 },
-    { month: 'Feb', meta: 110, real: 115 },
-    { month: 'Mar', meta: 120, real: 130 },
-    { month: 'Apr', meta: 120, real: 100 },
-    { month: 'May', meta: 130, real: 145 },
-    { month: 'Jun', meta: 140, real: 160 },
+  // Dados de performance do sistema
+  const systemMetrics = [
+    {
+      title: "Tempo de Resposta",
+      value: "285ms",
+      change: "-12%",
+      status: "good",
+      icon: Clock
+    },
+    {
+      title: "Uptime",
+      value: "99.9%",
+      change: "+0.1%",
+      status: "excellent",
+      icon: Activity
+    },
+    {
+      title: "Usuários Ativos",
+      value: "1,245",
+      change: "+18%",
+      status: "good",
+      icon: Users
+    },
+    {
+      title: "Transações/min",
+      value: "156",
+      change: "+5%",
+      status: "good",
+      icon: Zap
+    }
   ];
 
-  const sellerData = [
-    { nome: 'Carlos Silva', vendas: 840000, meta: 800000, taxa: 105, status: 'acima' },
-    { nome: 'Marina Souza', vendas: 720000, meta: 800000, taxa: 90, status: 'abaixo' },
-    { nome: 'Paulo Mendes', vendas: 950000, meta: 800000, taxa: 119, status: 'acima' },
-    { nome: 'Juliana Costa', vendas: 810000, meta: 800000, taxa: 101, status: 'acima' },
+  // Dados de performance de vendas
+  const salesPerformance = [
+    { month: 'Jan', vendas: 285000, meta: 300000, conversao: 24 },
+    { month: 'Fev', vendas: 320000, meta: 300000, conversao: 28 },
+    { month: 'Mar', vendas: 298000, meta: 300000, conversao: 22 },
+    { month: 'Abr', vendas: 410000, meta: 350000, conversao: 31 },
+    { month: 'Mai', vendas: 458000, meta: 400000, conversao: 35 },
+    { month: 'Jun', vendas: 395000, meta: 400000, conversao: 29 }
   ];
 
-  const conversionData = [
-    { name: 'Prospecção', value: 400, color: '#8884d8' },
-    { name: 'Contato', value: 300, color: '#82ca9d' },
-    { name: 'Proposta', value: 200, color: '#ffc658' },
-    { name: 'Fechado', value: 100, color: '#ff8042' }
+  const teamPerformance = [
+    { name: 'Carlos Silva', vendas: 125000, meta: 100000, conversao: 32 },
+    { name: 'Ana Oliveira', vendas: 98000, meta: 90000, conversao: 28 },
+    { name: 'João Santos', vendas: 87000, meta: 85000, conversao: 25 },
+    { name: 'Maria Costa', vendas: 112000, meta: 95000, conversao: 30 }
   ];
 
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "excellent": return "text-green-600";
+      case "good": return "text-blue-600";
+      case "warning": return "text-yellow-600";
+      case "poor": return "text-red-600";
+      default: return "text-gray-600";
+    }
+  };
 
-  const formatBRL = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
+  const getChangeColor = (change: string) => {
+    if (change.startsWith('+')) return "text-green-600";
+    if (change.startsWith('-')) return "text-red-600";
+    return "text-gray-600";
   };
 
   return (
@@ -52,503 +93,287 @@ const Performance = () => {
         <DashboardSidebar />
         
         <div className="flex-1">
-          <div className="container mx-auto py-10 px-4">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex space-x-4 items-center">
+          <div className="container mx-auto py-6 px-4">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
                 <SidebarTrigger />
-                <h1 className="text-3xl font-bold">Performance de Vendas</h1>
+                <div>
+                  <h1 className="text-3xl font-bold">Performance do Sistema</h1>
+                  <p className="text-muted-foreground">Monitore a performance técnica e comercial</p>
+                </div>
               </div>
               
-              <div className="flex space-x-4 items-center">
-                <Select defaultValue={dateRange} onValueChange={setDateRange}>
+              <div className="flex space-x-2">
+                <Select value={dateRange} onValueChange={setDateRange}>
                   <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Selecione o período" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="7d">Últimos 7 dias</SelectItem>
                     <SelectItem value="30d">Últimos 30 dias</SelectItem>
                     <SelectItem value="90d">Últimos 90 dias</SelectItem>
-                    <SelectItem value="12m">Último ano</SelectItem>
                   </SelectContent>
                 </Select>
-                
-                <Button>
-                  Exportar Relatório
+                <Button variant="outline">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Atualizar
                 </Button>
               </div>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Faturamento Total</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ 3.542.800,00</div>
-                  <p className="text-xs text-green-600 flex items-center mt-1">
-                    <ArrowUp className="h-3 w-3 mr-1" /> +12.5% em relação ao período anterior
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Atingimento da Meta</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">98.5%</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div className="bg-green-600 h-2.5 rounded-full" style={{ width: '98.5%' }}></div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ 15.850,00</div>
-                  <p className="text-xs text-green-600 flex items-center mt-1">
-                    <ArrowUp className="h-3 w-3 mr-1" /> +5.2% em relação ao período anterior
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Taxa de Conversão</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">22.8%</div>
-                  <p className="text-xs text-red-600 flex items-center mt-1">
-                    <ArrowDown className="h-3 w-3 mr-1" /> -1.3% em relação ao período anterior
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Tabs defaultValue="overview" className="mt-6" onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4 md:w-auto md:grid-cols-4">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  Visão Geral
-                </TabsTrigger>
-                <TabsTrigger value="sales" className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Vendas
-                </TabsTrigger>
-                <TabsTrigger value="sellers" className="flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  Vendedores
-                </TabsTrigger>
-                <TabsTrigger value="goals" className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Metas
-                </TabsTrigger>
+            <Tabs defaultValue="system" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="system">Sistema</TabsTrigger>
+                <TabsTrigger value="sales">Vendas</TabsTrigger>
+                <TabsTrigger value="team">Equipe</TabsTrigger>
+                <TabsTrigger value="reports">Relatórios</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-4 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="col-span-2">
-                    <CardHeader>
-                      <CardTitle>Performance de Vendas vs Meta</CardTitle>
-                      <CardDescription>Comparativo entre meta e realizado nos últimos meses</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={salesPerformanceData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="meta" name="Meta" fill="#8884d8" />
-                            <Bar dataKey="real" name="Realizado" fill="#82ca9d" />
-                          </BarChart>
-                        </ResponsiveContainer>
+              <TabsContent value="system" className="space-y-6">
+                {/* Métricas do Sistema */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {systemMetrics.map((metric, index) => (
+                    <Card key={index}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">{metric.title}</p>
+                            <p className={`text-3xl font-bold ${getStatusColor(metric.status)}`}>
+                              {metric.value}
+                            </p>
+                            <p className={`text-xs ${getChangeColor(metric.change)}`}>
+                              {metric.change} vs período anterior
+                            </p>
+                          </div>
+                          <metric.icon className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Gráfico de Performance do Sistema */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Métricas de Sistema - Últimos 30 dias</CardTitle>
+                    <CardDescription>Monitoramento em tempo real da infraestrutura</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={salesPerformance}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="conversao" stroke="#2563eb" strokeWidth={3} name="Taxa de Conversão %" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Status dos Serviços */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Status dos Serviços</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        { name: "API Principal", status: "operational", uptime: "99.9%" },
+                        { name: "Base de Dados", status: "operational", uptime: "99.8%" },
+                        { name: "Sistema de Email", status: "operational", uptime: "99.7%" },
+                        { name: "CDN", status: "operational", uptime: "99.9%" },
+                        { name: "Sistema de Backup", status: "operational", uptime: "100%" }
+                      ].map((service, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span className="font-medium">{service.name}</span>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <Badge variant="outline" className="bg-green-100 text-green-800">
+                              Operacional
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              Uptime: {service.uptime}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="sales" className="space-y-6">
+                {/* Performance de Vendas */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Performance de Vendas vs Metas</CardTitle>
+                    <CardDescription>Comparativo mensal de vendas realizadas e metas estabelecidas</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={salesPerformance}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip formatter={(value, name) => [
+                            `R$ ${value.toLocaleString()}`,
+                            name === 'vendas' ? 'Vendas Realizadas' : 'Meta'
+                          ]} />
+                          <Legend />
+                          <Bar dataKey="vendas" fill="#2563eb" name="Vendas Realizadas" />
+                          <Bar dataKey="meta" fill="#94a3b8" name="Meta" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* KPIs de Vendas */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Ticket Médio</p>
+                          <p className="text-3xl font-bold">R$ 8.450</p>
+                          <p className="text-xs text-green-600">+12% vs mês anterior</p>
+                        </div>
+                        <DollarSign className="h-8 w-8 text-green-600" />
                       </div>
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader>
-                      <CardTitle>Funil de Conversão</CardTitle>
-                      <CardDescription>Taxa de conversão por etapa do funil</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={conversionData}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              outerRadius={80}
-                              fill="#8884d8"
-                              dataKey="value"
-                              label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            >
-                              {conversionData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                            <Tooltip />
-                          </PieChart>
-                        </ResponsiveContainer>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Taxa de Conversão</p>
+                          <p className="text-3xl font-bold">29%</p>
+                          <p className="text-xs text-green-600">+3% vs mês anterior</p>
+                        </div>
+                        <Target className="h-8 w-8 text-blue-600" />
                       </div>
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader>
-                      <CardTitle>Próximas Metas</CardTitle>
-                      <CardDescription>Metas de vendas para os próximos períodos</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span className="text-sm font-medium">Junho 2025</span>
-                          </div>
-                          <span className="font-semibold">R$ 980.000,00</span>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Crescimento MoM</p>
+                          <p className="text-3xl font-bold">+18%</p>
+                          <p className="text-xs text-green-600">Acima da meta (15%)</p>
                         </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span className="text-sm font-medium">3º Trimestre 2025</span>
-                          </div>
-                          <span className="font-semibold">R$ 3.200.000,00</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span className="text-sm font-medium">4º Trimestre 2025</span>
-                          </div>
-                          <span className="font-semibold">R$ 3.850.000,00</span>
-                        </div>
-                        
-                        <div className="pt-2">
-                          <Button variant="outline" className="w-full">Ver Todas as Metas</Button>
-                        </div>
+                        <TrendingUp className="h-8 w-8 text-purple-600" />
                       </div>
                     </CardContent>
                   </Card>
                 </div>
               </TabsContent>
 
-              <TabsContent value="sales" className="mt-6">
+              <TabsContent value="team" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Análise de Vendas</CardTitle>
-                    <CardDescription>Detalhamento de vendas por categoria e produto</CardDescription>
+                    <CardTitle>Performance da Equipe</CardTitle>
+                    <CardDescription>Ranking de vendedores do mês</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div>
-                        <h3 className="font-medium mb-4">Vendas por Categoria</h3>
-                        <div className="space-y-4">
-                          {[
-                            { name: 'Aço Carbono', value: 1250000, percent: 35 },
-                            { name: 'Aço Inox', value: 980000, percent: 28 },
-                            { name: 'Alumínio', value: 680000, percent: 19 },
-                            { name: 'Cobre', value: 420000, percent: 12 },
-                            { name: 'Outros', value: 212000, percent: 6 }
-                          ].map((category, idx) => (
-                            <div key={idx}>
-                              <div className="flex justify-between mb-1">
-                                <span>{category.name}</span>
-                                <span className="font-medium">{formatBRL(category.value)}</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-blue-600 h-2 rounded-full" 
-                                  style={{ width: `${category.percent}%` }}
-                                ></div>
+                    <div className="space-y-4">
+                      {teamPerformance.map((member, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                              index === 0 ? 'bg-yellow-500' : 
+                              index === 1 ? 'bg-gray-400' : 
+                              index === 2 ? 'bg-orange-600' : 'bg-blue-500'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium">{member.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {member.conversao}% conversão
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="font-medium mb-4">Top Produtos</h3>
-                        <div className="space-y-4">
-                          {[
-                            { name: 'Aço Inox 304', value: 520000 },
-                            { name: 'Aço Carbono ASTM A36', value: 480000 },
-                            { name: 'Alumínio 6061', value: 370000 },
-                            { name: 'Cobre Eletrolítico', value: 280000 },
-                            { name: 'Bronze Fosforoso', value: 210000 }
-                          ].map((product, idx) => (
-                            <div key={idx} className="flex justify-between items-center p-2 border-b">
-                              <span>{idx + 1}. {product.name}</span>
-                              <span className="font-medium">{formatBRL(product.value)}</span>
+                          </div>
+                          
+                          <div className="text-right">
+                            <div className="font-bold text-lg">
+                              R$ {member.vendas.toLocaleString()}
                             </div>
-                          ))}
+                            <div className="text-sm text-muted-foreground">
+                              Meta: R$ {member.meta.toLocaleString()}
+                            </div>
+                            <Badge variant="outline" className={
+                              member.vendas >= member.meta ? 
+                              "bg-green-100 text-green-800" : 
+                              "bg-yellow-100 text-yellow-800"
+                            }>
+                              {member.vendas >= member.meta ? "Meta atingida" : "Abaixo da meta"}
+                            </Badge>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-8">
-                      <h3 className="font-medium mb-4">Evolução de Vendas</h3>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart
-                            data={[
-                              { name: 'Jan', value: 280000 },
-                              { name: 'Fev', value: 320000 },
-                              { name: 'Mar', value: 350000 },
-                              { name: 'Abr', value: 410000 },
-                              { name: 'Mai', value: 480000 },
-                              { name: 'Jun', value: 520000 },
-                            ]}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => formatBRL(value as number)} />
-                            <Line 
-                              type="monotone" 
-                              dataKey="value" 
-                              stroke="#8884d8" 
-                              strokeWidth={2}
-                              dot={{ r: 4 }}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="sellers" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Performance da Equipe de Vendas</CardTitle>
-                    <CardDescription>Análise por vendedor e região</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="font-medium mb-4">Ranking de Vendedores</h3>
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b">
-                                <th className="text-left pb-2">Vendedor</th>
-                                <th className="text-left pb-2">Vendas</th>
-                                <th className="text-left pb-2">Meta</th>
-                                <th className="text-left pb-2">% Atingimento</th>
-                                <th className="text-left pb-2">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sellerData.map((seller, idx) => (
-                                <tr key={idx} className="border-b">
-                                  <td className="py-3 font-medium">{seller.nome}</td>
-                                  <td className="py-3">{formatBRL(seller.vendas)}</td>
-                                  <td className="py-3">{formatBRL(seller.meta)}</td>
-                                  <td className="py-3">{seller.taxa}%</td>
-                                  <td className="py-3">
-                                    <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                                      seller.status === 'acima' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                    }`}>
-                                      {seller.status === 'acima' ? 'Acima da meta' : 'Abaixo da meta'}
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+              <TabsContent value="reports" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Relatórios Disponíveis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {[
+                          "Performance Mensal Detalhada",
+                          "Análise de Tendências",
+                          "Comparativo Ano a Ano",
+                          "Relatório de Eficiência",
+                          "KPIs Consolidados"
+                        ].map((report, index) => (
+                          <div key={index} className="flex justify-between items-center p-3 border rounded">
+                            <span>{report}</span>
+                            <Button size="sm" variant="outline">
+                              Gerar
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Alertas e Notificações</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="p-3 bg-green-50 border border-green-200 rounded">
+                          <div className="font-medium text-green-800">Sistema Operacional</div>
+                          <div className="text-sm text-green-600">Todos os serviços funcionando normalmente</div>
+                        </div>
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                          <div className="font-medium text-blue-800">Meta do Mês</div>
+                          <div className="text-sm text-blue-600">85% da meta mensal atingida</div>
+                        </div>
+                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+                          <div className="font-medium text-yellow-800">Backup Agendado</div>
+                          <div className="text-sm text-yellow-600">Próximo backup em 2 horas</div>
                         </div>
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h3 className="font-medium mb-4">Vendas por Região</h3>
-                          <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <PieChart>
-                                <Pie
-                                  data={[
-                                    { name: 'Sudeste', value: 55 },
-                                    { name: 'Sul', value: 20 },
-                                    { name: 'Nordeste', value: 12 },
-                                    { name: 'Centro-Oeste', value: 8 },
-                                    { name: 'Norte', value: 5 }
-                                  ]}
-                                  cx="50%"
-                                  cy="50%"
-                                  labelLine={false}
-                                  outerRadius={80}
-                                  fill="#8884d8"
-                                  dataKey="value"
-                                  label={({name, value}) => `${name}: ${value}%`}
-                                >
-                                  {COLORS.map((color, index) => (
-                                    <Cell key={`cell-${index}`} fill={color} />
-                                  ))}
-                                </Pie>
-                                <Tooltip />
-                              </PieChart>
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="font-medium mb-4">Vendas por Canal</h3>
-                          <div className="space-y-4">
-                            {[
-                              { name: 'Vendas Diretas', value: 65 },
-                              { name: 'Distribuidores', value: 25 },
-                              { name: 'E-commerce', value: 10 }
-                            ].map((channel, idx) => (
-                              <div key={idx}>
-                                <div className="flex justify-between mb-1">
-                                  <span>{channel.name}</span>
-                                  <span className="font-medium">{channel.value}%</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-purple-600 h-2 rounded-full" 
-                                    style={{ width: `${channel.value}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="goals" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Gestão de Metas</CardTitle>
-                    <CardDescription>Configure e acompanhe as metas da equipe</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium">Meta Atual</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">R$ 3.600.000,00</div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                            <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: '98.5%' }}></div>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">98.5% atingido</p>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium">Meta Individual Média</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">R$ 800.000,00</div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                            <div className="bg-green-600 h-2.5 rounded-full" style={{ width: '103.8%' }}></div>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">103.8% atingido</p>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium">Projeção Próximo Mês</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">R$ 3.850.000,00</div>
-                          <p className="text-xs text-green-600 flex items-center mt-1">
-                            <ArrowUp className="h-3 w-3 mr-1" /> +6.9% em relação ao mês atual
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="font-medium mb-4">Metas por Vendedor</h3>
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="text-left pb-2">Vendedor</th>
-                              <th className="text-left pb-2">Meta Atual</th>
-                              <th className="text-left pb-2">Meta Próximo Mês</th>
-                              <th className="text-left pb-2">Variação</th>
-                              <th className="text-left pb-2"></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sellerData.map((seller, idx) => (
-                              <tr key={idx} className="border-b">
-                                <td className="py-3 font-medium">{seller.nome}</td>
-                                <td className="py-3">{formatBRL(seller.meta)}</td>
-                                <td className="py-3">{formatBRL(seller.meta * 1.05)}</td>
-                                <td className="py-3 text-green-600">+5%</td>
-                                <td className="py-3">
-                                  <Button variant="outline" size="sm">Ajustar</Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div>
-                        <h3 className="font-medium mb-4">Histórico de Metas</h3>
-                        <div className="h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart
-                              data={[
-                                { month: 'Jan', meta: 3200000, atingido: 3150000 },
-                                { month: 'Fev', meta: 3300000, atingido: 3280000 },
-                                { month: 'Mar', meta: 3400000, atingido: 3520000 },
-                                { month: 'Abr', meta: 3500000, atingido: 3490000 },
-                                { month: 'Mai', meta: 3600000, atingido: 3542000 },
-                              ]}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="month" />
-                              <YAxis />
-                              <Tooltip formatter={(value) => formatBRL(value as number)} />
-                              <Legend />
-                              <Line 
-                                type="monotone" 
-                                dataKey="meta" 
-                                name="Meta"
-                                stroke="#8884d8" 
-                                strokeWidth={2}
-                                dot={{ r: 4 }}
-                              />
-                              <Line 
-                                type="monotone" 
-                                dataKey="atingido" 
-                                name="Realizado"
-                                stroke="#82ca9d" 
-                                strokeWidth={2}
-                                dot={{ r: 4 }}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </Tabs>
           </div>

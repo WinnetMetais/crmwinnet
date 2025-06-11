@@ -1,140 +1,70 @@
 
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Zap, 
   Mail, 
-  MessageSquare, 
-  Calendar, 
   Users, 
-  TrendingUp,
+  Plus, 
+  Calendar,
   Play,
   Pause,
   Settings,
   BarChart3,
   Target,
-  Clock
+  Clock,
+  Send
 } from "lucide-react";
 
 const MarketingAutomation = () => {
-  const [activeAutomations, setActiveAutomations] = useState(3);
-  
-  const automationFlows = [
+  const [automations] = useState([
     {
       id: 1,
-      name: "Boas-vindas Novos Clientes",
-      type: "email",
-      status: "ativo",
-      trigger: "Novo cadastro",
-      contacts: 147,
-      conversion: "23%",
-      lastRun: "2 horas atrás"
+      name: "Boas-vindas Novos Leads",
+      status: "ativa",
+      triggers: "Novo cadastro",
+      contacts: 245,
+      openRate: "68%",
+      clickRate: "12%",
+      lastRun: "2024-01-15 09:30"
     },
     {
       id: 2,
-      name: "Follow-up Orçamentos",
-      type: "whatsapp",
-      status: "ativo",
-      trigger: "Orçamento sem resposta (3 dias)",
+      name: "Abandono de Carrinho",
+      status: "ativa",
+      triggers: "Carrinho abandonado",
       contacts: 89,
-      conversion: "18%",
-      lastRun: "1 hora atrás"
+      openRate: "45%",
+      clickRate: "8%",
+      lastRun: "2024-01-15 11:15"
     },
     {
       id: 3,
-      name: "Reativação Clientes Inativos",
-      type: "email",
-      status: "ativo",
-      trigger: "Sem compra (60 dias)",
-      contacts: 203,
-      conversion: "12%",
-      lastRun: "6 horas atrás"
-    },
-    {
-      id: 4,
-      name: "Upsell Produtos Relacionados",
-      type: "email",
-      status: "pausado",
-      trigger: "Após compra",
-      contacts: 67,
-      conversion: "31%",
-      lastRun: "2 dias atrás"
+      name: "Follow-up Orçamentos",
+      status: "pausada",
+      triggers: "Orçamento não respondido",
+      contacts: 156,
+      openRate: "72%",
+      clickRate: "15%",
+      lastRun: "2024-01-14 16:45"
     }
-  ];
-
-  const emailTemplates = [
-    {
-      id: 1,
-      name: "Boas-vindas",
-      subject: "Bem-vindo à Winnet Metais!",
-      opens: "78%",
-      clicks: "12%",
-      status: "ativo"
-    },
-    {
-      id: 2,
-      name: "Follow-up Orçamento",
-      subject: "Sobre seu orçamento - Ainda tem interesse?",
-      opens: "65%",
-      clicks: "8%",
-      status: "ativo"
-    },
-    {
-      id: 3,
-      name: "Promoção Lixeiras",
-      subject: "🔥 Oferta especial: 20% OFF em lixeiras",
-      opens: "83%",
-      clicks: "15%",
-      status: "rascunho"
-    }
-  ];
-
-  const segments = [
-    {
-      name: "Novos Clientes",
-      count: 47,
-      criteria: "Cadastro < 30 dias",
-      color: "bg-green-100 text-green-800"
-    },
-    {
-      name: "Clientes VIP",
-      count: 23,
-      criteria: "Compras > R$ 10.000",
-      color: "bg-purple-100 text-purple-800"
-    },
-    {
-      name: "Inativos",
-      count: 156,
-      criteria: "Sem compra > 60 dias",
-      color: "bg-red-100 text-red-800"
-    },
-    {
-      name: "Interessados em Lixeiras",
-      count: 89,
-      criteria: "Orçamentos de lixeiras",
-      color: "bg-blue-100 text-blue-800"
-    }
-  ];
+  ]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "ativo": return "bg-green-100 text-green-800";
-      case "pausado": return "bg-yellow-100 text-yellow-800";
+      case "ativa": return "bg-green-100 text-green-800";
+      case "pausada": return "bg-yellow-100 text-yellow-800";
       case "rascunho": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "email": return <Mail className="h-4 w-4" />;
-      case "whatsapp": return <MessageSquare className="h-4 w-4" />;
-      default: return <Zap className="h-4 w-4" />;
     }
   };
 
@@ -149,18 +79,18 @@ const MarketingAutomation = () => {
               <SidebarTrigger />
               <div>
                 <h1 className="text-3xl font-bold">Automação de Marketing</h1>
-                <p className="text-muted-foreground">Gerencie campanhas automatizadas e segmentação de clientes</p>
+                <p className="text-muted-foreground">Configure fluxos automatizados para nutrição de leads</p>
               </div>
             </div>
 
-            {/* Métricas Gerais */}
+            {/* Métricas */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Fluxos Ativos</p>
-                      <p className="text-3xl font-bold">{activeAutomations}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Automações Ativas</p>
+                      <p className="text-3xl font-bold">12</p>
                     </div>
                     <Zap className="h-8 w-8 text-blue-600" />
                   </div>
@@ -171,10 +101,10 @@ const MarketingAutomation = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Contatos Ativos</p>
-                      <p className="text-3xl font-bold">506</p>
+                      <p className="text-sm font-medium text-muted-foreground">Emails Enviados</p>
+                      <p className="text-3xl font-bold">2.456</p>
                     </div>
-                    <Users className="h-8 w-8 text-green-600" />
+                    <Mail className="h-8 w-8 text-green-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -183,10 +113,10 @@ const MarketingAutomation = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Taxa Conversão Média</p>
-                      <p className="text-3xl font-bold">21%</p>
+                      <p className="text-sm font-medium text-muted-foreground">Taxa de Abertura</p>
+                      <p className="text-3xl font-bold">68%</p>
                     </div>
-                    <TrendingUp className="h-8 w-8 text-purple-600" />
+                    <BarChart3 className="h-8 w-8 text-purple-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -195,71 +125,73 @@ const MarketingAutomation = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">ROI Mensal</p>
-                      <p className="text-3xl font-bold">340%</p>
+                      <p className="text-sm font-medium text-muted-foreground">Leads Ativos</p>
+                      <p className="text-3xl font-bold">490</p>
                     </div>
-                    <BarChart3 className="h-8 w-8 text-orange-600" />
+                    <Users className="h-8 w-8 text-orange-600" />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Tabs defaultValue="fluxos" className="space-y-6">
+            <Tabs defaultValue="automations" className="space-y-6">
               <TabsList>
-                <TabsTrigger value="fluxos">Fluxos de Automação</TabsTrigger>
+                <TabsTrigger value="automations">Automações</TabsTrigger>
+                <TabsTrigger value="create">Criar Nova</TabsTrigger>
                 <TabsTrigger value="templates">Templates</TabsTrigger>
-                <TabsTrigger value="segmentos">Segmentos</TabsTrigger>
-                <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
+                <TabsTrigger value="analytics">Relatórios</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="fluxos" className="space-y-6">
+              <TabsContent value="automations" className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Fluxos de Automação</h2>
+                  <h3 className="text-lg font-semibold">Automações Configuradas</h3>
                   <Button>
-                    <Zap className="h-4 w-4 mr-2" />
-                    Novo Fluxo
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nova Automação
                   </Button>
                 </div>
 
-                <div className="grid gap-4">
-                  {automationFlows.map((flow) => (
-                    <Card key={flow.id}>
+                <div className="space-y-4">
+                  {automations.map((automation) => (
+                    <Card key={automation.id}>
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              {getTypeIcon(flow.type)}
-                            </div>
-                            <div>
-                              <h3 className="font-semibold">{flow.name}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                Trigger: {flow.trigger}
-                              </p>
+                            <div className="flex items-center space-x-2">
+                              <Zap className="h-5 w-5 text-blue-500" />
+                              <div>
+                                <h4 className="font-medium">{automation.name}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Gatilho: {automation.triggers}
+                                </p>
+                              </div>
                             </div>
                           </div>
                           
-                          <div className="flex items-center space-x-6">
-                            <div className="text-center">
-                              <p className="text-sm font-medium">{flow.contacts}</p>
-                              <p className="text-xs text-muted-foreground">Contatos</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm font-medium">{flow.conversion}</p>
-                              <p className="text-xs text-muted-foreground">Conversão</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-xs text-muted-foreground">Última execução</p>
-                              <p className="text-sm">{flow.lastRun}</p>
-                            </div>
-                            <Badge className={getStatusColor(flow.status)}>
-                              {flow.status}
+                          <div className="flex items-center space-x-4">
+                            <Badge variant="outline" className={getStatusColor(automation.status)}>
+                              {automation.status}
                             </Badge>
+                            
+                            <div className="text-right text-sm">
+                              <div className="font-medium">{automation.contacts} contatos</div>
+                              <div className="text-muted-foreground">
+                                {automation.openRate} abertura • {automation.clickRate} clique
+                              </div>
+                            </div>
+                            
                             <div className="flex space-x-2">
-                              <Button variant="outline" size="sm">
-                                {flow.status === "ativo" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                              </Button>
-                              <Button variant="outline" size="sm">
+                              <Button size="sm" variant="outline">
                                 <Settings className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant={automation.status === 'ativa' ? 'outline' : 'default'}
+                              >
+                                {automation.status === 'ativa' ? 
+                                  <Pause className="h-4 w-4" /> : 
+                                  <Play className="h-4 w-4" />
+                                }
                               </Button>
                             </div>
                           </div>
@@ -268,115 +200,173 @@ const MarketingAutomation = () => {
                     </Card>
                   ))}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="create" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Criar Nova Automação</CardTitle>
+                    <CardDescription>Configure um novo fluxo de nutrição automatizado</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Nome da Automação</Label>
+                        <Input id="name" placeholder="Ex: Boas-vindas novos leads" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="trigger">Gatilho</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o gatilho" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="signup">Novo cadastro</SelectItem>
+                            <SelectItem value="quote">Solicitar orçamento</SelectItem>
+                            <SelectItem value="cart">Abandono de carrinho</SelectItem>
+                            <SelectItem value="download">Download de material</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descrição</Label>
+                      <Textarea 
+                        id="description" 
+                        placeholder="Descreva o objetivo desta automação..." 
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Configurar Email</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="subject">Assunto do Email</Label>
+                          <Input id="subject" placeholder="Bem-vindo à Winnet Metais!" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="delay">Delay (horas)</Label>
+                          <Input id="delay" type="number" placeholder="0" />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="content">Conteúdo do Email</Label>
+                        <Textarea 
+                          id="content" 
+                          placeholder="Digite o conteúdo do seu email..."
+                          className="min-h-32"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-4">
+                      <Button>
+                        <Send className="mr-2 h-4 w-4" />
+                        Criar Automação
+                      </Button>
+                      <Button variant="outline">
+                        Salvar Rascunho
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="templates" className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Templates de Email</h2>
-                  <Button>
-                    <Mail className="h-4 w-4 mr-2" />
-                    Novo Template
-                  </Button>
-                </div>
-
-                <div className="grid gap-4">
-                  {emailTemplates.map((template) => (
-                    <Card key={template.id}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold">{template.name}</h3>
-                            <p className="text-sm text-muted-foreground">{template.subject}</p>
-                          </div>
-                          
-                          <div className="flex items-center space-x-6">
-                            <div className="text-center">
-                              <p className="text-sm font-medium">{template.opens}</p>
-                              <p className="text-xs text-muted-foreground">Taxa Abertura</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm font-medium">{template.clicks}</p>
-                              <p className="text-xs text-muted-foreground">Taxa Clique</p>
-                            </div>
-                            <Badge className={getStatusColor(template.status)}>
-                              {template.status}
-                            </Badge>
-                            <Button variant="outline" size="sm">
-                              Editar
-                            </Button>
-                          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Boas-vindas</CardTitle>
+                      <CardDescription>Template para novos leads</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Emails no fluxo:</span>
+                          <span>3</span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Conversão média:</span>
+                          <span>15%</span>
+                        </div>
+                      </div>
+                      <Button className="w-full mt-4" variant="outline">
+                        Usar Template
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Abandono Carrinho</CardTitle>
+                      <CardDescription>Recuperação de vendas perdidas</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Emails no fluxo:</span>
+                          <span>4</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Conversão média:</span>
+                          <span>22%</span>
+                        </div>
+                      </div>
+                      <Button className="w-full mt-4" variant="outline">
+                        Usar Template
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Nutrição Lead</CardTitle>
+                      <CardDescription>Educação e engajamento</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Emails no fluxo:</span>
+                          <span>6</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Conversão média:</span>
+                          <span>8%</span>
+                        </div>
+                      </div>
+                      <Button className="w-full mt-4" variant="outline">
+                        Usar Template
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
 
-              <TabsContent value="segmentos" className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Segmentos de Clientes</h2>
-                  <Button>
-                    <Target className="h-4 w-4 mr-2" />
-                    Novo Segmento
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {segments.map((segment, index) => (
-                    <Card key={index}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold">{segment.name}</h3>
-                          <Badge className={segment.color}>
-                            {segment.count} contatos
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Critério: {segment.criteria}
-                        </p>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            Ver Contatos
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            Criar Campanha
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="relatorios" className="space-y-6">
-                <h2 className="text-xl font-semibold">Relatórios de Performance</h2>
-                
+              <TabsContent value="analytics" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Performance por Canal</CardTitle>
+                      <CardTitle>Performance Geral</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                          <div className="flex items-center space-x-2">
-                            <Mail className="h-4 w-4" />
-                            <span>Email</span>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">18.5% conversão</p>
-                            <p className="text-xs text-muted-foreground">321 enviados</p>
-                          </div>
+                          <span>Taxa de Entrega</span>
+                          <span className="font-bold">98.5%</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <div className="flex items-center space-x-2">
-                            <MessageSquare className="h-4 w-4" />
-                            <span>WhatsApp</span>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">24.2% conversão</p>
-                            <p className="text-xs text-muted-foreground">89 enviados</p>
-                          </div>
+                          <span>Taxa de Abertura</span>
+                          <span className="font-bold">68.2%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Taxa de Clique</span>
+                          <span className="font-bold">12.4%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Taxa de Conversão</span>
+                          <span className="font-bold">15.8%</span>
                         </div>
                       </div>
                     </CardContent>
@@ -384,21 +374,21 @@ const MarketingAutomation = () => {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Tendência de Conversões</CardTitle>
+                      <CardTitle>Top Automações</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between">
-                          <span>Esta semana</span>
-                          <span className="font-medium text-green-600">+12%</span>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-2 border rounded">
+                          <span>Boas-vindas Novos Leads</span>
+                          <span className="text-green-600 font-bold">68%</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Este mês</span>
-                          <span className="font-medium text-green-600">+28%</span>
+                        <div className="flex justify-between items-center p-2 border rounded">
+                          <span>Follow-up Orçamentos</span>
+                          <span className="text-green-600 font-bold">72%</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Último trimestre</span>
-                          <span className="font-medium text-green-600">+45%</span>
+                        <div className="flex justify-between items-center p-2 border rounded">
+                          <span>Abandono de Carrinho</span>
+                          <span className="text-yellow-600 font-bold">45%</span>
                         </div>
                       </div>
                     </CardContent>

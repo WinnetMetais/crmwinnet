@@ -1,141 +1,101 @@
 
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { 
-  Users, 
-  Shield, 
-  Settings, 
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  CheckCircle,
-  XCircle,
-  UserPlus
-} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlusCircle, Search, Filter, Users, Shield, Settings, UserCheck, UserX, Edit, Trash2 } from "lucide-react";
 
 const UserManagement = () => {
-  const [users] = useState([
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+
+  const users = [
     {
       id: 1,
-      name: "Carlos Silva",
-      email: "carlos@winnetmetais.com",
-      role: "Administrador",
-      status: "ativo",
-      lastLogin: "2024-01-15 09:30",
-      permissions: ["vendas", "clientes", "produtos", "configuracoes", "usuarios"]
+      name: 'Carlos Silva',
+      email: 'carlos@winnetmetais.com',
+      role: 'Administrador',
+      status: 'Ativo',
+      lastLogin: '2024-01-15 14:30',
+      department: 'Comercial',
+      permissions: ['vendas', 'clientes', 'relatórios']
     },
     {
       id: 2,
-      name: "Ana Oliveira",
-      email: "ana@winnetmetais.com",
-      role: "Vendedor",
-      status: "ativo",
-      lastLogin: "2024-01-15 08:45",
-      permissions: ["vendas", "clientes", "produtos"]
+      name: 'Ana Oliveira',
+      email: 'ana@winnetmetais.com',
+      role: 'Vendedor',
+      status: 'Ativo',
+      lastLogin: '2024-01-15 09:15',
+      department: 'Comercial',
+      permissions: ['vendas', 'clientes']
     },
     {
       id: 3,
-      name: "João Santos",
-      email: "joao@winnetmetais.com",
-      role: "Operacional",
-      status: "ativo",
-      lastLogin: "2024-01-14 16:20",
-      permissions: ["produtos", "estoque"]
+      name: 'João Santos',
+      email: 'joao@winnetmetais.com',
+      role: 'Gerente',
+      status: 'Ativo',
+      lastLogin: '2024-01-14 16:45',
+      department: 'Operações',
+      permissions: ['vendas', 'clientes', 'relatórios', 'estoque']
     },
     {
       id: 4,
-      name: "Maria Costa",
-      email: "maria@winnetmetais.com",
-      role: "Vendedor",
-      status: "inativo",
-      lastLogin: "2024-01-10 14:15",
-      permissions: ["vendas", "clientes"]
+      name: 'Maria Costa',
+      email: 'maria@winnetmetais.com',
+      role: 'Vendedor',
+      status: 'Inativo',
+      lastLogin: '2024-01-10 11:20',
+      department: 'Comercial',
+      permissions: ['vendas', 'clientes']
+    },
+    {
+      id: 5,
+      name: 'Pedro Almeida',
+      email: 'pedro@winnetmetais.com',
+      role: 'Analista',
+      status: 'Ativo',
+      lastLogin: '2024-01-15 13:00',
+      department: 'Financeiro',
+      permissions: ['relatórios', 'financeiro']
     }
-  ]);
+  ];
 
-  const [roles] = useState([
-    {
-      name: "Administrador",
-      description: "Acesso total ao sistema",
-      users: 1,
-      permissions: [
-        "Gerenciar usuários",
-        "Configurações do sistema",
-        "Vendas e orçamentos",
-        "Gestão de clientes",
-        "Gestão de produtos",
-        "Relatórios financeiros",
-        "Backup e auditoria"
-      ]
-    },
-    {
-      name: "Vendedor",
-      description: "Foco em vendas e relacionamento com clientes",
-      users: 2,
-      permissions: [
-        "Vendas e orçamentos",
-        "Gestão de clientes",
-        "Visualizar produtos",
-        "Follow-up de leads",
-        "Relatórios de vendas"
-      ]
-    },
-    {
-      name: "Operacional",
-      description: "Gestão de produtos e estoque",
-      users: 1,
-      permissions: [
-        "Gestão de produtos",
-        "Controle de estoque",
-        "Atualizar preços",
-        "Relatórios de produtos"
-      ]
-    },
-    {
-      name: "Financeiro",
-      description: "Controle financeiro e relatórios",
-      users: 0,
-      permissions: [
-        "Relatórios financeiros",
-        "Gestão de pagamentos",
-        "Controle de comissões",
-        "Análise de margem"
-      ]
-    }
-  ]);
+  const roles = ['Administrador', 'Gerente', 'Vendedor', 'Analista'];
+  const departments = ['Comercial', 'Operações', 'Financeiro', 'Marketing'];
 
-  const [permissions] = useState([
-    { module: "Vendas", permissions: ["Criar orçamentos", "Editar orçamentos", "Excluir orçamentos", "Aprovar vendas"] },
-    { module: "Clientes", permissions: ["Visualizar clientes", "Criar clientes", "Editar clientes", "Excluir clientes"] },
-    { module: "Produtos", permissions: ["Visualizar produtos", "Criar produtos", "Editar produtos", "Excluir produtos", "Gerenciar estoque"] },
-    { module: "Financeiro", permissions: ["Ver relatórios", "Gerenciar pagamentos", "Configurar margens", "Exportar dados"] },
-    { module: "Sistema", permissions: ["Configurações gerais", "Gerenciar usuários", "Backup", "Auditoria", "Integrações"] }
-  ]);
-
-  const getStatusColor = (status: string) => {
-    return status === "ativo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
-  };
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === 'all' || user.role === filterRole;
+    return matchesSearch && matchesRole;
+  });
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "Administrador": return "bg-purple-100 text-purple-800";
-      case "Vendedor": return "bg-blue-100 text-blue-800";
-      case "Operacional": return "bg-green-100 text-green-800";
-      case "Financeiro": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
+      case 'Administrador': return 'bg-red-100 text-red-800';
+      case 'Gerente': return 'bg-blue-100 text-blue-800';
+      case 'Vendedor': return 'bg-green-100 text-green-800';
+      case 'Analista': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const activeUsers = users.filter(u => u.status === "ativo").length;
-  const totalRoles = roles.length;
+  const getStatusColor = (status: string) => {
+    return status === 'Ativo' 
+      ? 'bg-green-100 text-green-800' 
+      : 'bg-gray-100 text-gray-800';
+  };
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -148,11 +108,11 @@ const UserManagement = () => {
               <SidebarTrigger />
               <div>
                 <h1 className="text-3xl font-bold">Gestão de Usuários</h1>
-                <p className="text-muted-foreground">Gerencie usuários, permissões e níveis de acesso</p>
+                <p className="text-muted-foreground">Gerencie usuários, permissões e acessos do sistema</p>
               </div>
             </div>
 
-            {/* Métricas */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <Card>
                 <CardContent className="p-6">
@@ -171,9 +131,11 @@ const UserManagement = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Usuários Ativos</p>
-                      <p className="text-3xl font-bold">{activeUsers}</p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {users.filter(u => u.status === 'Ativo').length}
+                      </p>
                     </div>
-                    <CheckCircle className="h-8 w-8 text-green-600" />
+                    <UserCheck className="h-8 w-8 text-green-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -182,10 +144,12 @@ const UserManagement = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Perfis de Acesso</p>
-                      <p className="text-3xl font-bold">{totalRoles}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Administradores</p>
+                      <p className="text-3xl font-bold text-red-600">
+                        {users.filter(u => u.role === 'Administrador').length}
+                      </p>
                     </div>
-                    <Shield className="h-8 w-8 text-purple-600" />
+                    <Shield className="h-8 w-8 text-red-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -194,199 +158,247 @@ const UserManagement = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Sessões Ativas</p>
-                      <p className="text-3xl font-bold">3</p>
+                      <p className="text-sm font-medium text-muted-foreground">Departamentos</p>
+                      <p className="text-3xl font-bold text-purple-600">{departments.length}</p>
                     </div>
-                    <Eye className="h-8 w-8 text-orange-600" />
+                    <Settings className="h-8 w-8 text-purple-600" />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Tabs defaultValue="usuarios" className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="usuarios">Usuários</TabsTrigger>
-                <TabsTrigger value="perfis">Perfis de Acesso</TabsTrigger>
-                <TabsTrigger value="permissoes">Permissões</TabsTrigger>
-                <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="usuarios" className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Lista de Usuários</h2>
-                  <Button>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Novo Usuário
-                  </Button>
-                </div>
-
-                <div className="grid gap-4">
-                  {users.map((user) => (
-                    <Card key={user.id}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <Users className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold">{user.name}</h3>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Último login: {user.lastLogin}
-                              </p>
-                            </div>
+            {/* Filters and Search */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Filtros e Pesquisa</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Pesquisar por nome, email ou departamento..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Select value={filterRole} onValueChange={setFilterRole}>
+                    <SelectTrigger className="w-full md:w-[200px]">
+                      <SelectValue placeholder="Filtrar por cargo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os cargos</SelectItem>
+                      {roles.map((role) => (
+                        <SelectItem key={role} value={role}>{role}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Novo Usuário
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>Adicionar Novo Usuário</DialogTitle>
+                        <DialogDescription>
+                          Preencha as informações do usuário e defina permissões.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="name">Nome Completo *</Label>
+                            <Input id="name" placeholder="Nome do usuário" />
                           </div>
-                          
-                          <div className="flex items-center space-x-4">
-                            <div className="text-center">
-                              <Badge className={getRoleColor(user.role)}>
-                                {user.role}
-                              </Badge>
-                            </div>
-                            <div className="text-center">
-                              <Badge className={getStatusColor(user.status)}>
-                                {user.status}
-                              </Badge>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm font-medium">{user.permissions.length}</p>
-                              <p className="text-xs text-muted-foreground">Permissões</p>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button variant="outline" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button variant="destructive" size="sm">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email *</Label>
+                            <Input id="email" type="email" placeholder="email@winnetmetais.com" />
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="perfis" className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Perfis de Acesso</h2>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Perfil
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {roles.map((role, index) => (
-                    <Card key={index}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <span>{role.name}</span>
-                          <Badge>{role.users} usuários</Badge>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {role.description}
-                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="role">Cargo</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o cargo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {roles.map((role) => (
+                                  <SelectItem key={role} value={role}>{role}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="department">Departamento</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o departamento" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {departments.map((dept) => (
+                                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                         <div className="space-y-2">
-                          <h4 className="font-medium text-sm">Permissões:</h4>
-                          <div className="space-y-1">
-                            {role.permissions.slice(0, 3).map((permission, i) => (
-                              <div key={i} className="flex items-center space-x-2">
-                                <CheckCircle className="h-3 w-3 text-green-600" />
-                                <span className="text-xs">{permission}</span>
+                          <Label>Permissões</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {['vendas', 'clientes', 'relatórios', 'estoque', 'financeiro', 'configurações'].map((permission) => (
+                              <div key={permission} className="flex items-center space-x-2">
+                                <input type="checkbox" id={permission} />
+                                <label htmlFor={permission} className="text-sm capitalize">{permission}</label>
                               </div>
                             ))}
-                            {role.permissions.length > 3 && (
-                              <p className="text-xs text-muted-foreground">
-                                +{role.permissions.length - 3} mais...
-                              </p>
-                            )}
                           </div>
                         </div>
-                        <div className="flex space-x-2 mt-4">
-                          <Button variant="outline" size="sm">
-                            Editar
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            Ver Detalhes
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button>Criar Usuário</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </TabsContent>
+              </CardContent>
+            </Card>
 
-              <TabsContent value="permissoes" className="space-y-6">
-                <h2 className="text-xl font-semibold">Matriz de Permissões</h2>
-                
-                <div className="space-y-6">
-                  {permissions.map((module, index) => (
-                    <Card key={index}>
-                      <CardHeader>
-                        <CardTitle>{module.module}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {module.permissions.map((permission, i) => (
-                            <div key={i} className="flex items-center space-x-2">
-                              <input type="checkbox" className="rounded" />
-                              <Label className="text-sm">{permission}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
+            {/* Users Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Lista de Usuários</CardTitle>
+                <CardDescription>
+                  Gerencie todos os usuários do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Usuário</TableHead>
+                      <TableHead>Cargo</TableHead>
+                      <TableHead>Departamento</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Último Acesso</TableHead>
+                      <TableHead>Permissões</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{user.name}</div>
+                            <div className="text-sm text-muted-foreground">{user.email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getRoleColor(user.role)}>
+                            {user.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{user.department}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getStatusColor(user.status)}>
+                            {user.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(user.lastLogin).toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {user.permissions.slice(0, 2).map((permission) => (
+                              <Badge key={permission} variant="secondary" className="text-xs">
+                                {permission}
+                              </Badge>
+                            ))}
+                            {user.permissions.length > 2 && (
+                              <Badge variant="secondary" className="text-xs">
+                                +{user.permissions.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button size="icon" variant="ghost">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              {user.status === 'Ativo' ? 
+                                <UserX className="h-4 w-4" /> : 
+                                <UserCheck className="h-4 w-4" />
+                              }
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
 
-              <TabsContent value="auditoria" className="space-y-6">
-                <h2 className="text-xl font-semibold">Log de Auditoria</h2>
-                
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between border-b pb-3">
-                        <div>
-                          <p className="font-medium">Carlos Silva fez login</p>
-                          <p className="text-sm text-muted-foreground">15/01/2024 às 09:30</p>
-                        </div>
-                        <Badge variant="outline">Login</Badge>
-                      </div>
-                      <div className="flex items-center justify-between border-b pb-3">
-                        <div>
-                          <p className="font-medium">Ana Oliveira criou novo cliente</p>
-                          <p className="text-sm text-muted-foreground">15/01/2024 às 08:45</p>
-                        </div>
-                        <Badge variant="outline">Criação</Badge>
-                      </div>
-                      <div className="flex items-center justify-between border-b pb-3">
-                        <div>
-                          <p className="font-medium">João Santos atualizou produto L1618</p>
-                          <p className="text-sm text-muted-foreground">14/01/2024 às 16:20</p>
-                        </div>
-                        <Badge variant="outline">Edição</Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Carlos Silva alterou permissões de Ana Oliveira</p>
-                          <p className="text-sm text-muted-foreground">14/01/2024 às 14:15</p>
-                        </div>
-                        <Badge variant="outline">Permissão</Badge>
+            {/* Permissions Management */}
+            <div className="mt-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gestão de Permissões</CardTitle>
+                  <CardDescription>
+                    Configure permissões por cargo e departamento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-medium mb-4">Permissões por Cargo</h4>
+                      <div className="space-y-3">
+                        {roles.map((role) => (
+                          <div key={role} className="flex items-center justify-between p-3 border rounded">
+                            <span className="font-medium">{role}</span>
+                            <Button size="sm" variant="outline">
+                              <Settings className="mr-2 h-3 w-3" />
+                              Configurar
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                    
+                    <div>
+                      <h4 className="font-medium mb-4">Atividade Recente</h4>
+                      <div className="space-y-3">
+                        <div className="text-sm p-3 bg-muted rounded">
+                          <div className="font-medium">Carlos Silva</div>
+                          <div className="text-muted-foreground">Fez login às 14:30</div>
+                        </div>
+                        <div className="text-sm p-3 bg-muted rounded">
+                          <div className="font-medium">Ana Oliveira</div>
+                          <div className="text-muted-foreground">Criou novo cliente</div>
+                        </div>
+                        <div className="text-sm p-3 bg-muted rounded">
+                          <div className="font-medium">João Santos</div>
+                          <div className="text-muted-foreground">Gerou relatório de vendas</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -159,7 +158,7 @@ const TasksNotifications = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Taxa Conclusão</p>
+                      <p className="text-sm font-medium text-muted-foreground">Taxa de Conclusão</p>
                       <p className="text-3xl font-bold">78%</p>
                     </div>
                     <CheckSquare className="h-8 w-8 text-green-600" />
@@ -168,24 +167,25 @@ const TasksNotifications = () => {
               </Card>
             </div>
 
-            <Tabs defaultValue="tarefas" className="space-y-6">
+            <Tabs defaultValue="tasks" className="space-y-6">
               <TabsList>
-                <TabsTrigger value="tarefas">Minhas Tarefas</TabsTrigger>
-                <TabsTrigger value="notificacoes">Central de Notificações</TabsTrigger>
-                <TabsTrigger value="criar">Criar Tarefa</TabsTrigger>
+                <TabsTrigger value="tasks">Tarefas</TabsTrigger>
+                <TabsTrigger value="notifications">Notificações</TabsTrigger>
+                <TabsTrigger value="create">Criar Nova</TabsTrigger>
+                <TabsTrigger value="settings">Configurações</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="tarefas" className="space-y-6">
+              <TabsContent value="tasks" className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Lista de Tarefas</h2>
+                  <h3 className="text-lg font-semibold">Lista de Tarefas</h3>
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
+                    <Button variant="outline">
+                      <Filter className="mr-2 h-4 w-4" />
                       Filtrar
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Search className="h-4 w-4 mr-2" />
-                      Buscar
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Nova Tarefa
                     </Button>
                   </div>
                 </div>
@@ -196,43 +196,42 @@ const TasksNotifications = () => {
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-2">
-                              <h3 className="font-semibold">{task.title}</h3>
-                              <Badge className={getPriorityColor(task.priority)}>
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h4 className="font-medium">{task.title}</h4>
+                              <Badge variant="outline" className={getPriorityColor(task.priority)}>
                                 {task.priority}
                               </Badge>
-                              <Badge className={getStatusColor(task.status)}>
+                              <Badge variant="outline" className={getStatusColor(task.status)}>
                                 {task.status}
                               </Badge>
                             </div>
+                            
                             <p className="text-sm text-muted-foreground mb-3">
                               {task.description}
                             </p>
+                            
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <div className="flex items-center space-x-1">
-                                <User className="h-4 w-4" />
-                                <span>{task.assignedTo}</span>
+                              <div className="flex items-center">
+                                <User className="mr-1 h-3 w-3" />
+                                {task.assignedTo}
                               </div>
-                              <div className="flex items-center space-x-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>{new Date(task.dueDate).toLocaleDateString('pt-BR')}</span>
+                              <div className="flex items-center">
+                                <Calendar className="mr-1 h-3 w-3" />
+                                {new Date(task.dueDate).toLocaleDateString()}
                               </div>
                               {task.customer && (
-                                <div className="flex items-center space-x-1">
-                                  <span>Cliente: {task.customer}</span>
-                                </div>
+                                <div>Cliente: {task.customer}</div>
                               )}
                             </div>
                           </div>
+                          
                           <div className="flex space-x-2">
-                            <Button variant="outline" size="sm">
+                            <Button size="sm" variant="outline">
                               Editar
                             </Button>
-                            {task.status !== "concluida" && (
-                              <Button size="sm">
-                                Concluir
-                              </Button>
-                            )}
+                            <Button size="sm">
+                              Concluir
+                            </Button>
                           </div>
                         </div>
                       </CardContent>
@@ -241,122 +240,136 @@ const TasksNotifications = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="notificacoes" className="space-y-6">
+              <TabsContent value="notifications" className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Central de Notificações do Sistema</h2>
-                  <Button variant="outline" size="sm" onClick={() => markAllAsRead()}>
-                    Marcar todas como lidas
+                  <h3 className="text-lg font-semibold">Central de Notificações</h3>
+                  <Button onClick={markAllAsRead} variant="outline">
+                    Marcar Todas como Lidas
                   </Button>
                 </div>
 
-                <div className="space-y-4">
-                  {notifications.map((notification) => (
-                    <Card key={notification.id} className={notification.read ? "opacity-60" : ""}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start space-x-3">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-medium">{notification.title}</h4>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(notification.created_at).toLocaleString('pt-BR')}
-                                </span>
-                                {!notification.read && (
-                                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                )}
-                              </div>
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {notification.message}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="secondary">{notification.type}</Badge>
-                              {notification.metadata && 
-                               typeof notification.metadata === 'object' && 
-                               notification.metadata !== null &&
-                               'module' in notification.metadata && (
-                                <Badge variant="outline">
-                                  {String(notification.metadata.module)}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            {!notification.read && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => markAsRead(notification.id)}
-                              >
-                                Marcar como lida
-                              </Button>
-                            )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteNotification(notification.id)}
-                            >
-                              Excluir
-                            </Button>
-                          </div>
-                        </div>
+                <div className="space-y-3">
+                  {notifications.length === 0 ? (
+                    <Card>
+                      <CardContent className="p-6 text-center">
+                        <Bell className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">Nenhuma notificação no momento</p>
                       </CardContent>
                     </Card>
-                  ))}
+                  ) : (
+                    notifications.map((notification) => (
+                      <Card key={notification.id} className={!notification.read ? "border-blue-200 bg-blue-50" : ""}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{notification.title}</h4>
+                              <p className="text-sm text-muted-foreground">{notification.message}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(notification.createdAt).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="flex space-x-2">
+                              {!notification.read && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => markAsRead(notification.id)}
+                                >
+                                  Marcar como Lida
+                                </Button>
+                              )}
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => deleteNotification(notification.id)}
+                              >
+                                Excluir
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </TabsContent>
 
-              <TabsContent value="criar" className="space-y-6">
+              <TabsContent value="create" className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Criar Nova Tarefa</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="taskTitle">Título da Tarefa</Label>
-                        <Input id="taskTitle" placeholder="Ex: Enviar proposta para cliente..." />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="title">Título da Tarefa</Label>
+                        <Input id="title" placeholder="Digite o título..." />
                       </div>
-                      <div>
-                        <Label htmlFor="assignedTo">Responsável</Label>
-                        <Input id="assignedTo" placeholder="Nome do responsável" />
+                      <div className="space-y-2">
+                        <Label htmlFor="assignee">Responsável</Label>
+                        <Input id="assignee" placeholder="Nome do responsável..." />
                       </div>
                     </div>
-
-                    <div>
+                    
+                    <div className="space-y-2">
                       <Label htmlFor="description">Descrição</Label>
-                      <Textarea 
-                        id="description" 
-                        placeholder="Descreva os detalhes da tarefa..."
-                        rows={3}
-                      />
+                      <Textarea id="description" placeholder="Descreva a tarefa..." />
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
                         <Label htmlFor="priority">Prioridade</Label>
-                        <select id="priority" className="w-full p-2 border rounded-md">
-                          <option value="baixa">Baixa</option>
-                          <option value="média">Média</option>
-                          <option value="alta">Alta</option>
-                        </select>
+                        <Input id="priority" placeholder="Alta, Média, Baixa" />
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="dueDate">Data de Vencimento</Label>
                         <Input id="dueDate" type="date" />
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="customer">Cliente (opcional)</Label>
-                        <Input id="customer" placeholder="Nome do cliente" />
+                        <Input id="customer" placeholder="Nome do cliente..." />
                       </div>
                     </div>
+                    
+                    <Button 
+                      onClick={() => handleCreateNotification("Nova Tarefa", "Tarefa criada com sucesso", "success")}
+                    >
+                      Criar Tarefa
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                    <div className="flex justify-end space-x-4">
-                      <Button variant="outline">Cancelar</Button>
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Criar Tarefa
-                      </Button>
+              <TabsContent value="settings" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Configurações de Notificações</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">Notificações por Email</div>
+                          <div className="text-sm text-muted-foreground">Receber alertas por email</div>
+                        </div>
+                        <Button variant="outline" size="sm">Ativo</Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">Lembretes de Tarefas</div>
+                          <div className="text-sm text-muted-foreground">Notificações 1 dia antes do vencimento</div>
+                        </div>
+                        <Button variant="outline" size="sm">Ativo</Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">Notificações Push</div>
+                          <div className="text-sm text-muted-foreground">Alertas no navegador</div>
+                        </div>
+                        <Button variant="outline" size="sm">Inativo</Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

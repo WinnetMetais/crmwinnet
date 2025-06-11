@@ -1,148 +1,130 @@
-
 import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend,
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell 
-} from 'recharts';
-import { 
-  Filter, 
-  Download, 
-  Plus, 
-  TrendingUp, 
-  TrendingDown,
-  BarChart as BarChartIcon,
-  Calendar,
-  PieChart as PieChartIcon,
-} from 'lucide-react';
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationEllipsis, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-
-// Sample data for campaigns
-const campaignPerformanceData = [
-  { month: 'Jan', google: 4200, facebook: 2400, linkedin: 1800, total: 8400 },
-  { month: 'Feb', google: 3800, facebook: 2800, linkedin: 1600, total: 8200 },
-  { month: 'Mar', google: 5200, facebook: 3100, linkedin: 2400, total: 10700 },
-  { month: 'Apr', google: 4800, facebook: 3400, linkedin: 2200, total: 10400 },
-  { month: 'Mai', google: 6000, facebook: 3800, linkedin: 2600, total: 12400 },
-  { month: 'Jun', google: 5400, facebook: 4200, linkedin: 3000, total: 12600 },
-];
-
-const conversionData = [
-  { name: 'Impressões', value: 120000, fill: '#8884d8' },
-  { name: 'Cliques', value: 15000, fill: '#83a6ed' },
-  { name: 'Conversões', value: 2200, fill: '#8dd1e1' },
-];
-
-const ROAS = [
-  { platform: 'Google Ads', value: 3.2, status: 'aumento', change: '+0.4' },
-  { platform: 'Facebook', value: 2.8, status: 'aumento', change: '+0.3' },
-  { platform: 'LinkedIn', value: 1.8, status: 'reducao', change: '-0.2' },
-  { platform: 'Instagram', value: 3.5, status: 'aumento', change: '+0.5' },
-];
-
-const activeCampaigns = [
-  { 
-    name: 'Campanha Produtos Industriais', 
-    platform: 'Google Ads', 
-    status: 'Ativa', 
-    budget: 'R$ 15.000,00',
-    spent: 'R$ 8.420,00', 
-    impressions: '85.320', 
-    clicks: '4.210', 
-    ctr: '4.93%', 
-    conversions: '185',
-    cpa: 'R$ 45,50'
-  },
-  { 
-    name: 'Remarketing Clientes Corporativos', 
-    platform: 'Facebook', 
-    status: 'Ativa', 
-    budget: 'R$ 8.000,00',
-    spent: 'R$ 4.380,00', 
-    impressions: '92.450', 
-    clicks: '3.850', 
-    ctr: '4.16%', 
-    conversions: '120',
-    cpa: 'R$ 36,50'
-  },
-  { 
-    name: 'Leads B2B Qualificados', 
-    platform: 'LinkedIn', 
-    status: 'Ativa', 
-    budget: 'R$ 12.000,00',
-    spent: 'R$ 6.240,00', 
-    impressions: '45.200', 
-    clicks: '1.820', 
-    ctr: '4.02%', 
-    conversions: '68',
-    cpa: 'R$ 91,76'
-  },
-  { 
-    name: 'Campanha de Consciência de Marca', 
-    platform: 'Instagram', 
-    status: 'Ativa', 
-    budget: 'R$ 5.000,00',
-    spent: 'R$ 2.850,00', 
-    impressions: '78.300', 
-    clicks: '3.120', 
-    ctr: '3.98%', 
-    conversions: '92',
-    cpa: 'R$ 30,98'
-  },
-];
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Search, Plus, Filter, Eye, Edit, Trash2, ArrowUpDown, Activity, Zap, Target } from "lucide-react";
 
 const Campaigns = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
   const [dateRange, setDateRange] = useState('30d');
-  const [platform, setPlatform] = useState('todas');
-  const [currentTab, setCurrentTab] = useState('active');
+
+  // Sample campaign data
+  const campaigns = [
+    {
+      id: 1,
+      name: 'Aço Inox 304 - Search',
+      platform: 'Google Ads',
+      budget: 'R$ 300,00/dia',
+      status: 'Ativa',
+      impressions: '45.3K',
+      clicks: '5.2K',
+      ctr: '11.5%',
+      costPerClick: 'R$ 2,80',
+      conversions: '320',
+      costPerConversion: 'R$ 45,50',
+      roi: '415%'
+    },
+    {
+      id: 2,
+      name: 'Alumínio 6061 - Search',
+      platform: 'Facebook Ads',
+      budget: 'R$ 250,00/dia',
+      status: 'Ativa',
+      impressions: '38.7K',
+      clicks: '4.1K',
+      ctr: '10.6%',
+      costPerClick: 'R$ 3,10',
+      conversions: '280',
+      costPerConversion: 'R$ 48,20',
+      roi: '385%'
+    },
+    {
+      id: 3,
+      name: 'Remarketing Geral',
+      platform: 'Google Ads',
+      budget: 'R$ 200,00/dia',
+      status: 'Ativa',
+      impressions: '122K',
+      clicks: '3.8K',
+      ctr: '3.1%',
+      costPerClick: 'R$ 1,50',
+      conversions: '210',
+      costPerConversion: 'R$ 27,14',
+      roi: '620%'
+    },
+    {
+      id: 4,
+      name: 'Display - Fornecedores',
+      platform: 'Facebook Ads',
+      budget: 'R$ 180,00/dia',
+      status: 'Pausada',
+      impressions: '87K',
+      clicks: '1.2K',
+      ctr: '1.3%',
+      costPerClick: 'R$ 1,85',
+      conversions: '45',
+      costPerConversion: 'R$ 49,33',
+      roi: '280%'
+    },
+    {
+      id: 5,
+      name: 'Cobre - Performance',
+      platform: 'Google Ads',
+      budget: 'R$ 320,00/dia',
+      status: 'Pausada',
+      impressions: '34.2K',
+      clicks: '3.7K',
+      ctr: '10.8%',
+      costPerClick: 'R$ 2,90',
+      conversions: '190',
+      costPerConversion: 'R$ 56,52',
+      roi: '310%'
+    },
+    {
+      id: 6,
+      name: 'Brand Protection',
+      platform: 'Google Ads',
+      budget: 'R$ 150,00/dia',
+      status: 'Ativa',
+      impressions: '18.5K',
+      clicks: '4.2K',
+      ctr: '22.7%',
+      costPerClick: 'R$ 0,95',
+      conversions: '320',
+      costPerConversion: 'R$ 12,42',
+      roi: '980%'
+    },
+  ];
+
+  // Filter campaigns based on search term and active tab
+  const filteredCampaigns = campaigns.filter(campaign => {
+    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (activeTab === 'all') return matchesSearch;
+    if (activeTab === 'active') return matchesSearch && campaign.status === 'Ativa';
+    if (activeTab === 'paused') return matchesSearch && campaign.status === 'Pausada';
+    
+    return matchesSearch;
+  });
+
+  // Chart data
+  const performanceData = [
+    { day: '01/05', clicks: 380, impressions: 3800, conversions: 28 },
+    { day: '02/05', clicks: 420, impressions: 4100, conversions: 32 },
+    { day: '03/05', clicks: 390, impressions: 3900, conversions: 30 },
+    { day: '04/05', clicks: 450, impressions: 4400, conversions: 35 },
+    { day: '05/05', clicks: 480, impressions: 4700, conversions: 38 },
+    { day: '06/05', clicks: 460, impressions: 4500, conversions: 36 },
+    { day: '07/05', clicks: 510, impressions: 5000, conversions: 40 },
+  ];
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -154,9 +136,13 @@ const Campaigns = () => {
             <div className="flex justify-between items-center mb-8">
               <div className="flex space-x-4 items-center">
                 <SidebarTrigger />
-                <h1 className="text-3xl font-bold">Gestão de Campanhas</h1>
+                <div>
+                  <h1 className="text-3xl font-bold">Campanhas de Marketing</h1>
+                  <p className="text-muted-foreground">Gerencie suas campanhas publicitárias</p>
+                </div>
               </div>
-              <div className="flex space-x-4 items-center">
+              
+              <div className="flex space-x-2">
                 <Select defaultValue={dateRange} onValueChange={setDateRange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Selecione o período" />
@@ -165,278 +151,214 @@ const Campaigns = () => {
                     <SelectItem value="7d">Últimos 7 dias</SelectItem>
                     <SelectItem value="30d">Últimos 30 dias</SelectItem>
                     <SelectItem value="90d">Últimos 90 dias</SelectItem>
-                    <SelectItem value="12m">Último ano</SelectItem>
                   </SelectContent>
                 </Select>
-                
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
+
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
                   Filtros
                 </Button>
                 
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar
-                </Button>
-
-                <Button variant="default" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
                   Nova Campanha
                 </Button>
               </div>
             </div>
 
-            {/* Dashboard Resumido */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {ROAS.map((item, index) => (
-                <Card key={index}>
-                  <CardHeader className="pb-2">
-                    <CardDescription>{item.platform}</CardDescription>
-                    <CardTitle className="text-2xl flex items-center">
-                      {item.value}x ROAS
-                      {item.status === 'aumento' ? (
-                        <TrendingUp className="ml-2 h-5 w-5 text-green-500" />
-                      ) : (
-                        <TrendingDown className="ml-2 h-5 w-5 text-red-500" />
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={item.status === 'aumento' ? "text-green-500 text-sm" : "text-red-500 text-sm"}>
-                      {item.change} em relação ao período anterior
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            {/* Gráficos de Performance */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Performance por Plataforma</CardTitle>
-                      <CardDescription>Comparativo de cliques por plataforma</CardDescription>
-                    </div>
-                    <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                  </div>
+            {/* Campaign Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center text-sm font-medium">
+                    <Activity className="mr-2 h-4 w-4 text-blue-500" />
+                    Impressões
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={campaignPerformanceData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="google" name="Google Ads" fill="#4285F4" />
-                        <Bar dataKey="facebook" name="Facebook" fill="#1877F2" />
-                        <Bar dataKey="linkedin" name="LinkedIn" fill="#0A66C2" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <div className="text-2xl font-bold">346K</div>
+                  <p className="text-xs text-green-600 flex items-center mt-1">
+                    +12.5% vs período anterior
+                  </p>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Funil de Conversão</CardTitle>
-                      <CardDescription>Impressões até conversões</CardDescription>
-                    </div>
-                    <PieChartIcon className="h-5 w-5 text-muted-foreground" />
-                  </div>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center text-sm font-medium">
+                    <Zap className="mr-2 h-4 w-4 text-yellow-500" />
+                    Cliques
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={conversionData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {conversionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <div className="text-2xl font-bold">22.2K</div>
+                  <p className="text-xs text-green-600 flex items-center mt-1">
+                    +8.3% vs período anterior
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center text-sm font-medium">
+                    <Target className="mr-2 h-4 w-4 text-green-500" />
+                    Conversões
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">1,365</div>
+                  <p className="text-xs text-green-600 flex items-center mt-1">
+                    +15.2% vs período anterior
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">CTR Médio</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">6.41%</div>
+                  <p className="text-xs text-red-600 flex items-center mt-1">
+                    -1.3% vs período anterior
+                  </p>
                 </CardContent>
               </Card>
             </div>
-            
-            {/* Campanhas Ativas */}
-            <Card>
+
+            {/* Performance Chart */}
+            <Card className="mb-8">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Campanhas Ativas</CardTitle>
-                    <CardDescription>Status e métricas das campanhas atuais</CardDescription>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Tabs defaultValue="active" className="w-[400px]" onValueChange={setCurrentTab}>
-                      <TabsList>
-                        <TabsTrigger value="active">Ativas</TabsTrigger>
-                        <TabsTrigger value="paused">Pausadas</TabsTrigger>
-                        <TabsTrigger value="completed">Finalizadas</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                    <Select defaultValue={platform} onValueChange={setPlatform}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Todas as plataformas" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todas">Todas as plataformas</SelectItem>
-                        <SelectItem value="google">Google Ads</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="linkedin">LinkedIn</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                <CardTitle>Performance da Campanha</CardTitle>
+                <CardDescription>Análise diária de cliques, impressões e conversões</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Campanha</TableHead>
-                      <TableHead>Plataforma</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Orçamento</TableHead>
-                      <TableHead>Gasto</TableHead>
-                      <TableHead>Impressões</TableHead>
-                      <TableHead>Cliques</TableHead>
-                      <TableHead>CTR</TableHead>
-                      <TableHead>Conversões</TableHead>
-                      <TableHead>CPA</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {activeCampaigns.map((campaign, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{campaign.name}</TableCell>
-                        <TableCell>{campaign.platform}</TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {campaign.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>{campaign.budget}</TableCell>
-                        <TableCell>{campaign.spent}</TableCell>
-                        <TableCell>{campaign.impressions}</TableCell>
-                        <TableCell>{campaign.clicks}</TableCell>
-                        <TableCell>{campaign.ctr}</TableCell>
-                        <TableCell>{campaign.conversions}</TableCell>
-                        <TableCell>{campaign.cpa}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                
-                <div className="mt-4">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious href="#" />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink href="#" isActive>1</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink href="#">2</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink href="#">3</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext href="#" />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={performanceData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="day" />
+                      <YAxis yAxisId="left" />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <Tooltip />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="clicks" name="Cliques" fill="#8884d8" />
+                      <Bar yAxisId="left" dataKey="impressions" name="Impressões" fill="#82ca9d" />
+                      <Bar yAxisId="right" dataKey="conversions" name="Conversões" fill="#ff7300" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
-            
-            {/* Calendário de Campanhas */}
-            <Card className="mt-8">
+
+            {/* Campaigns Table */}
+            <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                   <div>
-                    <CardTitle>Calendário de Campanhas</CardTitle>
-                    <CardDescription>Planejamento e cronograma de campanhas</CardDescription>
+                    <CardTitle>Campanhas Ativas</CardTitle>
+                    <CardDescription>
+                      Gerencie e otimize suas campanhas de anúncios
+                    </CardDescription>
                   </div>
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                  
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar campanhas..."
+                        className="pl-8 w-full md:w-[250px]"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                    
+                    <Tabs 
+                      defaultValue="all" 
+                      className="w-full md:w-auto" 
+                      onValueChange={setActiveTab}
+                      value={activeTab}
+                    >
+                      <TabsList className="grid grid-cols-3 w-full md:w-auto">
+                        <TabsTrigger value="all">Todas</TabsTrigger>
+                        <TabsTrigger value="active">Ativas</TabsTrigger>
+                        <TabsTrigger value="paused">Pausadas</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="aspect-w-16 aspect-h-9">
-                  <AspectRatio ratio={16/9}>
-                    <div className="grid grid-cols-7 gap-1 h-full">
-                      <div className="text-center font-semibold">DOM</div>
-                      <div className="text-center font-semibold">SEG</div>
-                      <div className="text-center font-semibold">TER</div>
-                      <div className="text-center font-semibold">QUA</div>
-                      <div className="text-center font-semibold">QUI</div>
-                      <div className="text-center font-semibold">SEX</div>
-                      <div className="text-center font-semibold">SÁB</div>
-                      
-                      {/* Semana 1 */}
-                      {[...Array(7)].map((_, i) => (
-                        <div key={i} className="border p-2 rounded-md text-start">
-                          <div className="font-semibold">{i + 1}</div>
-                          {i === 3 && (
-                            <div className="bg-blue-100 text-blue-800 text-xs p-1 rounded mt-1">
-                              Lançamento Produtos Industriais
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Campanha</TableHead>
+                        <TableHead>Plataforma</TableHead>
+                        <TableHead>Orçamento</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>
+                          <div className="flex items-center">
+                            Impressões
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center">
+                            Cliques
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </div>
+                        </TableHead>
+                        <TableHead>CTR</TableHead>
+                        <TableHead>CPC</TableHead>
+                        <TableHead>Conversões</TableHead>
+                        <TableHead>Custo/Conv</TableHead>
+                        <TableHead>ROI</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCampaigns.map((campaign) => (
+                        <TableRow key={campaign.id}>
+                          <TableCell className="font-medium">{campaign.name}</TableCell>
+                          <TableCell>{campaign.platform}</TableCell>
+                          <TableCell>{campaign.budget}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
+                                campaign.status === 'Ativa'
+                                  ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-100"
+                                  : "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100"
+                              }
+                            >
+                              {campaign.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{campaign.impressions}</TableCell>
+                          <TableCell>{campaign.clicks}</TableCell>
+                          <TableCell>{campaign.ctr}</TableCell>
+                          <TableCell>{campaign.costPerClick}</TableCell>
+                          <TableCell>{campaign.conversions}</TableCell>
+                          <TableCell>{campaign.costPerConversion}</TableCell>
+                          <TableCell className="text-green-600 font-medium">{campaign.roi}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button size="icon" variant="ghost">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
-                          )}
-                          {i === 5 && (
-                            <div className="bg-green-100 text-green-800 text-xs p-1 rounded mt-1">
-                              Remarketing - Início
-                            </div>
-                          )}
-                        </div>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                      
-                      {/* Semana 2 */}
-                      {[...Array(7)].map((_, i) => (
-                        <div key={i + 7} className="border p-2 rounded-md text-start">
-                          <div className="font-semibold">{i + 8}</div>
-                          {i === 2 && (
-                            <div className="bg-purple-100 text-purple-800 text-xs p-1 rounded mt-1">
-                              LinkedIn B2B
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      
-                      {/* Semana 3 */}
-                      {[...Array(7)].map((_, i) => (
-                        <div key={i + 14} className="border p-2 rounded-md text-start">
-                          <div className="font-semibold">{i + 15}</div>
-                          {i === 1 && (
-                            <div className="bg-red-100 text-red-800 text-xs p-1 rounded mt-1">
-                              Final Campanha Q2
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </AspectRatio>
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>

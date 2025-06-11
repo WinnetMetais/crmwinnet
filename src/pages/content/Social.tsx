@@ -1,186 +1,72 @@
 
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Calendar as CalendarIcon, 
-  Plus, 
-  Instagram, 
-  Linkedin, 
-  Facebook, 
-  Twitter, 
-  MoreHorizontal,
-  Heart,
-  MessageCircle,
-  Share,
-  BarChart,
-  Eye,
-  ThumbsUp,
-  Clock,
-  FileText,
-  Image as ImageIcon,
-  UploadCloud
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar as CalendarIcon, Plus, Share2, Heart, MessageCircle, Repeat, Eye, Clock } from "lucide-react";
 
 const Social = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [activeTab, setActiveTab] = useState('posts');
 
-  // Dados fictícios para posts e métricas
   const socialPosts = [
     {
       id: 1,
-      content: "A utilização de aço inoxidável na indústria alimentícia garante mais segurança e durabilidade. Conheça nossa linha completa de produtos para o setor.",
-      image: "/placeholder.svg",
-      publishedAt: "2025-05-12",
-      platform: "Instagram",
-      status: "Publicado",
-      engagement: {
-        likes: 124,
-        comments: 8,
-        shares: 12,
-        reach: 2450
-      }
+      content: 'Novos modelos de lixeiras em aço inox chegaram! Resistência e durabilidade para sua empresa. 🏭✨',
+      platform: 'Instagram',
+      status: 'Publicado',
+      publishDate: '2024-01-15 10:00',
+      engagement: { likes: 245, comments: 12, shares: 8 },
+      reach: '3.2K'
     },
     {
       id: 2,
-      content: "Webinar: Tendências em ligas metálicas para 2025. Nossos especialistas vão apresentar as novidades do setor e como elas podem impactar seu negócio. Link na bio!",
-      image: "/placeholder.svg",
-      publishedAt: "2025-05-15",
-      platform: "LinkedIn",
-      status: "Agendado",
-      engagement: {
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        reach: 0
-      }
+      content: 'Alumínio naval de alta qualidade para construção marítima. Conheça nossa linha premium.',
+      platform: 'LinkedIn',
+      status: 'Agendado',
+      publishDate: '2024-01-16 14:30',
+      engagement: { likes: 0, comments: 0, shares: 0 },
+      reach: '-'
     },
     {
       id: 3,
-      content: "#DicaTécnica: O bronze é uma excelente escolha para peças que precisam resistir ao atrito. Sua composição permite maior durabilidade em sistemas mecânicos. Saiba mais em nosso blog.",
-      image: "/placeholder.svg",
-      publishedAt: "2025-05-08",
-      platform: "Facebook",
-      status: "Publicado",
-      engagement: {
-        likes: 89,
-        comments: 5,
-        shares: 7,
-        reach: 1870
-      }
-    },
-    {
-      id: 4,
-      content: "O alumínio é até 3x mais leve que o aço, mantendo excelente resistência mecânica. Por isso é a escolha ideal para projetos que demandam estruturas leves sem perder a qualidade.",
-      image: null,
-      publishedAt: "2025-05-18",
-      platform: "LinkedIn",
-      status: "Rascunho",
-      engagement: {
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        reach: 0
-      }
-    },
-    {
-      id: 5,
-      content: "Case de sucesso: Veja como a implementação de nossas chapas de aço galvanizado aumentou a vida útil dos equipamentos da Indústria ABC em mais de 40%.",
-      image: "/placeholder.svg",
-      publishedAt: "2025-05-10",
-      platform: "Instagram",
-      status: "Publicado",
-      engagement: {
-        likes: 156,
-        comments: 23,
-        shares: 18,
-        reach: 3240
-      }
-    },
-  ];
-
-  // Métricas de performance
-  const performanceMetrics = [
-    { 
-      platform: "Instagram", 
-      followers: 3580,
-      engagement: "3.8%",
-      growth: "+2.5%",
-      icon: Instagram,
-      color: "bg-pink-100 text-pink-800" 
-    },
-    { 
-      platform: "LinkedIn", 
-      followers: 2450,
-      engagement: "4.2%",
-      growth: "+3.1%",
-      icon: Linkedin,
-      color: "bg-blue-100 text-blue-800"
-    },
-    { 
-      platform: "Facebook", 
-      followers: 1890,
-      engagement: "2.6%",
-      growth: "+1.2%",
-      icon: Facebook,
-      color: "bg-indigo-100 text-indigo-800"
+      content: 'Dica do dia: Como escolher o metal ideal para seu projeto industrial? Confira nosso blog!',
+      platform: 'Facebook',
+      status: 'Rascunho',
+      publishDate: '',
+      engagement: { likes: 0, comments: 0, shares: 0 },
+      reach: '-'
     }
   ];
 
-  // Status do post
+  const platformStats = [
+    { name: 'Instagram', followers: '2.1K', engagement: '4.2%', posts: 45 },
+    { name: 'LinkedIn', followers: '890', engagement: '6.1%', posts: 23 },
+    { name: 'Facebook', followers: '1.5K', engagement: '3.8%', posts: 38 }
+  ];
+
   const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'Publicado':
-        return 'bg-green-100 text-green-800';
-      case 'Agendado':
-        return 'bg-blue-100 text-blue-800';
-      case 'Rascunho':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+    switch (status) {
+      case 'Publicado': return 'bg-green-100 text-green-800';
+      case 'Agendado': return 'bg-blue-100 text-blue-800';
+      case 'Rascunho': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // Icon da plataforma
-  const getPlatformIcon = (platform: string) => {
-    switch(platform) {
-      case 'Instagram':
-        return <Instagram className="h-4 w-4" />;
-      case 'LinkedIn':
-        return <Linkedin className="h-4 w-4" />;
-      case 'Facebook':
-        return <Facebook className="h-4 w-4" />;
-      case 'Twitter':
-        return <Twitter className="h-4 w-4" />;
-      default:
-        return null;
+  const getPlatformColor = (platform: string) => {
+    switch (platform) {
+      case 'Instagram': return 'bg-pink-100 text-pink-800';
+      case 'LinkedIn': return 'bg-blue-100 text-blue-800';
+      case 'Facebook': return 'bg-indigo-100 text-indigo-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -190,49 +76,40 @@ const Social = () => {
         <DashboardSidebar />
         
         <div className="flex-1">
-          <div className="container mx-auto py-10 px-4">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex space-x-4 items-center">
+          <div className="container mx-auto py-6 px-4">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
                 <SidebarTrigger />
-                <h1 className="text-3xl font-bold">Redes Sociais</h1>
+                <div>
+                  <h1 className="text-3xl font-bold">Redes Sociais</h1>
+                  <p className="text-muted-foreground">Gerencie suas publicações e engajamento</p>
+                </div>
               </div>
-              
-              <div className="flex space-x-2">
-                <Button variant="outline">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  Calendário
-                </Button>
-                
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Novo Post
-                </Button>
-              </div>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Publicação
+              </Button>
             </div>
 
-            {/* Métricas das Plataformas */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {performanceMetrics.map((platform) => (
-                <Card key={platform.platform}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center text-sm font-medium">
-                      <platform.icon className="mr-2 h-5 w-5" />
-                      {platform.platform}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between">
-                      <div>
-                        <div className="text-2xl font-bold">{platform.followers.toLocaleString()}</div>
-                        <p className="text-xs text-muted-foreground">Seguidores</p>
+            {/* Platform Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {platformStats.map((platform, index) => (
+                <Card key={index}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-medium">{platform.name}</h3>
+                      <Badge variant="outline" className={getPlatformColor(platform.name)}>
+                        {platform.posts} posts
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Seguidores</span>
+                        <span className="font-bold">{platform.followers}</span>
                       </div>
-                      <div>
-                        <div className="text-2xl font-bold">{platform.engagement}</div>
-                        <p className="text-xs text-muted-foreground">Engajamento</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-green-600 font-medium">{platform.growth}</p>
-                        <p className="text-xs text-muted-foreground">Crescimento</p>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Engajamento</span>
+                        <span className="font-bold text-green-600">{platform.engagement}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -240,245 +117,287 @@ const Social = () => {
               ))}
             </div>
 
-            {/* Estrutura de Tabs */}
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                  <div>
-                    <CardTitle>Gerenciamento de Posts</CardTitle>
-                    <CardDescription>Crie, agende e analise suas publicações</CardDescription>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Select defaultValue="todas">
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Plataforma" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todas">Todas</SelectItem>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="linkedin">LinkedIn</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select defaultValue="todos">
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todos">Todos</SelectItem>
-                        <SelectItem value="publicados">Publicados</SelectItem>
-                        <SelectItem value="agendados">Agendados</SelectItem>
-                        <SelectItem value="rascunhos">Rascunhos</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+            <Tabs defaultValue="posts" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="posts">Publicações</TabsTrigger>
+                <TabsTrigger value="schedule">Agenda</TabsTrigger>
+                <TabsTrigger value="create">Criar Post</TabsTrigger>
+                <TabsTrigger value="analytics">Analítica</TabsTrigger>
+              </TabsList>
 
-                <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="posts">Posts</TabsTrigger>
-                    <TabsTrigger value="calendar">Calendário</TabsTrigger>
-                    <TabsTrigger value="analytics">Análises</TabsTrigger>
-                  </TabsList>
-                
-                <CardContent>
-                  <TabsContent value="posts" className="mt-0">
-                    <div className="space-y-6">
-                      <div className="flex justify-end">
-                        <Button variant="outline" size="sm" className="mb-2">
-                          <UploadCloud className="mr-2 h-4 w-4" />
-                          Importar Conteúdo
-                        </Button>
-                      </div>
-                    
-                      {/* Criação rápida de post */}
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-4">
-                            <Avatar>
-                              <AvatarFallback>WM</AvatarFallback>
-                              <AvatarImage src="/placeholder.svg" alt="Winnet Metais" />
-                            </Avatar>
-                            <div className="flex-1 space-y-4">
-                              <Textarea 
-                                placeholder="O que deseja compartilhar hoje?" 
-                                className="min-h-20"
-                              />
-                              <div className="flex flex-wrap justify-between items-center gap-2">
-                                <div className="flex gap-2">
-                                  <Button variant="outline" size="sm">
-                                    <ImageIcon className="h-4 w-4 mr-1" /> Imagem
-                                  </Button>
-                                  <Button variant="outline" size="sm">
-                                    <FileText className="h-4 w-4 mr-1" /> Documento
-                                  </Button>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Select defaultValue="instagram">
-                                    <SelectTrigger className="w-[140px]">
-                                      <SelectValue placeholder="Plataforma" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="instagram">Instagram</SelectItem>
-                                      <SelectItem value="linkedin">LinkedIn</SelectItem>
-                                      <SelectItem value="facebook">Facebook</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <Button variant="outline" size="sm" className="w-[150px] justify-start">
-                                        <Clock className="mr-2 h-4 w-4" />
-                                        Agendar
-                                      </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                      <Calendar
-                                        mode="single"
-                                        selected={date}
-                                        onSelect={setDate}
-                                        initialFocus
-                                        className="p-3"
-                                      />
-                                      <div className="p-3 border-t">
-                                        <Select defaultValue="09:00">
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Horário" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="09:00">09:00</SelectItem>
-                                            <SelectItem value="12:00">12:00</SelectItem>
-                                            <SelectItem value="15:00">15:00</SelectItem>
-                                            <SelectItem value="18:00">18:00</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    </PopoverContent>
-                                  </Popover>
-                                  
-                                  <Button>Publicar</Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      
-                      {/* Lista de posts */}
-                      <div className="space-y-6">
-                        {socialPosts.map((post) => (
-                          <Card key={post.id}>
-                            <CardContent className="p-6">
-                              <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-10 w-10">
-                                    <AvatarFallback>WM</AvatarFallback>
-                                    <AvatarImage src="/placeholder.svg" alt="Winnet Metais" />
-                                  </Avatar>
-                                  <div>
-                                    <h3 className="font-medium">Winnet Metais</h3>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
-                                      <span>•</span>
-                                      <span className="flex items-center">
-                                        {getPlatformIcon(post.platform)}
-                                      </span>
-                                      <Badge variant="outline" className={`ml-1 ${getStatusColor(post.status)}`}>
-                                        {post.status}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>Editar</DropdownMenuItem>
-                                    <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                                    <DropdownMenuItem>Reagendar</DropdownMenuItem>
-                                    <DropdownMenuItem className="text-red-600">Excluir</DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                              
-                              <div className="mt-4">
-                                <p className="text-sm">{post.content}</p>
-                                
-                                {post.image && (
-                                  <div className="mt-3 rounded-md overflow-hidden">
-                                    <img 
-                                      src={post.image} 
-                                      alt="Conteúdo do post" 
-                                      className="w-full h-auto object-cover" 
-                                    />
-                                  </div>
+              <TabsContent value="posts" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Feed de Publicações</CardTitle>
+                    <CardDescription>Gerencie todas suas publicações em um só lugar</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {socialPosts.map((post) => (
+                        <div key={post.id} className="border rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <Badge variant="outline" className={getPlatformColor(post.platform)}>
+                                  {post.platform}
+                                </Badge>
+                                <Badge variant="outline" className={getStatusColor(post.status)}>
+                                  {post.status}
+                                </Badge>
+                                {post.publishDate && (
+                                  <span className="text-sm text-muted-foreground flex items-center">
+                                    <Clock className="mr-1 h-3 w-3" />
+                                    {new Date(post.publishDate).toLocaleString()}
+                                  </span>
                                 )}
                               </div>
+                              <p className="text-sm mb-3">{post.content}</p>
                               
                               {post.status === 'Publicado' && (
-                                <div className="mt-4 pt-4 border-t">
-                                  <div className="flex justify-between">
-                                    <div className="flex space-x-6">
-                                      <div className="flex items-center text-sm">
-                                        <Heart className="h-4 w-4 mr-1" />
-                                        {post.engagement.likes}
-                                      </div>
-                                      <div className="flex items-center text-sm">
-                                        <MessageCircle className="h-4 w-4 mr-1" />
-                                        {post.engagement.comments}
-                                      </div>
-                                      <div className="flex items-center text-sm">
-                                        <Share className="h-4 w-4 mr-1" />
-                                        {post.engagement.shares}
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center text-sm">
-                                      <Eye className="h-4 w-4 mr-1" />
-                                      {post.engagement.reach} visualizações
-                                    </div>
+                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                  <div className="flex items-center">
+                                    <Heart className="mr-1 h-3 w-3" />
+                                    {post.engagement.likes}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <MessageCircle className="mr-1 h-3 w-3" />
+                                    {post.engagement.comments}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Repeat className="mr-1 h-3 w-3" />
+                                    {post.engagement.shares}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Eye className="mr-1 h-3 w-3" />
+                                    {post.reach}
                                   </div>
                                 </div>
                               )}
-                            </CardContent>
-                          </Card>
+                            </div>
+                            
+                            <div className="flex space-x-2">
+                              <Button size="sm" variant="outline">Editar</Button>
+                              <Button size="sm" variant="outline">
+                                <Share2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="schedule" className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <Card className="lg:col-span-1">
+                    <CardHeader>
+                      <CardTitle>Calendário</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        className="rounded-md border"
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="lg:col-span-2">
+                    <CardHeader>
+                      <CardTitle>Posts Agendados</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {socialPosts.filter(p => p.status === 'Agendado').map((post) => (
+                          <div key={post.id} className="flex items-center justify-between p-3 border rounded">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <Badge variant="outline" className={getPlatformColor(post.platform)}>
+                                  {post.platform}
+                                </Badge>
+                                <span className="text-sm text-muted-foreground">
+                                  {new Date(post.publishDate).toLocaleString()}
+                                </span>
+                              </div>
+                              <p className="text-sm">{post.content}</p>
+                            </div>
+                            <Button size="sm" variant="outline">Editar</Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="create" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Criar Nova Publicação</CardTitle>
+                    <CardDescription>Componha sua mensagem e escolha onde publicar</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="platform">Plataforma</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a plataforma" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="instagram">Instagram</SelectItem>
+                            <SelectItem value="linkedin">LinkedIn</SelectItem>
+                            <SelectItem value="facebook">Facebook</SelectItem>
+                            <SelectItem value="all">Todas as plataformas</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="type">Tipo de Publicação</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Tipo de conteúdo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="text">Apenas Texto</SelectItem>
+                            <SelectItem value="image">Imagem + Texto</SelectItem>
+                            <SelectItem value="video">Vídeo + Texto</SelectItem>
+                            <SelectItem value="link">Link + Texto</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="content">Conteúdo da Publicação</Label>
+                      <Textarea 
+                        id="content" 
+                        placeholder="Digite sua mensagem aqui..."
+                        className="min-h-32"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Caracteres restantes: 280 (Twitter) | 2200 (Instagram) | 3000 (LinkedIn)
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="schedule">Agendamento</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Quando publicar?" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="now">Publicar agora</SelectItem>
+                            <SelectItem value="schedule">Agendar publicação</SelectItem>
+                            <SelectItem value="draft">Salvar como rascunho</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="datetime">Data e Hora</Label>
+                        <Input type="datetime-local" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Hashtags Sugeridas</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {['#WinnetMetais', '#AçoInox', '#AlumínioNaval', '#MetaisEspeciais', '#Indústria'].map((tag, index) => (
+                          <Badge key={index} variant="outline" className="cursor-pointer hover:bg-blue-100">
+                            {tag}
+                          </Badge>
                         ))}
                       </div>
                     </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="calendar" className="mt-0">
-                    <div className="p-4 bg-muted/50 rounded-md h-[400px] flex items-center justify-center">
-                      <div className="text-center">
-                        <CalendarIcon className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-                        <h3 className="font-medium mb-1">Calendário de Publicações</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Visualize e organize suas publicações em um calendário interativo
-                        </p>
-                      </div>
+
+                    <div className="flex space-x-4">
+                      <Button>Publicar</Button>
+                      <Button variant="outline">Agendar</Button>
+                      <Button variant="outline">Salvar Rascunho</Button>
+                      <Button variant="outline">Pré-visualizar</Button>
                     </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="analytics" className="mt-0">
-                    <div className="p-4 bg-muted/50 rounded-md h-[400px] flex items-center justify-center">
-                      <div className="text-center">
-                        <BarChart className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-                        <h3 className="font-medium mb-1">Análise de Performance</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Explore métricas detalhadas sobre o desempenho dos seus posts
-                        </p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="analytics" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Engajamento por Plataforma</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {platformStats.map((platform, index) => (
+                          <div key={index} className="flex justify-between items-center p-3 border rounded">
+                            <div>
+                              <div className="font-medium">{platform.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {platform.followers} seguidores
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold text-green-600">{platform.engagement}</div>
+                              <div className="text-xs text-muted-foreground">Taxa de engajamento</div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Melhores Horários</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span>Instagram</span>
+                          <span className="font-medium">18:00 - 20:00</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>LinkedIn</span>
+                          <span className="font-medium">08:00 - 10:00</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Facebook</span>
+                          <span className="font-medium">19:00 - 21:00</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Posts com Melhor Performance</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {socialPosts.filter(p => p.status === 'Publicado').map((post) => (
+                        <div key={post.id} className="flex justify-between items-center p-3 border rounded">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{post.content.substring(0, 60)}...</p>
+                            <div className="text-xs text-muted-foreground">
+                              {post.platform} • {new Date(post.publishDate).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">{post.engagement.likes} likes</div>
+                            <div className="text-sm text-muted-foreground">{post.reach} alcance</div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </TabsContent>
-                </CardContent>
-                </Tabs>
-              </CardHeader>
-            </Card>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
