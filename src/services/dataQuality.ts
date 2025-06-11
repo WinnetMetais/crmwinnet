@@ -7,6 +7,12 @@ interface BasicTransaction {
   id: string;
 }
 
+// Interface para resposta do Supabase
+interface SupabaseRow {
+  id: string;
+  [key: string]: any;
+}
+
 export class DataQualityService {
   // Executar validação de qualidade dos dados
   static async runDataValidation(customerIds?: string[]): Promise<void> {
@@ -16,30 +22,20 @@ export class DataQualityService {
       if (customerIds && customerIds.length > 0) {
         targetCustomers = [...customerIds];
       } else {
-        // Buscar todos os IDs de clientes usando query manual
-        const response = await supabase
-          .from('customers')
-          .select('id');
-        
-        if (response.error) {
-          console.error('Erro ao buscar clientes:', response.error);
-          throw response.error;
-        }
-        
-        if (response.data) {
-          targetCustomers = response.data.map((item: any) => item.id);
-        }
+        // Buscar todos os IDs de clientes de forma simplificada
+        const customersData = await this.getCustomerIds();
+        targetCustomers = customersData;
       }
       
       for (const customerId of targetCustomers) {
         try {
           // Executar função de cálculo de qualidade
-          const qualityResult = await supabase.rpc('calculate_customer_data_quality', { 
+          const { error: qualityError } = await supabase.rpc('calculate_customer_data_quality', { 
             customer_id: customerId 
           });
 
-          if (qualityResult.error) {
-            console.error(`Erro ao calcular score para cliente ${customerId}:`, qualityResult.error);
+          if (qualityError) {
+            console.error(`Erro ao calcular score para cliente ${customerId}:`, qualityError);
             continue;
           }
 
@@ -48,12 +44,12 @@ export class DataQualityService {
           
           if (transactions.length > 0) {
             for (const transaction of transactions) {
-              const validationResult = await supabase.rpc('validate_transaction_data', {
+              const { error: validationError } = await supabase.rpc('validate_transaction_data', {
                 transaction_id: transaction.id
               });
 
-              if (validationResult.error) {
-                console.error(`Erro ao validar transação ${transaction.id}:`, validationResult.error);
+              if (validationError) {
+                console.error(`Erro ao validar transação ${transaction.id}:`, validationError);
               }
             }
           }
@@ -82,10 +78,41 @@ export class DataQualityService {
     }
   }
 
+  // Método simplificado para buscar IDs de clientes
+  private static async getCustomerIds(): Promise<string[]> {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id');
+      
+      if (error) {
+        console.error('Erro ao buscar clientes:', error);
+        return [];
+      }
+
+      if (!data || !Array.isArray(data)) {
+        return [];
+      }
+
+      // Mapear de forma segura
+      const customerIds: string[] = [];
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i] as SupabaseRow;
+        if (row && row.id) {
+          customerIds.push(String(row.id));
+        }
+      }
+      
+      return customerIds;
+    } catch (error) {
+      console.error('Erro ao buscar IDs de clientes:', error);
+      return [];
+    }
+  }
+
   // Método simplificado para buscar transações
   private static async getBasicTransactions(customerId: string): Promise<BasicTransaction[]> {
     try {
-      // Query manual sem dependência de tipos complexos
       const { data, error } = await supabase
         .from('transactions')
         .select('id')
@@ -96,16 +123,16 @@ export class DataQualityService {
         return [];
       }
 
-      // Processar dados de forma segura
       if (!data || !Array.isArray(data)) {
         return [];
       }
 
       // Mapear manualmente para evitar problemas de tipo
       const transactions: BasicTransaction[] = [];
-      for (const item of data) {
-        if (item && typeof item === 'object' && 'id' in item) {
-          transactions.push({ id: String(item.id) });
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i] as SupabaseRow;
+        if (row && row.id) {
+          transactions.push({ id: String(row.id) });
         }
       }
       
