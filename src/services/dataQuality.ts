@@ -16,46 +16,54 @@ export class DataQualityService {
       if (customerIds && customerIds.length > 0) {
         targetCustomers = [...customerIds];
       } else {
-        // Buscar todos os IDs de clientes de forma simples
-        const customersResult = await supabase
+        // Buscar todos os IDs de clientes usando query manual
+        const response = await supabase
           .from('customers')
           .select('id');
         
-        if (customersResult.error) throw customersResult.error;
+        if (response.error) {
+          console.error('Erro ao buscar clientes:', response.error);
+          throw response.error;
+        }
         
-        if (customersResult.data) {
-          targetCustomers = customersResult.data.map((item: any) => item.id);
+        if (response.data) {
+          targetCustomers = response.data.map((item: any) => item.id);
         }
       }
       
       for (const customerId of targetCustomers) {
-        // Executar função de cálculo de qualidade
-        const qualityResult = await supabase.rpc('calculate_customer_data_quality', { 
-          customer_id: customerId 
-        });
+        try {
+          // Executar função de cálculo de qualidade
+          const qualityResult = await supabase.rpc('calculate_customer_data_quality', { 
+            customer_id: customerId 
+          });
 
-        if (qualityResult.error) {
-          console.error(`Erro ao calcular score para cliente ${customerId}:`, qualityResult.error);
-          continue;
-        }
+          if (qualityResult.error) {
+            console.error(`Erro ao calcular score para cliente ${customerId}:`, qualityResult.error);
+            continue;
+          }
 
-        // Buscar transações de forma simplificada
-        const transactions = await this.getBasicTransactions(customerId);
-        
-        if (transactions.length > 0) {
-          for (const transaction of transactions) {
-            const validationResult = await supabase.rpc('validate_transaction_data', {
-              transaction_id: transaction.id
-            });
+          // Buscar transações de forma manual para evitar problemas de tipo
+          const transactions = await this.getBasicTransactions(customerId);
+          
+          if (transactions.length > 0) {
+            for (const transaction of transactions) {
+              const validationResult = await supabase.rpc('validate_transaction_data', {
+                transaction_id: transaction.id
+              });
 
-            if (validationResult.error) {
-              console.error(`Erro ao validar transação ${transaction.id}:`, validationResult.error);
+              if (validationResult.error) {
+                console.error(`Erro ao validar transação ${transaction.id}:`, validationResult.error);
+              }
             }
           }
-        }
 
-        // Registrar log de validação
-        await this.createValidationLog(customerId, 'customer', 'data_quality', 'passed');
+          // Registrar log de validação
+          await this.createValidationLog(customerId, 'customer', 'data_quality', 'passed');
+        } catch (error) {
+          console.error(`Erro ao processar cliente ${customerId}:`, error);
+          await this.createValidationLog(customerId, 'customer', 'data_quality', 'failed');
+        }
       }
 
       toast({
@@ -65,6 +73,11 @@ export class DataQualityService {
 
     } catch (error) {
       console.error('Erro na validação de dados:', error);
+      toast({
+        title: "Erro na Validação",
+        description: "Ocorreu um erro durante a validação dos dados",
+        variant: "destructive",
+      });
       throw error;
     }
   }
@@ -72,19 +85,18 @@ export class DataQualityService {
   // Método simplificado para buscar transações
   private static async getBasicTransactions(customerId: string): Promise<BasicTransaction[]> {
     try {
-      // Query básica sem complexidade de tipos
-      const response = await supabase
+      // Query manual sem dependência de tipos complexos
+      const { data, error } = await supabase
         .from('transactions')
         .select('id')
         .eq('customer_id', customerId);
       
-      if (response.error) {
-        console.error(`Erro ao buscar transações:`, response.error);
+      if (error) {
+        console.error(`Erro ao buscar transações:`, error);
         return [];
       }
 
       // Processar dados de forma segura
-      const data = response.data;
       if (!data || !Array.isArray(data)) {
         return [];
       }
@@ -123,12 +135,12 @@ export class DataQualityService {
         validated_by: 'Sistema Automático'
       };
 
-      const result = await supabase
+      const { error } = await supabase
         .from('data_validation_logs')
         .insert(logEntry);
 
-      if (result.error) {
-        console.error('Erro ao registrar log:', result.error);
+      if (error) {
+        console.error('Erro ao registrar log:', error);
       }
     } catch (error) {
       console.error('Erro ao registrar log de validação:', error);

@@ -18,12 +18,14 @@ export class QualityMetricsService {
         const validRecords = scores.filter(s => s >= 70).length;
         const invalidRecords = totalRecords - validRecords;
         const averageScore = totalRecords > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / totalRecords) : 0;
+        const completenessPercentage = totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0;
 
         metrics.customers = {
           totalRecords,
           validRecords,
           invalidRecords,
-          averageScore
+          averageScore,
+          completenessPercentage
         };
       }
 
@@ -38,12 +40,14 @@ export class QualityMetricsService {
         const validRecords = scores.filter(s => s >= 70).length;
         const invalidRecords = totalRecords - validRecords;
         const averageScore = totalRecords > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / totalRecords) : 0;
+        const completenessPercentage = totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0;
 
         metrics.deals = {
           totalRecords,
           validRecords,
           invalidRecords,
-          averageScore
+          averageScore,
+          completenessPercentage
         };
       }
 
@@ -58,12 +62,14 @@ export class QualityMetricsService {
         const validRecords = scores.filter(s => s >= 70).length;
         const invalidRecords = totalRecords - validRecords;
         const averageScore = totalRecords > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / totalRecords) : 0;
+        const completenessPercentage = totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0;
 
         metrics.opportunities = {
           totalRecords,
           validRecords,
           invalidRecords,
-          averageScore
+          averageScore,
+          completenessPercentage
         };
       }
 
