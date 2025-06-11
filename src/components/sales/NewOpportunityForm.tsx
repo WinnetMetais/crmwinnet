@@ -278,6 +278,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
                   <ClientTab
                     selectedCustomer={selectedCustomer}
                     onSelectCustomer={handleSelectCustomer}
+                    onNewCustomer={() => setShowCustomerForm(true)}
                   />
                 </TabsContent>
 
@@ -360,9 +361,13 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
             customerAddress: formData.clientAddress,
             customerCnpj: formData.clientCnpj,
             items: formData.items.map(item => ({
-              ...item,
+              id: item.id,
               code: item.sku,
-              unitPrice: item.unitPrice // Corrigir a propriedade aqui
+              description: item.productName,
+              quantity: item.quantity,
+              unit: item.unit,
+              unitPrice: item.unitPrice,
+              total: item.total
             })),
             subtotal: formData.subtotal,
             discount: formData.discount,
