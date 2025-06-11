@@ -76,6 +76,10 @@ const TasksNotifications = () => {
     createTaskNotification('', message, type);
   };
 
+  const handleMarkAllAsRead = () => {
+    markAllAsRead();
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "alta": return "bg-red-100 text-red-800";
@@ -243,7 +247,7 @@ const TasksNotifications = () => {
               <TabsContent value="notifications" className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Central de Notificações</h3>
-                  <Button onClick={markAllAsRead} variant="outline">
+                  <Button onClick={handleMarkAllAsRead} variant="outline">
                     Marcar Todas como Lidas
                   </Button>
                 </div>
@@ -265,7 +269,7 @@ const TasksNotifications = () => {
                               <h4 className="font-medium">{notification.title}</h4>
                               <p className="text-sm text-muted-foreground">{notification.message}</p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(notification.createdAt).toLocaleString()}
+                                {new Date(notification.created_at).toLocaleString()}
                               </p>
                             </div>
                             <div className="flex space-x-2">
@@ -383,3 +387,5 @@ const TasksNotifications = () => {
 };
 
 export default TasksNotifications;
+
+</initial_code>

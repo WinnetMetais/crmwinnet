@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
@@ -335,7 +334,7 @@ const Templates = () => {
                         className="min-h-40"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Use variáveis como {{nome_cliente}}, {{empresa}}, {{valor}} para personalização automática.
+                        Use variáveis como nome_cliente, empresa, valor para personalização automática.
                       </p>
                     </div>
 
