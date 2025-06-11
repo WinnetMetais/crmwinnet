@@ -31,18 +31,18 @@ export class DataQualityService {
           continue;
         }
 
-        // Executar validação de transações se existirem
-        const { data: transactionData, error: transactionError } = await supabase
+        // Executar validação de transações se existirem - using simplified query
+        const transactionQuery = await supabase
           .from('transactions')
           .select('id')
           .eq('customer_id', customerId);
 
-        if (transactionError) {
-          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionError);
+        if (transactionQuery.error) {
+          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionQuery.error);
           continue;
         }
 
-        const transactions: any[] = transactionData || [];
+        const transactions: any[] = transactionQuery.data || [];
         if (transactions.length > 0) {
           for (const transaction of transactions) {
             const validationResult = await supabase.rpc('validate_transaction_data', {
