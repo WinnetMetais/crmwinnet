@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -288,7 +287,7 @@ const Analysis = () => {
                               </td>
                               <td className="p-3 text-right font-bold">{item.roi}%</td>
                               <td className="p-3 text-right">
-                                <span className={`px-2 py-1 rounded text-xs ${
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
                                   item.roi > 160 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                                 }`}>
                                   {item.roi > 160 ? 'Excelente' : 'Bom'}

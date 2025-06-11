@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { AdvancedFilters } from "@/components/tools/AdvancedFilters";
 
 const Filters = () => {
