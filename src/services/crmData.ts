@@ -92,10 +92,10 @@ export class CRMDataService {
   // Executar validação de qualidade dos dados
   static async runDataValidation(customerIds?: string[]): Promise<void> {
     try {
-      let customersToValidate: string[] = [];
+      let targetCustomers: string[] = [];
       
       if (customerIds && customerIds.length > 0) {
-        customersToValidate = customerIds;
+        targetCustomers = [...customerIds];
       } else {
         // Se não fornecido, buscar todos os IDs de clientes
         const { data: customerData, error: customerError } = await supabase
@@ -103,10 +103,10 @@ export class CRMDataService {
           .select('id');
         
         if (customerError) throw customerError;
-        customersToValidate = (customerData || []).map((customer: any) => customer.id);
+        targetCustomers = (customerData || []).map((item: any) => item.id);
       }
       
-      for (const customerId of customersToValidate) {
+      for (const customerId of targetCustomers) {
         // Executar função de cálculo de qualidade
         const { error: scoreError } = await supabase.rpc('calculate_customer_data_quality', { 
           customer_id: customerId 
@@ -146,7 +146,7 @@ export class CRMDataService {
 
       toast({
         title: "Validação Concluída",
-        description: `${customersToValidate.length} registros validados com sucesso`,
+        description: `${targetCustomers.length} registros validados com sucesso`,
       });
 
     } catch (error) {
