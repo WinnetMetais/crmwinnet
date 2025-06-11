@@ -495,9 +495,12 @@ export type Database = {
           created_by: string | null
           custom_data: Json | null
           customer_type_id: string | null
+          data_completeness_percentage: number | null
+          data_quality_score: number | null
           email: string | null
           id: string
           last_contact_date: string | null
+          last_validated_at: string | null
           lead_score: number | null
           lead_source: string | null
           lead_source_id: string | null
@@ -515,6 +518,7 @@ export type Database = {
           status: string | null
           tags: string[] | null
           updated_at: string
+          validation_errors: Json | null
           website: string | null
           zip_code: string | null
         }
@@ -528,9 +532,12 @@ export type Database = {
           created_by?: string | null
           custom_data?: Json | null
           customer_type_id?: string | null
+          data_completeness_percentage?: number | null
+          data_quality_score?: number | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
+          last_validated_at?: string | null
           lead_score?: number | null
           lead_source?: string | null
           lead_source_id?: string | null
@@ -548,6 +555,7 @@ export type Database = {
           status?: string | null
           tags?: string[] | null
           updated_at?: string
+          validation_errors?: Json | null
           website?: string | null
           zip_code?: string | null
         }
@@ -561,9 +569,12 @@ export type Database = {
           created_by?: string | null
           custom_data?: Json | null
           customer_type_id?: string | null
+          data_completeness_percentage?: number | null
+          data_quality_score?: number | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
+          last_validated_at?: string | null
           lead_score?: number | null
           lead_source?: string | null
           lead_source_id?: string | null
@@ -581,6 +592,7 @@ export type Database = {
           status?: string | null
           tags?: string[] | null
           updated_at?: string
+          validation_errors?: Json | null
           website?: string | null
           zip_code?: string | null
         }
@@ -622,6 +634,48 @@ export type Database = {
           },
         ]
       }
+      data_validation_logs: {
+        Row: {
+          created_at: string | null
+          errors: Json | null
+          id: string
+          module_name: string
+          record_id: string | null
+          suggestions: Json | null
+          table_name: string
+          validated_at: string | null
+          validated_by: string | null
+          validation_status: string
+          validation_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          errors?: Json | null
+          id?: string
+          module_name: string
+          record_id?: string | null
+          suggestions?: Json | null
+          table_name: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_status: string
+          validation_type: string
+        }
+        Update: {
+          created_at?: string | null
+          errors?: Json | null
+          id?: string
+          module_name?: string
+          record_id?: string | null
+          suggestions?: Json | null
+          table_name?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_status?: string
+          validation_type?: string
+        }
+        Relationships: []
+      }
       deals: {
         Row: {
           active_follow_up: boolean | null
@@ -631,11 +685,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           customer_id: string
+          data_quality_score: number | null
           description: string | null
           estimated_value: number | null
           follow_up_date: string | null
           id: string
           last_contact_date: string | null
+          last_validated_at: string | null
           observations: string | null
           opportunity_id: string | null
           pipeline_stage_id: string | null
@@ -647,6 +703,7 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string
+          validation_errors: Json | null
           value: number | null
         }
         Insert: {
@@ -657,11 +714,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_id: string
+          data_quality_score?: number | null
           description?: string | null
           estimated_value?: number | null
           follow_up_date?: string | null
           id?: string
           last_contact_date?: string | null
+          last_validated_at?: string | null
           observations?: string | null
           opportunity_id?: string | null
           pipeline_stage_id?: string | null
@@ -673,6 +732,7 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string
+          validation_errors?: Json | null
           value?: number | null
         }
         Update: {
@@ -683,11 +743,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_id?: string
+          data_quality_score?: number | null
           description?: string | null
           estimated_value?: number | null
           follow_up_date?: string | null
           id?: string
           last_contact_date?: string | null
+          last_validated_at?: string | null
           observations?: string | null
           opportunity_id?: string | null
           pipeline_stage_id?: string | null
@@ -699,6 +761,7 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string
+          validation_errors?: Json | null
           value?: number | null
         }
         Relationships: [
@@ -954,15 +1017,18 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           customer_id: string
+          data_quality_score: number | null
           description: string | null
           expected_close_date: string | null
           id: string
+          last_validated_at: string | null
           lead_source: string | null
           probability: number | null
           stage: string
           status: string | null
           title: string
           updated_at: string | null
+          validation_errors: Json | null
           value: number | null
         }
         Insert: {
@@ -971,15 +1037,18 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           customer_id: string
+          data_quality_score?: number | null
           description?: string | null
           expected_close_date?: string | null
           id?: string
+          last_validated_at?: string | null
           lead_source?: string | null
           probability?: number | null
           stage?: string
           status?: string | null
           title: string
           updated_at?: string | null
+          validation_errors?: Json | null
           value?: number | null
         }
         Update: {
@@ -988,15 +1057,18 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           customer_id?: string
+          data_quality_score?: number | null
           description?: string | null
           expected_close_date?: string | null
           id?: string
+          last_validated_at?: string | null
           lead_source?: string | null
           probability?: number | null
           stage?: string
           status?: string | null
           title?: string
           updated_at?: string | null
+          validation_errors?: Json | null
           value?: number | null
         }
         Relationships: [
@@ -1463,12 +1535,14 @@ export type Database = {
           customer_id: string | null
           customer_name: string
           customer_phone: string | null
+          data_quality_score: number | null
           date: string
           deal_id: string | null
           delivery_terms: string | null
           discount: number | null
           id: string
           internal_notes: string | null
+          last_validated_at: string | null
           notes: string | null
           opportunity_id: string | null
           payment_terms: string | null
@@ -1481,6 +1555,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           valid_until: string
+          validation_errors: Json | null
           warranty: string | null
         }
         Insert: {
@@ -1495,12 +1570,14 @@ export type Database = {
           customer_id?: string | null
           customer_name: string
           customer_phone?: string | null
+          data_quality_score?: number | null
           date: string
           deal_id?: string | null
           delivery_terms?: string | null
           discount?: number | null
           id?: string
           internal_notes?: string | null
+          last_validated_at?: string | null
           notes?: string | null
           opportunity_id?: string | null
           payment_terms?: string | null
@@ -1513,6 +1590,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           valid_until: string
+          validation_errors?: Json | null
           warranty?: string | null
         }
         Update: {
@@ -1527,12 +1605,14 @@ export type Database = {
           customer_id?: string | null
           customer_name?: string
           customer_phone?: string | null
+          data_quality_score?: number | null
           date?: string
           deal_id?: string | null
           delivery_terms?: string | null
           discount?: number | null
           id?: string
           internal_notes?: string | null
+          last_validated_at?: string | null
           notes?: string | null
           opportunity_id?: string | null
           payment_terms?: string | null
@@ -1545,6 +1625,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           valid_until?: string
+          validation_errors?: Json | null
           warranty?: string | null
         }
         Relationships: [
@@ -1717,11 +1798,13 @@ export type Database = {
           channel: string | null
           client_name: string | null
           created_at: string | null
+          data_quality_score: number | null
           date: string
           description: string | null
           due_date: string | null
           id: string
           invoice_number: string | null
+          last_validated_at: string | null
           payment_method: string | null
           recurring: boolean | null
           recurring_period: string | null
@@ -1732,6 +1815,7 @@ export type Database = {
           type: string
           updated_at: string | null
           user_id: string
+          validation_errors: Json | null
         }
         Insert: {
           amount: number
@@ -1739,11 +1823,13 @@ export type Database = {
           channel?: string | null
           client_name?: string | null
           created_at?: string | null
+          data_quality_score?: number | null
           date: string
           description?: string | null
           due_date?: string | null
           id?: string
           invoice_number?: string | null
+          last_validated_at?: string | null
           payment_method?: string | null
           recurring?: boolean | null
           recurring_period?: string | null
@@ -1754,6 +1840,7 @@ export type Database = {
           type: string
           updated_at?: string | null
           user_id: string
+          validation_errors?: Json | null
         }
         Update: {
           amount?: number
@@ -1761,11 +1848,13 @@ export type Database = {
           channel?: string | null
           client_name?: string | null
           created_at?: string | null
+          data_quality_score?: number | null
           date?: string
           description?: string | null
           due_date?: string | null
           id?: string
           invoice_number?: string | null
+          last_validated_at?: string | null
           payment_method?: string | null
           recurring?: boolean | null
           recurring_period?: string | null
@@ -1776,6 +1865,7 @@ export type Database = {
           type?: string
           updated_at?: string | null
           user_id?: string
+          validation_errors?: Json | null
         }
         Relationships: []
       }
@@ -1811,7 +1901,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_customer_data_quality: {
+        Args: { customer_id: string }
+        Returns: number
+      }
+      validate_transaction_data: {
+        Args: { transaction_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
