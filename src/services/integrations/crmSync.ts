@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { logIntegrationAction } from "@/services/integrationLogs";
 import { createCustomerInteraction } from "@/services/opportunities";
@@ -312,6 +313,9 @@ export class CRMSyncService {
     }
   }
 
+  /**
+   * Converte estágio para probabilidade
+   */
   private stageToProbalitity(stage?: string): number {
     const stageMap: Record<string, number> = {
       'prospecto': 20,
@@ -599,107 +603,6 @@ export class CRMSyncService {
       return 'vencido';
     }
     return 'pendente';
-  }
-
-  async getIntegrationStats() {
-    const { data: tokens, error } = await supabase
-      .from('ad_tokens')
-      .select('*')
-      .eq('active', true);
-
-    if (error) {
-      console.error("Erro ao obter estatísticas:", error);
-      await logIntegrationAction('crm', 'get_stats', 'error', null, error.message);
-      return [];
-    }
-
-    await logIntegrationAction('crm', 'get_stats', 'success', { tokens_found: tokens?.length || 0 });
-    return tokens || [];
-  }
-
-  async validateIntegrations() {
-    const { data: campaigns, error } = await supabase
-      .from('campaigns')
-      .select('platform, updated_at')
-      .gte('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
-    if (error) {
-      console.error("Erro ao validar integrações:", error);
-      await logIntegrationAction('crm', 'validate', 'error', null, error.message);
-      return { valid: false, issues: ["Erro ao acessar dados"] };
-    }
-
-    const activePlatforms = new Set(campaigns?.map(c => c.platform) || []);
-    const expectedPlatforms = ['google', 'facebook', 'linkedin'];
-    const missingPlatforms = expectedPlatforms.filter(p => !activePlatforms.has(p));
-
-    const result = {
-      valid: missingPlatforms.length === 0,
-      activePlatforms: Array.from(activePlatforms),
-      missingPlatforms,
-      lastUpdate: campaigns?.[0]?.updated_at
-    };
-
-    await logIntegrationAction('crm', 'validate', 'success', result);
-    return result;
-  }
-
-  async syncOpportunitiesWithDeals() {
-    try {
-      const { data: opportunities } = await supabase
-        .from('opportunities')
-        .select('*')
-        .is('deal_id', null);
-
-      const { data: deals } = await supabase
-        .from('deals')
-        .select('*')
-        .is('opportunity_id', null);
-
-      // Relacionar oportunidades com deals baseado no cliente e valor
-      for (const opportunity of opportunities || []) {
-        const matchingDeal = deals?.find(deal => 
-          deal.customer_id === opportunity.customer_id &&
-          Math.abs((deal.estimated_value || 0) - (opportunity.value || 0)) < 100
-        );
-
-        if (matchingDeal) {
-          // Atualizar deal com referência da oportunidade
-          await supabase
-            .from('deals')
-            .update({ opportunity_id: opportunity.id })
-            .eq('id', matchingDeal.id);
-
-          // Atualizar oportunidade com estágio do deal
-          await supabase
-            .from('opportunities')
-            .update({ 
-              stage: matchingDeal.status || 'prospecto',
-              probability: this.stageToProbalitity(matchingDeal.status)
-            })
-            .eq('id', opportunity.id);
-        }
-      }
-
-      await logIntegrationAction('crm', 'sync_opportunities_deals', 'success');
-      return true;
-    } catch (error) {
-      console.error("Erro ao sincronizar oportunidades com deals:", error);
-      await logIntegrationAction('crm', 'sync_opportunities_deals', 'error', null, String(error));
-      return false;
-    }
-  }
-
-  private stageToProbalitity(stage?: string): number {
-    const stageMap: Record<string, number> = {
-      'prospecto': 20,
-      'qualificacao': 40,
-      'proposta': 60,
-      'negociacao': 80,
-      'fechamento': 95,
-      'lead': 10
-    };
-    return stageMap[stage || 'lead'] || 20;
   }
 }
 
