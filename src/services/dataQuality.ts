@@ -2,6 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+// Interface simples para transações
+interface SimpleTransaction {
+  id: string;
+}
+
 export class DataQualityService {
   // Executar validação de qualidade dos dados
   static async runDataValidation(customerIds?: string[]): Promise<void> {
@@ -31,18 +36,9 @@ export class DataQualityService {
           continue;
         }
 
-        // Executar validação de transações se existirem - using explicit type assertion
-        const transactionQuery = await supabase
-          .from('transactions')
-          .select('id')
-          .eq('customer_id', customerId) as any;
-
-        if (transactionQuery.error) {
-          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionQuery.error);
-          continue;
-        }
-
-        const transactions = (transactionQuery.data as any[]) || [];
+        // Buscar transações usando uma query simplificada
+        const transactions = await this.getCustomerTransactions(customerId);
+        
         if (transactions.length > 0) {
           for (const transaction of transactions) {
             const validationResult = await supabase.rpc('validate_transaction_data', {
@@ -67,6 +63,29 @@ export class DataQualityService {
     } catch (error) {
       console.error('Erro na validação de dados:', error);
       throw error;
+    }
+  }
+
+  // Método auxiliar para buscar transações com tipos explícitos
+  private static async getCustomerTransactions(customerId: string): Promise<SimpleTransaction[]> {
+    try {
+      const response = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('customer_id', customerId);
+
+      if (response.error) {
+        console.error(`Erro ao buscar transações para cliente ${customerId}:`, response.error);
+        return [];
+      }
+
+      // Mapear explicitamente para nossa interface simples
+      return (response.data || []).map((item: any): SimpleTransaction => ({
+        id: item.id
+      }));
+    } catch (error) {
+      console.error('Erro ao buscar transações:', error);
+      return [];
     }
   }
 
