@@ -18,7 +18,9 @@ import {
   User,
   AlertTriangle,
   Filter,
-  Search
+  Search,
+  MoreHorizontal,
+  CheckCircle
 } from "lucide-react";
 import { NotificationBanner, useNotifications, useModuleNotifications } from "@/components/notifications";
 
@@ -83,20 +85,29 @@ const TasksNotifications = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "alta": return "bg-red-100 text-red-800";
-      case "média": return "bg-yellow-100 text-yellow-800";
-      case "baixa": return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "alta": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "média": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "baixa": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "concluida": return "bg-green-100 text-green-800";
-      case "em-progresso": return "bg-blue-100 text-blue-800";
-      case "pendente": return "bg-gray-100 text-gray-800";
-      case "atrasada": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "concluida": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "em-progresso": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "pendente": return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
+      case "atrasada": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "concluida": return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "em-progresso": return <Clock className="h-4 w-4 text-blue-600" />;
+      case "pendente": return <AlertTriangle className="h-4 w-4 text-gray-600" />;
+      default: return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -106,74 +117,89 @@ const TasksNotifications = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-background">
         <DashboardSidebar />
         
-        <div className="flex-1">
-          <div className="container mx-auto py-6 px-4">
+        <div className="flex-1 overflow-hidden">
+          <div className="container mx-auto py-6 px-4 space-y-6">
             <NotificationBanner />
             
-            <div className="flex items-center space-x-4 mb-6">
-              <SidebarTrigger />
-              <div>
-                <h1 className="text-3xl font-bold">Tarefas & Notificações</h1>
-                <p className="text-muted-foreground">Gerencie suas tarefas e acompanhe notificações do sistema</p>
+            {/* Header melhorado */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight">Tarefas & Notificações</h1>
+                  <p className="text-muted-foreground">Gerencie suas tarefas e acompanhe notificações do sistema</p>
+                </div>
               </div>
+              <Button className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Tarefa
+              </Button>
             </div>
 
-            {/* Métricas */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <Card>
+            {/* Métricas melhoradas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="transition-all hover:shadow-md">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Tarefas Pendentes</p>
                       <p className="text-3xl font-bold">{pendingTasks}</p>
                     </div>
-                    <Clock className="h-8 w-8 text-blue-600" />
+                    <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900">
+                      <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="transition-all hover:shadow-md">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Tarefas Atrasadas</p>
                       <p className="text-3xl font-bold text-red-600">{overdueTasks}</p>
                     </div>
-                    <AlertTriangle className="h-8 w-8 text-red-600" />
+                    <div className="p-2 bg-red-100 rounded-lg dark:bg-red-900">
+                      <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="transition-all hover:shadow-md">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Notificações</p>
                       <p className="text-3xl font-bold">{unreadNotifications}</p>
                     </div>
-                    <Bell className="h-8 w-8 text-orange-600" />
+                    <div className="p-2 bg-orange-100 rounded-lg dark:bg-orange-900">
+                      <Bell className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="transition-all hover:shadow-md">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Taxa de Conclusão</p>
                       <p className="text-3xl font-bold">78%</p>
                     </div>
-                    <CheckSquare className="h-8 w-8 text-green-600" />
+                    <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900">
+                      <CheckSquare className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             <Tabs defaultValue="tasks" className="space-y-6">
-              <TabsList>
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="tasks">Tarefas</TabsTrigger>
                 <TabsTrigger value="notifications">Notificações</TabsTrigger>
                 <TabsTrigger value="create">Criar Nova</TabsTrigger>
@@ -181,61 +207,75 @@ const TasksNotifications = () => {
               </TabsList>
 
               <TabsContent value="tasks" className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Lista de Tarefas</h3>
-                  <div className="flex space-x-2">
-                    <Button variant="outline">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filtrar
-                    </Button>
-                    <Button>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Nova Tarefa
-                    </Button>
-                  </div>
-                </div>
+                {/* Filtros melhorados */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Pesquisar Tarefas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Pesquisar tarefas..." className="pl-10" />
+                      </div>
+                      <Button variant="outline" className="w-full sm:w-auto">
+                        <Filter className="mr-2 h-4 w-4" />
+                        Filtrar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
 
+                {/* Lista de tarefas melhorada */}
                 <div className="space-y-4">
                   {tasks.map((task) => (
-                    <Card key={task.id}>
+                    <Card key={task.id} className="group hover:shadow-md transition-all duration-200">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <h4 className="font-medium">{task.title}</h4>
-                              <Badge variant="outline" className={getPriorityColor(task.priority)}>
-                                {task.priority}
-                              </Badge>
-                              <Badge variant="outline" className={getStatusColor(task.status)}>
-                                {task.status}
-                              </Badge>
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-center space-x-3">
+                              {getStatusIcon(task.status)}
+                              <h4 className="font-medium text-lg">{task.title}</h4>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="outline" className={getPriorityColor(task.priority)}>
+                                  {task.priority}
+                                </Badge>
+                                <Badge variant="outline" className={getStatusColor(task.status)}>
+                                  {task.status}
+                                </Badge>
+                              </div>
                             </div>
                             
-                            <p className="text-sm text-muted-foreground mb-3">
+                            <p className="text-muted-foreground">
                               {task.description}
                             </p>
                             
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <div className="flex items-center">
-                                <User className="mr-1 h-3 w-3" />
-                                {task.assignedTo}
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                <span>{task.assignedTo}</span>
                               </div>
-                              <div className="flex items-center">
-                                <Calendar className="mr-1 h-3 w-3" />
-                                {new Date(task.dueDate).toLocaleDateString()}
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>{new Date(task.dueDate).toLocaleDateString('pt-BR')}</span>
                               </div>
                               {task.customer && (
-                                <div>Cliente: {task.customer}</div>
+                                <div className="flex items-center gap-1">
+                                  <span>Cliente: {task.customer}</span>
+                                </div>
                               )}
                             </div>
                           </div>
                           
-                          <div className="flex space-x-2">
+                          <div className="flex items-center space-x-2">
                             <Button size="sm" variant="outline">
                               Editar
                             </Button>
                             <Button size="sm">
                               Concluir
+                            </Button>
+                            <Button size="sm" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
@@ -246,7 +286,7 @@ const TasksNotifications = () => {
               </TabsContent>
 
               <TabsContent value="notifications" className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h3 className="text-lg font-semibold">Central de Notificações</h3>
                   <Button onClick={handleMarkAllAsRead} variant="outline">
                     Marcar Todas como Lidas
@@ -256,21 +296,22 @@ const TasksNotifications = () => {
                 <div className="space-y-3">
                   {notifications.length === 0 ? (
                     <Card>
-                      <CardContent className="p-6 text-center">
-                        <Bell className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">Nenhuma notificação no momento</p>
+                      <CardContent className="p-12 text-center">
+                        <Bell className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Nenhuma notificação</h3>
+                        <p className="text-muted-foreground">Você está em dia com todas as notificações!</p>
                       </CardContent>
                     </Card>
                   ) : (
                     notifications.map((notification) => (
-                      <Card key={notification.id} className={!notification.read ? "border-blue-200 bg-blue-50" : ""}>
+                      <Card key={notification.id} className={`transition-all ${!notification.read ? "border-blue-200 bg-blue-50/50 dark:bg-blue-950/20" : ""}`}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
-                            <div className="flex-1">
+                            <div className="flex-1 space-y-2">
                               <h4 className="font-medium">{notification.title}</h4>
                               <p className="text-sm text-muted-foreground">{notification.message}</p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(notification.created_at).toLocaleString()}
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(notification.timestamp || Date.now()).toLocaleString('pt-BR')}
                               </p>
                             </div>
                             <div className="flex space-x-2">
@@ -304,30 +345,30 @@ const TasksNotifications = () => {
                   <CardHeader>
                     <CardTitle>Criar Nova Tarefa</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Título da Tarefa</Label>
+                        <Label htmlFor="title">Título da Tarefa *</Label>
                         <Input id="title" placeholder="Digite o título..." />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="assignee">Responsável</Label>
+                        <Label htmlFor="assignee">Responsável *</Label>
                         <Input id="assignee" placeholder="Nome do responsável..." />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="description">Descrição</Label>
+                      <Label htmlFor="description">Descrição *</Label>
                       <Textarea id="description" placeholder="Descreva a tarefa..." />
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="priority">Prioridade</Label>
+                        <Label htmlFor="priority">Prioridade *</Label>
                         <Input id="priority" placeholder="Alta, Média, Baixa" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="dueDate">Data de Vencimento</Label>
+                        <Label htmlFor="dueDate">Data de Vencimento *</Label>
                         <Input id="dueDate" type="date" />
                       </div>
                       <div className="space-y-2">
@@ -338,6 +379,7 @@ const TasksNotifications = () => {
                     
                     <Button 
                       onClick={() => handleCreateNotification("Nova Tarefa", "Tarefa criada com sucesso", "success")}
+                      className="w-full sm:w-auto"
                     >
                       Criar Tarefa
                     </Button>
@@ -351,8 +393,8 @@ const TasksNotifications = () => {
                     <CardTitle>Configurações de Notificações</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <div className="font-medium">Notificações por Email</div>
                           <div className="text-sm text-muted-foreground">Receber alertas por email</div>
@@ -360,7 +402,7 @@ const TasksNotifications = () => {
                         <Button variant="outline" size="sm">Ativo</Button>
                       </div>
                       
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <div className="font-medium">Lembretes de Tarefas</div>
                           <div className="text-sm text-muted-foreground">Notificações 1 dia antes do vencimento</div>
@@ -368,7 +410,7 @@ const TasksNotifications = () => {
                         <Button variant="outline" size="sm">Ativo</Button>
                       </div>
                       
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <div className="font-medium">Notificações Push</div>
                           <div className="text-sm text-muted-foreground">Alertas no navegador</div>
