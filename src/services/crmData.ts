@@ -61,7 +61,19 @@ export class CRMDataService {
   // Executar validação de qualidade dos dados
   static async runDataValidation(customerIds?: string[]): Promise<void> {
     try {
-      const customersToValidate = customerIds || await this.getAllCustomerIds();
+      let customersToValidate: string[];
+      
+      if (customerIds && customerIds.length > 0) {
+        customersToValidate = customerIds;
+      } else {
+        // Se não fornecido, buscar todos os IDs de clientes
+        const { data, error } = await supabase
+          .from('customers')
+          .select('id');
+        
+        if (error) throw error;
+        customersToValidate = (data || []).map(customer => customer.id);
+      }
       
       for (const customerId of customersToValidate) {
         // Executar função de cálculo de qualidade
@@ -110,40 +122,54 @@ export class CRMDataService {
   // Obter métricas de qualidade por módulo
   static async getQualityMetrics(): Promise<{ [module: string]: QualityMetrics }> {
     try {
-      const modules: Array<{ name: string; table: 'customers' | 'deals' | 'opportunities' | 'transactions' }> = [
-        { name: 'customers', table: 'customers' },
-        { name: 'deals', table: 'deals' },
-        { name: 'opportunities', table: 'opportunities' },
-        { name: 'transactions', table: 'transactions' }
-      ];
-      
       const metrics: { [module: string]: QualityMetrics } = {};
 
-      for (const module of modules) {
-        const { data, error } = await supabase
-          .from(module.table)
-          .select('data_quality_score');
+      // Buscar métricas para customers
+      const { data: customersData, error: customersError } = await supabase
+        .from('customers')
+        .select('data_quality_score');
 
-        if (error) {
-          console.error(`Erro ao buscar métricas para ${module.name}:`, error);
-          metrics[module.name] = this.getEmptyMetrics();
-          continue;
-        }
+      if (customersError) {
+        console.error('Erro ao buscar métricas para customers:', customersError);
+        metrics.customers = this.getEmptyMetrics();
+      } else {
+        metrics.customers = this.calculateModuleMetrics(customersData || []);
+      }
 
-        const records = data || [];
-        const totalRecords = records.length;
-        const validRecords = records.filter(r => (r.data_quality_score || 0) >= 60).length;
-        const averageScore = totalRecords > 0 
-          ? Math.round(records.reduce((sum, r) => sum + (r.data_quality_score || 0), 0) / totalRecords)
-          : 0;
+      // Buscar métricas para deals
+      const { data: dealsData, error: dealsError } = await supabase
+        .from('deals')
+        .select('data_quality_score');
 
-        metrics[module.name] = {
-          totalRecords,
-          validRecords,
-          invalidRecords: totalRecords - validRecords,
-          averageScore,
-          completenessPercentage: totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0
-        };
+      if (dealsError) {
+        console.error('Erro ao buscar métricas para deals:', dealsError);
+        metrics.deals = this.getEmptyMetrics();
+      } else {
+        metrics.deals = this.calculateModuleMetrics(dealsData || []);
+      }
+
+      // Buscar métricas para opportunities
+      const { data: opportunitiesData, error: opportunitiesError } = await supabase
+        .from('opportunities')
+        .select('data_quality_score');
+
+      if (opportunitiesError) {
+        console.error('Erro ao buscar métricas para opportunities:', opportunitiesError);
+        metrics.opportunities = this.getEmptyMetrics();
+      } else {
+        metrics.opportunities = this.calculateModuleMetrics(opportunitiesData || []);
+      }
+
+      // Buscar métricas para transactions
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('transactions')
+        .select('data_quality_score');
+
+      if (transactionsError) {
+        console.error('Erro ao buscar métricas para transactions:', transactionsError);
+        metrics.transactions = this.getEmptyMetrics();
+      } else {
+        metrics.transactions = this.calculateModuleMetrics(transactionsData || []);
       }
 
       return metrics;
@@ -151,6 +177,23 @@ export class CRMDataService {
       console.error('Erro ao calcular métricas:', error);
       throw error;
     }
+  }
+
+  // Calcular métricas para um módulo específico
+  private static calculateModuleMetrics(records: Array<{ data_quality_score: number | null }>): QualityMetrics {
+    const totalRecords = records.length;
+    const validRecords = records.filter(r => (r.data_quality_score || 0) >= 60).length;
+    const averageScore = totalRecords > 0 
+      ? Math.round(records.reduce((sum, r) => sum + (r.data_quality_score || 0), 0) / totalRecords)
+      : 0;
+
+    return {
+      totalRecords,
+      validRecords,
+      invalidRecords: totalRecords - validRecords,
+      averageScore,
+      completenessPercentage: totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0
+    };
   }
 
   // Obter logs de validação recentes
@@ -205,15 +248,6 @@ export class CRMDataService {
       return status as 'passed' | 'failed' | 'warning';
     }
     return 'failed'; // valor padrão
-  }
-
-  private static async getAllCustomerIds(): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('customers')
-      .select('id');
-
-    if (error) throw error;
-    return (data || []).map(customer => customer.id);
   }
 
   private static getEmptyMetrics(): QualityMetrics {

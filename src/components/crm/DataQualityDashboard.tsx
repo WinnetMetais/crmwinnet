@@ -69,7 +69,7 @@ export const DataQualityDashboard = () => {
   }));
 
   const handleRunValidation = () => {
-    runValidation(); // Sem argumentos, vai validar todos os clientes
+    runValidation(undefined); // Explicitly pass undefined to validate all customers
   };
 
   if (metricsLoading) {
