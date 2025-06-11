@@ -53,23 +53,56 @@ export const SpreadsheetSync = () => {
   };
 
   const parseCSV = (csv: string): SpreadsheetRow[] => {
-    const lines = csv.split('\n').filter(line => line.trim());
-    if (lines.length === 0) return [];
+    try {
+      const lines = csv.split('\n').filter(line => line.trim());
+      if (lines.length === 0) return [];
 
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-    console.log('Cabeçalhos CSV detectados:', headers);
-    
-    return lines.slice(1).map((line, index) => {
-      try {
-        const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-        return parseRowData(headers, values, index);
-      } catch (error) {
-        console.error(`Erro ao processar linha CSV ${index + 2}:`, error);
-        return null;
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+      console.log('Cabeçalhos CSV detectados:', headers);
+      
+      const validRows: SpreadsheetRow[] = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          // Melhor parsing do CSV considerando vírgulas em aspas
+          const values = parseCSVLine(lines[i]);
+          const row = parseRowData(headers, values, i);
+          
+          if (row && isValidRow(row)) {
+            validRows.push(row);
+          }
+        } catch (error) {
+          console.error(`Erro ao processar linha CSV ${i + 1}:`, error);
+        }
       }
-    }).filter((row): row is SpreadsheetRow => 
-      row !== null && row.descricao && row.valor && row.valor > 0
-    );
+      
+      return validRows;
+    } catch (error) {
+      console.error('Erro ao processar CSV:', error);
+      throw new Error('Erro ao processar arquivo CSV');
+    }
+  };
+
+  const parseCSVLine = (line: string): string[] => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    result.push(current.trim());
+    return result;
   };
 
   const parseExcel = (file: File): Promise<SpreadsheetRow[]> => {
@@ -92,25 +125,33 @@ export const SpreadsheetSync = () => {
             return;
           }
 
-          const headers = (jsonData[0] as string[]).map(h => h?.toString().toLowerCase().trim() || '');
+          const headers = (jsonData[0] as any[]).map(h => 
+            h?.toString().toLowerCase().trim().replace(/['"]/g, '') || ''
+          );
           console.log('Cabeçalhos Excel detectados:', headers);
           
-          const rows = jsonData.slice(1).map((row: any, index) => {
+          const validRows: SpreadsheetRow[] = [];
+          
+          for (let i = 1; i < jsonData.length; i++) {
             try {
-              const values = headers.map((_, colIndex) => row[colIndex]?.toString() || '');
-              return parseRowData(headers, values, index);
+              const row = jsonData[i] as any[];
+              const values = headers.map((_, colIndex) => 
+                row[colIndex]?.toString().trim() || ''
+              );
+              const parsedRow = parseRowData(headers, values, i);
+              
+              if (parsedRow && isValidRow(parsedRow)) {
+                validRows.push(parsedRow);
+              }
             } catch (error) {
-              console.error(`Erro ao processar linha Excel ${index + 2}:`, error);
-              return null;
+              console.error(`Erro ao processar linha Excel ${i + 1}:`, error);
             }
-          }).filter((row): row is SpreadsheetRow => 
-            row !== null && row.descricao && row.valor && row.valor > 0
-          );
+          }
 
-          resolve(rows);
+          resolve(validRows);
         } catch (error) {
           console.error('Erro ao processar arquivo Excel:', error);
-          reject(error);
+          reject(new Error('Erro ao processar arquivo Excel'));
         }
       };
       reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
@@ -119,35 +160,81 @@ export const SpreadsheetSync = () => {
   };
 
   const parseRowData = (headers: string[], values: string[], index: number): SpreadsheetRow | null => {
-    const row: any = {};
-    
-    headers.forEach((header, colIndex) => {
-      const value = values[colIndex] || '';
+    try {
+      const row: any = {};
       
-      // Mapear colunas da planilha para campos do sistema
-      if (header.includes('data') || header.includes('date')) {
-        row.data = value;
-      } else if (header.includes('descrição') || header.includes('descricao') || header.includes('description')) {
-        row.descricao = value;
-      } else if (header.includes('categoria') || header.includes('category')) {
-        row.categoria = value;
-      } else if (header.includes('tipo') || header.includes('type')) {
-        row.tipo = value.toLowerCase();
-      } else if (header.includes('valor') || header.includes('value') || header.includes('amount')) {
-        const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
-        row.valor = parseFloat(cleanValue) || 0;
-      } else if (header.includes('status')) {
-        row.status = value.toLowerCase();
-      } else if (header.includes('método') || header.includes('metodo') || header.includes('method')) {
-        row.metodo = value;
-      } else if (header.includes('canal') || header.includes('channel')) {
-        row.canal = value;
-      } else if (header.includes('cliente') || header.includes('client')) {
-        row.cliente = value;
-      }
-    });
+      headers.forEach((header, colIndex) => {
+        const value = values[colIndex] || '';
+        
+        // Mapeamento flexível de colunas
+        if (header.includes('data') || header.includes('date') || header.includes('vencimento')) {
+          row.data = value;
+        } else if (header.includes('descrição') || header.includes('descricao') || 
+                   header.includes('description') || header.includes('nome')) {
+          row.descricao = value;
+        } else if (header.includes('categoria') || header.includes('category')) {
+          row.categoria = value;
+        } else if (header.includes('tipo') || header.includes('type')) {
+          row.tipo = value.toLowerCase();
+        } else if (header.includes('valor') || header.includes('value') || 
+                   header.includes('amount') || header.includes('entrada') || 
+                   header.includes('saida')) {
+          // Para colunas de entrada/saída, determinar o tipo
+          if (header.includes('entrada')) {
+            row.tipo = 'receita';
+          } else if (header.includes('saida')) {
+            row.tipo = 'despesa';
+          }
+          const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
+          const numValue = parseFloat(cleanValue) || 0;
+          if (numValue > 0) {
+            row.valor = numValue;
+          }
+        } else if (header.includes('status')) {
+          row.status = value.toLowerCase();
+        } else if (header.includes('método') || header.includes('metodo') || 
+                   header.includes('method') || header.includes('pagamento')) {
+          row.metodo = value;
+        } else if (header.includes('canal') || header.includes('channel')) {
+          row.canal = value;
+        } else if (header.includes('cliente') || header.includes('client')) {
+          row.cliente = value;
+        }
+      });
+      
+      return row;
+    } catch (error) {
+      console.error(`Erro ao parsear linha ${index}:`, error);
+      return null;
+    }
+  };
+
+  const isValidRow = (row: any): boolean => {
+    // Validações básicas
+    if (!row.descricao || row.descricao.trim().length < 2) {
+      return false;
+    }
     
-    return row;
+    if (!row.valor || row.valor <= 0) {
+      return false;
+    }
+    
+    // Se não tiver tipo definido, tentar inferir
+    if (!row.tipo) {
+      row.tipo = 'receita'; // Default
+    }
+    
+    // Se não tiver categoria, usar default
+    if (!row.categoria) {
+      row.categoria = 'Importado';
+    }
+    
+    // Se não tiver status, usar default
+    if (!row.status) {
+      row.status = 'pendente';
+    }
+    
+    return true;
   };
 
   const checkDuplicate = async (transactionData: any): Promise<boolean> => {
@@ -184,23 +271,13 @@ export const SpreadsheetSync = () => {
 
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
-      setProgress((i / total) * 100);
+      setProgress(((i + 1) / total) * 100);
 
       try {
         // Converter data para formato ISO
         let dateISO = new Date().toISOString().split('T')[0];
         if (row.data) {
-          if (row.data.includes('/')) {
-            const dateParts = row.data.split('/');
-            if (dateParts.length === 3) {
-              const day = dateParts[0].padStart(2, '0');
-              const month = dateParts[1].padStart(2, '0');
-              const year = dateParts[2];
-              dateISO = `${year}-${month}-${day}`;
-            }
-          } else if (row.data.includes('-')) {
-            dateISO = row.data;
-          }
+          dateISO = parseDate(row.data);
         }
 
         // Mapear tipo de transação
@@ -256,6 +333,43 @@ export const SpreadsheetSync = () => {
     return { success: successCount, errors: errorCount, total, duplicates: duplicateCount };
   };
 
+  const parseDate = (dateStr: string): string => {
+    if (!dateStr) return new Date().toISOString().split('T')[0];
+    
+    try {
+      // Formatos aceitos: dd/mm/yyyy, yyyy-mm-dd, dd-mm-yyyy
+      if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          const day = parts[0].padStart(2, '0');
+          const month = parts[1].padStart(2, '0');
+          const year = parts[2];
+          return `${year}-${month}-${day}`;
+        }
+      } else if (dateStr.includes('-')) {
+        const parts = dateStr.split('-');
+        if (parts[0].length === 4) {
+          return dateStr; // Já está em formato ISO
+        } else if (parts.length === 3) {
+          const day = parts[0].padStart(2, '0');
+          const month = parts[1].padStart(2, '0');
+          const year = parts[2];
+          return `${year}-${month}-${day}`;
+        }
+      }
+      
+      // Tentar parseamento direto
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    } catch (error) {
+      console.error('Erro ao parsear data:', dateStr, error);
+    }
+    
+    return new Date().toISOString().split('T')[0]; // Fallback para hoje
+  };
+
   const handleSync = async () => {
     if (!file) {
       toast({
@@ -283,8 +397,8 @@ export const SpreadsheetSync = () => {
       
       if (data.length === 0) {
         toast({
-          title: "Arquivo vazio",
-          description: "Nenhum dado válido encontrado no arquivo.",
+          title: "Nenhum dado válido encontrado",
+          description: "Verifique se o arquivo contém dados válidos com as colunas necessárias (descrição, valor, etc.).",
           variant: "destructive",
         });
         return;
@@ -302,7 +416,7 @@ export const SpreadsheetSync = () => {
       console.error('Erro na sincronização:', error);
       toast({
         title: "Erro na sincronização",
-        description: "Ocorreu um erro ao processar o arquivo. Verifique o formato e tente novamente.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar o arquivo. Verifique o formato e tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -348,7 +462,7 @@ export const SpreadsheetSync = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Importe dados da sua planilha financeira para sincronizar com o CRM. 
-              Aceita arquivos CSV e Excel (.xlsx/.xls) com as colunas: data, descrição, categoria, tipo, valor, status, método, canal, cliente.
+              Aceita arquivos CSV e Excel (.xlsx/.xls). Detecta automaticamente colunas como: data, descrição, valor, entrada/saída, categoria, status, método de pagamento.
             </AlertDescription>
           </Alert>
 
