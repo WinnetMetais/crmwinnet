@@ -44,7 +44,7 @@ export class CRMDataService {
 
       if (error) throw error;
 
-      return (data || []).map(customer => ({
+      return (data || []).map((customer: any) => ({
         ...customer,
         // Garante que o status seja um dos valores válidos
         status: this.normalizeStatus(customer.status),
