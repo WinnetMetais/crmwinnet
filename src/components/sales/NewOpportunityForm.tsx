@@ -8,6 +8,7 @@ import { Plus, DollarSign } from "lucide-react";
 import { CustomerForm } from "@/components/customers/CustomerForm";
 import { QuoteForm } from "@/components/sales/QuoteForm";
 import { CustomerFormData } from "@/types/customer";
+import { Customer } from "@/services/customers";
 import { ClientTab } from "@/components/sales/opportunity/ClientTab";
 import { OpportunityTab } from "@/components/sales/opportunity/OpportunityTab";
 import { ProductsTab } from "@/components/sales/opportunity/ProductsTab";
@@ -18,10 +19,12 @@ import { createOpportunityItem } from "@/services/opportunities";
 
 interface OpportunityItem {
   id: string;
-  description: string;
+  productId: string;
+  productName: string;
+  sku: string;
   quantity: number;
   unit: string;
-  unit_price: number;
+  unitPrice: number;
   total: number;
 }
 
@@ -64,6 +67,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   
   const [formData, setFormData] = useState<OpportunityFormData>({
     customerId: '',
@@ -97,14 +101,27 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
   };
 
   const handleCustomerSubmit = (customerData: CustomerFormData) => {
+    const newCustomer: Customer = {
+      id: Date.now().toString(),
+      name: customerData.name,
+      email: customerData.email,
+      phone: customerData.phone,
+      address: customerData.address,
+      cnpj: customerData.cnpj,
+      lead_source: customerData.leadSource,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    setSelectedCustomer(newCustomer);
     updateFormData({
-      customerId: Date.now().toString(),
-      clientName: customerData.name,
-      clientEmail: customerData.email,
-      clientPhone: customerData.phone,
-      clientAddress: customerData.address,
-      clientCnpj: customerData.cnpj,
-      leadSource: customerData.leadSource
+      customerId: newCustomer.id,
+      clientName: newCustomer.name,
+      clientEmail: newCustomer.email || '',
+      clientPhone: newCustomer.phone || '',
+      clientAddress: newCustomer.address || '',
+      clientCnpj: newCustomer.cnpj || '',
+      leadSource: newCustomer.lead_source || ''
     });
     
     setShowCustomerForm(false);
@@ -113,6 +130,59 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     toast({
       title: "Cliente Cadastrado",
       description: "Cliente foi cadastrado e vinculado à oportunidade!",
+    });
+  };
+
+  const handleSelectCustomer = () => {
+    // TODO: Implementar seletor de cliente existente
+    toast({
+      title: "Em desenvolvimento",
+      description: "Seletor de cliente será implementado em breve",
+    });
+  };
+
+  const handleAddProduct = () => {
+    const newItem: OpportunityItem = {
+      id: Date.now().toString(),
+      productId: '',
+      productName: 'Produto Exemplo',
+      sku: 'SKU001',
+      quantity: 1,
+      unit: 'kg',
+      unitPrice: 100,
+      total: 100
+    };
+
+    updateFormData({
+      items: [...formData.items, newItem],
+      estimatedValue: formData.estimatedValue + newItem.total
+    });
+  };
+
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
+    const updatedItems = formData.items.map(item => {
+      if (item.id === itemId) {
+        const total = quantity * item.unitPrice;
+        return { ...item, quantity, total };
+      }
+      return item;
+    });
+
+    const newEstimatedValue = updatedItems.reduce((sum, item) => sum + item.total, 0);
+    
+    updateFormData({
+      items: updatedItems,
+      estimatedValue: newEstimatedValue
+    });
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    const updatedItems = formData.items.filter(item => item.id !== itemId);
+    const newEstimatedValue = updatedItems.reduce((sum, item) => sum + item.total, 0);
+    
+    updateFormData({
+      items: updatedItems,
+      estimatedValue: newEstimatedValue
     });
   };
 
@@ -151,10 +221,10 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
         for (const item of formData.items) {
           await createOpportunityItem({
             opportunity_id: opportunity.id,
-            description: item.description,
+            description: item.productName,
             quantity: item.quantity,
             unit: item.unit,
-            unit_price: item.unit_price,
+            unit_price: item.unitPrice,
             total: item.total
           });
         }
@@ -206,12 +276,8 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
 
                 <TabsContent value="client" className="space-y-6 mt-6">
                   <ClientTab
-                    formData={formData}
-                    onUpdateData={updateFormData}
-                    onNewCustomer={() => {
-                      setIsNewCustomer(true);
-                      setShowCustomerForm(true);
-                    }}
+                    selectedCustomer={selectedCustomer}
+                    onSelectCustomer={handleSelectCustomer}
                   />
                 </TabsContent>
 
@@ -232,8 +298,11 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
 
                 <TabsContent value="products" className="space-y-6 mt-6">
                   <ProductsTab
-                    formData={formData}
-                    onUpdateData={updateFormData}
+                    items={formData.items}
+                    estimatedValue={formData.estimatedValue}
+                    onAddProduct={handleAddProduct}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemoveItem={handleRemoveItem}
                   />
                 </TabsContent>
 
@@ -292,7 +361,8 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
             customerCnpj: formData.clientCnpj,
             items: formData.items.map(item => ({
               ...item,
-              code: ''
+              code: item.sku,
+              unitPrice: item.unitPrice // Corrigir a propriedade aqui
             })),
             subtotal: formData.subtotal,
             discount: formData.discount,
