@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,11 @@ export const CRMDataValidator = () => {
 
       const validationResults = (data || []).map(customer => ({
         ...customer,
-        validation_errors: customer.validation_errors || [],
+        validation_errors: Array.isArray(customer.validation_errors) 
+          ? customer.validation_errors 
+          : customer.validation_errors 
+            ? [String(customer.validation_errors)]
+            : [],
         severity: calculateSeverity(customer.data_quality_score || 0)
       }));
 
