@@ -1,25 +1,21 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
+import { NewTransactionForm } from "@/components/financial/NewTransactionForm";
 import { CashFlowManager } from "@/components/financial/CashFlowManager";
 import { ExpenseControl } from "@/components/financial/ExpenseControl";
 import { RevenueAnalysis } from "@/components/financial/RevenueAnalysis";
 import { ChannelAnalysis } from "@/components/financial/ChannelAnalysis";
 import { SpreadsheetSync } from "@/components/financial/SpreadsheetSync";
-import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
 import { DataValidationTool } from "@/components/financial/DataValidationTool";
+import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
+import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOperations";
 
 const Financial = () => {
-  // Dados de exemplo para os canais (serão atualizados com dados reais após importação)
-  const channelsData = {
-    site: { revenue: 86728.00, transactions: 265 },
-    mercadoLivre: { revenue: 64739.00, transactions: 193 },
-    madeiraMadeira: { revenue: 7971.67, transactions: 4 },
-    via: { revenue: 2495.42, transactions: 3 },
-    comercial: { revenue: 22093.86, transactions: 8 }
-  };
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -31,25 +27,31 @@ const Financial = () => {
             <div className="flex items-center space-x-4 mb-6">
               <SidebarTrigger />
               <div>
-                <h1 className="text-3xl font-bold">Módulo Financeiro</h1>
-                <p className="text-muted-foreground">Gestão completa das finanças da Winnet Metais</p>
+                <h1 className="text-3xl font-bold">Gestão Financeira</h1>
+                <p className="text-muted-foreground">Controle completo das finanças da Winnet Metais</p>
               </div>
             </div>
 
-            <Tabs defaultValue="dashboard" className="space-y-6">
-              <TabsList className="grid grid-cols-8 w-full">
+            <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-10 w-full">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="cashflow">Fluxo de Caixa</TabsTrigger>
+                <TabsTrigger value="new">Nova</TabsTrigger>
+                <TabsTrigger value="cashflow">Fluxo</TabsTrigger>
                 <TabsTrigger value="expenses">Despesas</TabsTrigger>
                 <TabsTrigger value="revenue">Receitas</TabsTrigger>
                 <TabsTrigger value="channels">Canais</TabsTrigger>
-                <TabsTrigger value="winnet-import">Dados Winnet</TabsTrigger>
+                <TabsTrigger value="spreadsheet">Planilha</TabsTrigger>
                 <TabsTrigger value="validation">Validação</TabsTrigger>
-                <TabsTrigger value="sync">Sincronização</TabsTrigger>
+                <TabsTrigger value="winnet">Winnet</TabsTrigger>
+                <TabsTrigger value="bulk">Operações</TabsTrigger>
               </TabsList>
 
               <TabsContent value="dashboard">
-                <FinancialDashboard data={{}} />
+                <FinancialDashboard />
+              </TabsContent>
+
+              <TabsContent value="new">
+                <NewTransactionForm />
               </TabsContent>
 
               <TabsContent value="cashflow">
@@ -65,19 +67,23 @@ const Financial = () => {
               </TabsContent>
 
               <TabsContent value="channels">
-                <ChannelAnalysis channels={channelsData} />
+                <ChannelAnalysis />
               </TabsContent>
 
-              <TabsContent value="winnet-import">
-                <WinnetDataImporter />
+              <TabsContent value="spreadsheet">
+                <SpreadsheetSync />
               </TabsContent>
 
               <TabsContent value="validation">
                 <DataValidationTool />
               </TabsContent>
 
-              <TabsContent value="sync">
-                <SpreadsheetSync />
+              <TabsContent value="winnet">
+                <WinnetDataImporter />
+              </TabsContent>
+
+              <TabsContent value="bulk">
+                <FinancialBulkOperations />
               </TabsContent>
             </Tabs>
           </div>

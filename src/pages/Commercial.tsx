@@ -8,6 +8,8 @@ import { QuoteEmailSender } from "@/components/commercial/QuoteEmailSender";
 import { CommissionSystem } from "@/components/commercial/CommissionSystem";
 import { SalesGoalsControl } from "@/components/commercial/SalesGoalsControl";
 import { NegotiationHistory } from "@/components/commercial/NegotiationHistory";
+import { CommercialSpreadsheetSync } from "@/components/commercial/CommercialSpreadsheetSync";
+import { CommercialBulkOperations } from "@/components/commercial/CommercialBulkOperations";
 
 const Commercial = () => {
   return (
@@ -26,12 +28,14 @@ const Commercial = () => {
             </div>
 
             <Tabs defaultValue="whatsapp" className="space-y-6">
-              <TabsList className="grid grid-cols-5 w-full">
+              <TabsList className="grid grid-cols-7 w-full">
                 <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
                 <TabsTrigger value="email">Email</TabsTrigger>
                 <TabsTrigger value="commission">Comissões</TabsTrigger>
                 <TabsTrigger value="goals">Metas</TabsTrigger>
                 <TabsTrigger value="negotiations">Negociações</TabsTrigger>
+                <TabsTrigger value="spreadsheet">Planilha</TabsTrigger>
+                <TabsTrigger value="bulk">Operações</TabsTrigger>
               </TabsList>
 
               <TabsContent value="whatsapp">
@@ -52,6 +56,14 @@ const Commercial = () => {
 
               <TabsContent value="negotiations">
                 <NegotiationHistory />
+              </TabsContent>
+
+              <TabsContent value="spreadsheet">
+                <CommercialSpreadsheetSync />
+              </TabsContent>
+
+              <TabsContent value="bulk">
+                <CommercialBulkOperations />
               </TabsContent>
             </Tabs>
           </div>
