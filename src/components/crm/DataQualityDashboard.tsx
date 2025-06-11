@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -26,185 +27,20 @@ import {
   FileText,
   RefreshCw
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useCRMData } from "@/hooks/useCRMData";
 
-interface QualityMetrics {
-  totalRecords: number;
-  validRecords: number;
-  invalidRecords: number;
-  averageScore: number;
-  completenessPercentage: number;
-}
-
-interface ModuleData {
-  module: string;
-  metrics: QualityMetrics;
-  recentLogs: any[];
-}
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export const DataQualityDashboard = () => {
-  const [moduleData, setModuleData] = useState<ModuleData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    loadQualityData();
-  }, []);
-
-  const loadQualityData = async () => {
-    try {
-      const modules = [
-        { name: 'customers', table: 'customers' as const, icon: Users },
-        { name: 'deals', table: 'deals' as const, icon: Target },
-        { name: 'opportunities', table: 'opportunities' as const, icon: TrendingUp },
-        { name: 'transactions', table: 'transactions' as const, icon: FileText }
-      ];
-
-      const moduleResults = await Promise.all(
-        modules.map(async (module) => {
-          try {
-            // Buscar métricas do módulo
-            const { data, error } = await supabase
-              .from(module.table)
-              .select('*');
-
-            if (error) {
-              console.error(`Erro ao carregar dados de ${module.name}:`, error);
-              return {
-                module: module.name,
-                metrics: {
-                  totalRecords: 0,
-                  validRecords: 0,
-                  invalidRecords: 0,
-                  averageScore: 0,
-                  completenessPercentage: 0
-                },
-                recentLogs: []
-              };
-            }
-
-            const records = data || [];
-            const totalRecords = records.length;
-            
-            // Verificar se a coluna data_quality_score existe
-            const hasQualityScore = records.length > 0 && 'data_quality_score' in records[0];
-            
-            let validRecords = 0;
-            let averageScore = 0;
-            
-            if (hasQualityScore) {
-              validRecords = records.filter(r => (r.data_quality_score || 0) >= 60).length;
-              averageScore = totalRecords > 0 
-                ? records.reduce((sum, r) => sum + (r.data_quality_score || 0), 0) / totalRecords 
-                : 0;
-            } else {
-              // Se não tem score, assumir que todos precisam de validação
-              validRecords = 0;
-              averageScore = 0;
-            }
-            
-            const invalidRecords = totalRecords - validRecords;
-
-            // Buscar logs recentes
-            const { data: logsData } = await supabase
-              .from('data_validation_logs')
-              .select('*')
-              .eq('table_name', module.table)
-              .order('created_at', { ascending: false })
-              .limit(5);
-
-            return {
-              module: module.name,
-              metrics: {
-                totalRecords,
-                validRecords,
-                invalidRecords,
-                averageScore: Math.round(averageScore),
-                completenessPercentage: totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0
-              },
-              recentLogs: logsData || []
-            };
-          } catch (moduleError) {
-            console.error(`Erro no módulo ${module.name}:`, moduleError);
-            return {
-              module: module.name,
-              metrics: {
-                totalRecords: 0,
-                validRecords: 0,
-                invalidRecords: 0,
-                averageScore: 0,
-                completenessPercentage: 0
-              },
-              recentLogs: []
-            };
-          }
-        })
-      );
-
-      setModuleData(moduleResults);
-    } catch (error) {
-      console.error('Erro ao carregar dados de qualidade:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os dados de qualidade",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshData = async () => {
-    setRefreshing(true);
-    await loadQualityData();
-    setRefreshing(false);
-    toast({
-      title: "Dados atualizados",
-      description: "Os dados de qualidade foram atualizados com sucesso",
-    });
-  };
-
-  const runQualityCheck = async () => {
-    setRefreshing(true);
-    try {
-      // Buscar todos os clientes para executar a função de cálculo
-      const { data: customers } = await supabase
-        .from('customers')
-        .select('id');
-
-      if (customers && customers.length > 0) {
-        // Executar validação para cada cliente
-        for (const customer of customers.slice(0, 10)) { // Limitar a 10 para não sobrecarregar
-          try {
-            const { error } = await supabase.rpc('calculate_customer_data_quality', { 
-              customer_id: customer.id 
-            });
-            if (error) {
-              console.error('Erro ao calcular qualidade do cliente:', error);
-            }
-          } catch (rpcError) {
-            console.error('Erro na chamada RPC:', rpcError);
-          }
-        }
-      }
-
-      await loadQualityData();
-      toast({
-        title: "Verificação concluída",
-        description: "A verificação de qualidade foi executada com sucesso",
-      });
-    } catch (error) {
-      console.error('Erro na verificação de qualidade:', error);
-      toast({
-        title: "Erro na verificação",
-        description: "Ocorreu um erro durante a verificação de qualidade",
-        variant: "destructive",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const {
+    qualityMetrics,
+    validationLogs,
+    metricsLoading,
+    logsLoading,
+    runValidation,
+    isValidating,
+    refreshData
+  } = useCRMData();
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
@@ -219,22 +55,20 @@ export const DataQualityDashboard = () => {
   };
 
   // Dados para gráficos
-  const chartData = moduleData.map(module => ({
-    name: module.module.charAt(0).toUpperCase() + module.module.slice(1),
-    score: module.metrics.averageScore,
-    valid: module.metrics.validRecords,
-    invalid: module.metrics.invalidRecords,
-    total: module.metrics.totalRecords
+  const chartData = Object.entries(qualityMetrics).map(([module, metrics]) => ({
+    name: module.charAt(0).toUpperCase() + module.slice(1),
+    score: metrics.averageScore,
+    valid: metrics.validRecords,
+    invalid: metrics.invalidRecords,
+    total: metrics.totalRecords
   }));
 
-  const pieData = moduleData.map(module => ({
-    name: module.module,
-    value: module.metrics.totalRecords
+  const pieData = Object.entries(qualityMetrics).map(([module, metrics]) => ({
+    name: module,
+    value: metrics.totalRecords
   }));
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-  if (loading) {
+  if (metricsLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
         <RefreshCw className="h-8 w-8 animate-spin" />
@@ -250,11 +84,11 @@ export const DataQualityDashboard = () => {
           <p className="text-muted-foreground">Visão geral da qualidade dos dados no CRM</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={refreshData} variant="outline" disabled={refreshing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          <Button onClick={refreshData} variant="outline" disabled={isValidating}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button onClick={runQualityCheck} disabled={refreshing}>
+          <Button onClick={() => runValidation()} disabled={isValidating}>
             <CheckCircle className="h-4 w-4 mr-2" />
             Executar Verificação
           </Button>
@@ -263,46 +97,46 @@ export const DataQualityDashboard = () => {
 
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {moduleData.map((module) => {
-          const IconComponent = module.module === 'customers' ? Users :
-                              module.module === 'deals' ? Target :
-                              module.module === 'opportunities' ? TrendingUp : FileText;
+        {Object.entries(qualityMetrics).map(([module, metrics]) => {
+          const IconComponent = module === 'customers' ? Users :
+                              module === 'deals' ? Target :
+                              module === 'opportunities' ? TrendingUp : FileText;
           
           return (
-            <Card key={module.module}>
+            <Card key={module}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium capitalize">
-                  {module.module}
+                  {module}
                 </CardTitle>
                 <IconComponent className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold">{module.metrics.totalRecords}</span>
-                    <Badge variant={getScoreBadgeVariant(module.metrics.averageScore)}>
-                      {module.metrics.averageScore}%
+                    <span className="text-2xl font-bold">{metrics.totalRecords}</span>
+                    <Badge variant={getScoreBadgeVariant(metrics.averageScore)}>
+                      {metrics.averageScore}%
                     </Badge>
                   </div>
                   
                   <div className="space-y-1">
                     <div className="flex justify-between text-sm">
                       <span>Qualidade Média</span>
-                      <span className={getScoreColor(module.metrics.averageScore)}>
-                        {module.metrics.averageScore}%
+                      <span className={getScoreColor(metrics.averageScore)}>
+                        {metrics.averageScore}%
                       </span>
                     </div>
-                    <Progress value={module.metrics.averageScore} className="h-2" />
+                    <Progress value={metrics.averageScore} className="h-2" />
                   </div>
 
                   <div className="flex justify-between items-center text-sm">
                     <div className="flex items-center gap-1">
                       <CheckCircle className="h-3 w-3 text-green-600" />
-                      <span>{module.metrics.validRecords} válidos</span>
+                      <span>{metrics.validRecords} válidos</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <XCircle className="h-3 w-3 text-red-600" />
-                      <span>{module.metrics.invalidRecords} inválidos</span>
+                      <span>{metrics.invalidRecords} inválidos</span>
                     </div>
                   </div>
                 </div>
@@ -387,42 +221,46 @@ export const DataQualityDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {moduleData.flatMap(module => 
-              module.recentLogs.map(log => (
-                <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {log.validation_status === 'passed' ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : log.validation_status === 'warning' ? (
-                      <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
-                    )}
-                    <div>
-                      <p className="font-medium">{log.table_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {log.validation_type} - {log.validated_by}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant={
-                      log.validation_status === 'passed' ? 'default' :
-                      log.validation_status === 'warning' ? 'secondary' : 'destructive'
-                    }>
-                      {log.validation_status}
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(log.created_at).toLocaleString('pt-BR')}
+            {!logsLoading && validationLogs.map(log => (
+              <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  {log.validation_status === 'passed' ? (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  ) : log.validation_status === 'warning' ? (
+                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-red-600" />
+                  )}
+                  <div>
+                    <p className="font-medium">{log.table_name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {log.validation_type} - {log.validated_by}
                     </p>
                   </div>
                 </div>
-              ))
-            )}
+                <div className="text-right">
+                  <Badge variant={
+                    log.validation_status === 'passed' ? 'default' :
+                    log.validation_status === 'warning' ? 'secondary' : 'destructive'
+                  }>
+                    {log.validation_status}
+                  </Badge>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {new Date(log.created_at).toLocaleString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+            ))}
             
-            {moduleData.every(module => module.recentLogs.length === 0) && (
+            {!logsLoading && validationLogs.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 Nenhum log de validação encontrado
+              </div>
+            )}
+
+            {logsLoading && (
+              <div className="flex justify-center py-4">
+                <RefreshCw className="h-6 w-6 animate-spin" />
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,112 +7,38 @@ import { Progress } from "@/components/ui/progress";
 import { DateFilters } from "@/components/shared/DateFilters";
 import { CheckCircle, AlertTriangle, XCircle, RefreshCw, Users, Calendar } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { DateFilterType } from "@/hooks/useDateFilters";
-
-interface ValidationResult {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  company?: string;
-  status: string;
-  created_at: string;
-  last_contact_date?: string;
-  data_quality_score: number;
-  validation_errors: string[];
-  severity: 'low' | 'medium' | 'high';
-}
+import { useCRMData } from "@/hooks/useCRMData";
 
 export const CRMDataValidator = () => {
-  const [customers, setCustomers] = useState<ValidationResult[]>([]);
-  const [filteredCustomers, setFilteredCustomers] = useState<ValidationResult[]>([]);
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationProgress, setValidationProgress] = useState(0);
-  const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilterType>('hoje');
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | null>(null);
-
-  useEffect(() => {
-    loadCustomers();
-  }, []);
-
-  // Aplicar filtros de data quando mudarem
-  useEffect(() => {
-    if (dateRange) {
-      applyDateFilter();
-    }
-  }, [customers, dateRange, selectedDateFilter]);
-
-  const loadCustomers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const validationResults = (data || []).map(customer => ({
-        ...customer,
-        validation_errors: Array.isArray(customer.validation_errors) 
-          ? customer.validation_errors.map(error => String(error))
-          : customer.validation_errors 
-            ? [String(customer.validation_errors)]
-            : [],
-        severity: calculateSeverity(customer.data_quality_score || 0)
-      }));
-
-      setCustomers(validationResults);
-      console.log(`Carregados ${validationResults.length} clientes para validação`);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os clientes",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const applyDateFilter = () => {
-    if (!dateRange) {
-      setFilteredCustomers(customers);
-      return;
-    }
-
-    console.log(`Aplicando filtro de data: ${selectedDateFilter}`, dateRange);
-
-    const filtered = customers.filter(customer => {
-      // Usar created_at como campo principal para filtro
-      const customerDate = new Date(customer.created_at);
-      
-      // Verificar se a data do cliente está dentro do range
-      const isInRange = customerDate >= dateRange.from && customerDate <= dateRange.to;
-      
-      // Para filtros de "HOJE" e "7 DIAS", também considerar last_contact_date
-      if ((selectedDateFilter === 'hoje' || selectedDateFilter === '7_dias') && customer.last_contact_date) {
-        const lastContactDate = new Date(customer.last_contact_date);
-        const isLastContactInRange = lastContactDate >= dateRange.from && lastContactDate <= dateRange.to;
-        return isInRange || isLastContactInRange;
-      }
-      
-      return isInRange;
-    });
-
-    setFilteredCustomers(filtered);
-    console.log(`Filtro aplicado: ${filtered.length} de ${customers.length} clientes`);
-  };
+  const {
+    customers,
+    stats,
+    filters,
+    customersLoading,
+    isValidating,
+    updateDateFilter,
+    runValidation,
+    refreshData
+  } = useCRMData();
 
   const handleDateFilterChange = (filter: DateFilterType, range: { from: Date; to: Date }) => {
     console.log(`Filtro de data alterado: ${filter}`, range);
-    setSelectedDateFilter(filter);
-    setDateRange(range);
+    updateDateFilter(filter, range);
   };
 
-  const calculateSeverity = (score: number): 'low' | 'medium' | 'high' => {
-    if (score >= 80) return 'low';
-    if (score >= 50) return 'medium';
-    return 'high';
+  const handleRunValidation = () => {
+    if (customers.length === 0) {
+      toast({
+        title: "Nenhum cliente",
+        description: "Não há clientes no período selecionado para validar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const customerIds = customers.map(c => c.id);
+    runValidation(customerIds);
   };
 
   const getSeverityColor = (severity: string) => {
@@ -132,62 +59,13 @@ export const CRMDataValidator = () => {
     }
   };
 
-  const runValidation = async () => {
-    if (filteredCustomers.length === 0) {
-      toast({
-        title: "Nenhum cliente",
-        description: "Não há clientes no período selecionado para validar",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsValidating(true);
-    setValidationProgress(0);
-
-    try {
-      console.log(`Iniciando validação de ${filteredCustomers.length} clientes`);
-      
-      for (let i = 0; i < filteredCustomers.length; i++) {
-        const customer = filteredCustomers[i];
-        
-        // Simular validação (na versão real, chamar função do Supabase)
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Atualizar progresso
-        const progress = ((i + 1) / filteredCustomers.length) * 100;
-        setValidationProgress(progress);
-      }
-
-      toast({
-        title: "Validação concluída",
-        description: `${filteredCustomers.length} clientes validados no período selecionado`,
-      });
-
-      // Recarregar dados
-      await loadCustomers();
-    } catch (error) {
-      console.error('Erro na validação:', error);
-      toast({
-        title: "Erro na validação",
-        description: "Ocorreu um erro durante a validação",
-        variant: "destructive",
-      });
-    } finally {
-      setIsValidating(false);
-      setValidationProgress(0);
-    }
-  };
-
-  const stats = {
-    total: filteredCustomers.length,
-    high: filteredCustomers.filter(c => c.severity === 'high').length,
-    medium: filteredCustomers.filter(c => c.severity === 'medium').length,
-    low: filteredCustomers.filter(c => c.severity === 'low').length,
-    avgScore: filteredCustomers.length > 0 
-      ? Math.round(filteredCustomers.reduce((sum, c) => sum + (c.data_quality_score || 0), 0) / filteredCustomers.length)
-      : 0
-  };
+  if (customersLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-96">
+        <RefreshCw className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -275,29 +153,39 @@ export const CRMDataValidator = () => {
         <CardContent>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span>Clientes no período selecionado: {filteredCustomers.length}</span>
-              <Button 
-                onClick={runValidation} 
-                disabled={isValidating || filteredCustomers.length === 0}
-              >
-                {isValidating ? (
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    Validando...
-                  </div>
-                ) : (
-                  'Executar Validação'
-                )}
-              </Button>
+              <span>Clientes no período selecionado: {customers.length}</span>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={refreshData} 
+                  variant="outline" 
+                  disabled={isValidating}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
+                  Atualizar
+                </Button>
+                <Button 
+                  onClick={handleRunValidation} 
+                  disabled={isValidating || customers.length === 0}
+                >
+                  {isValidating ? (
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Validando...
+                    </div>
+                  ) : (
+                    'Executar Validação'
+                  )}
+                </Button>
+              </div>
             </div>
 
             {isValidating && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Progresso da validação</span>
-                  <span>{Math.round(validationProgress)}%</span>
+                  <span>Validação em progresso...</span>
+                  <span>Processando registros</span>
                 </div>
-                <Progress value={validationProgress} className="h-2" />
+                <Progress value={100} className="h-2 animate-pulse" />
               </div>
             )}
           </div>
@@ -307,11 +195,11 @@ export const CRMDataValidator = () => {
       {/* Lista de Clientes */}
       <Card>
         <CardHeader>
-          <CardTitle>Clientes no Período ({filteredCustomers.length})</CardTitle>
+          <CardTitle>Clientes no Período ({customers.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {filteredCustomers.map((customer) => (
+            {customers.map((customer) => (
               <div key={customer.id} className="p-4 border rounded-lg">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -334,7 +222,7 @@ export const CRMDataValidator = () => {
                       )}
                     </div>
 
-                    {customer.validation_errors.length > 0 && (
+                    {customer.validation_errors && customer.validation_errors.length > 0 && (
                       <div className="mt-2">
                         <div className="text-sm font-medium mb-1">Problemas encontrados:</div>
                         <div className="text-sm text-red-600">
@@ -356,7 +244,7 @@ export const CRMDataValidator = () => {
               </div>
             ))}
             
-            {filteredCustomers.length === 0 && (
+            {customers.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 Nenhum cliente encontrado no período selecionado
               </div>
