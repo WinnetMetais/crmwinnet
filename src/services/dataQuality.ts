@@ -69,24 +69,33 @@ export class DataQualityService {
   // Método auxiliar para buscar transações com tipos explícitos
   private static async getCustomerTransactions(customerId: string): Promise<SimpleTransaction[]> {
     try {
-      // Query direta usando SQL básico para evitar problemas de tipo
-      const query = supabase.from('transactions').select('id').eq('customer_id', customerId);
-      const result = await query;
+      // Usar uma consulta mais simples sem encadeamento complexo
+      const transactionsResponse = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('customer_id', customerId);
       
-      if (result.error) {
-        console.error(`Erro ao buscar transações para cliente ${customerId}:`, result.error);
+      if (transactionsResponse.error) {
+        console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionsResponse.error);
         return [];
       }
 
-      // Mapear explicitamente para nossa interface simples
-      const transactions: SimpleTransaction[] = [];
-      if (result.data) {
-        for (const item of result.data) {
-          transactions.push({ id: String(item.id) });
+      // Processar resultado de forma segura
+      const transactionsData = transactionsResponse.data;
+      if (!transactionsData || !Array.isArray(transactionsData)) {
+        return [];
+      }
+
+      // Mapear para nossa interface simples
+      const result: SimpleTransaction[] = [];
+      for (let i = 0; i < transactionsData.length; i++) {
+        const item = transactionsData[i];
+        if (item && item.id) {
+          result.push({ id: String(item.id) });
         }
       }
       
-      return transactions;
+      return result;
     } catch (error) {
       console.error('Erro ao buscar transações:', error);
       return [];
