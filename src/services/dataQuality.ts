@@ -17,7 +17,7 @@ export class DataQualityService {
           .select('id');
         
         if (customerError) throw customerError;
-        targetCustomers = (customerData || []).map(item => item.id);
+        targetCustomers = (customerData || []).map((item: any) => item.id);
       }
       
       for (const customerId of targetCustomers) {
@@ -42,7 +42,7 @@ export class DataQualityService {
           continue;
         }
 
-        const transactions = transactionData || [];
+        const transactions: any[] = transactionData || [];
         if (transactions.length > 0) {
           for (const transaction of transactions) {
             const validationResult = await supabase.rpc('validate_transaction_data', {
