@@ -1301,6 +1301,7 @@ export type Database = {
           description: string | null
           dimensions: string | null
           id: string
+          image_url: string | null
           inventory_count: number | null
           margin_50: number | null
           margin_55: number | null
@@ -1326,6 +1327,7 @@ export type Database = {
           description?: string | null
           dimensions?: string | null
           id?: string
+          image_url?: string | null
           inventory_count?: number | null
           margin_50?: number | null
           margin_55?: number | null
@@ -1351,6 +1353,7 @@ export type Database = {
           description?: string | null
           dimensions?: string | null
           id?: string
+          image_url?: string | null
           inventory_count?: number | null
           margin_50?: number | null
           margin_55?: number | null

@@ -8,6 +8,7 @@ import { CashFlowManager } from "@/components/financial/CashFlowManager";
 import { ExpenseControl } from "@/components/financial/ExpenseControl";
 import { RevenueAnalysis } from "@/components/financial/RevenueAnalysis";
 import { ChannelAnalysis } from "@/components/financial/ChannelAnalysis";
+import { SpreadsheetSync } from "@/components/financial/SpreadsheetSync";
 
 const Financial = () => {
   // Dados de exemplo para os canais
@@ -35,12 +36,13 @@ const Financial = () => {
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6">
-              <TabsList className="grid grid-cols-5 w-full">
+              <TabsList className="grid grid-cols-6 w-full">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="cashflow">Fluxo de Caixa</TabsTrigger>
                 <TabsTrigger value="expenses">Despesas</TabsTrigger>
                 <TabsTrigger value="revenue">Receitas</TabsTrigger>
                 <TabsTrigger value="channels">Canais</TabsTrigger>
+                <TabsTrigger value="sync">Sincronização</TabsTrigger>
               </TabsList>
 
               <TabsContent value="dashboard">
@@ -61,6 +63,10 @@ const Financial = () => {
 
               <TabsContent value="channels">
                 <ChannelAnalysis channels={channelsData} />
+              </TabsContent>
+
+              <TabsContent value="sync">
+                <SpreadsheetSync />
               </TabsContent>
             </Tabs>
           </div>

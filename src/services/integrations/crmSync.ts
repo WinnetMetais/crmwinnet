@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { logIntegrationAction } from "@/services/integrationLogs";
 import { createCustomerInteraction } from "@/services/opportunities";
@@ -267,6 +266,384 @@ export class CRMSyncService {
   /**
    * Sincroniza oportunidades com deals existentes
    */
+  async syncOpportunitiesWithDeals() {
+    try {
+      const { data: opportunities } = await supabase
+        .from('opportunities')
+        .select('*')
+        .is('deal_id', null);
+
+      const { data: deals } = await supabase
+        .from('deals')
+        .select('*')
+        .is('opportunity_id', null);
+
+      // Relacionar oportunidades com deals baseado no cliente e valor
+      for (const opportunity of opportunities || []) {
+        const matchingDeal = deals?.find(deal => 
+          deal.customer_id === opportunity.customer_id &&
+          Math.abs((deal.estimated_value || 0) - (opportunity.value || 0)) < 100
+        );
+
+        if (matchingDeal) {
+          // Atualizar deal com referência da oportunidade
+          await supabase
+            .from('deals')
+            .update({ opportunity_id: opportunity.id })
+            .eq('id', matchingDeal.id);
+
+          // Atualizar oportunidade com estágio do deal
+          await supabase
+            .from('opportunities')
+            .update({ 
+              stage: matchingDeal.status || 'prospecto',
+              probability: this.stageToProbalitity(matchingDeal.status)
+            })
+            .eq('id', opportunity.id);
+        }
+      }
+
+      await logIntegrationAction('crm', 'sync_opportunities_deals', 'success');
+      return true;
+    } catch (error) {
+      console.error("Erro ao sincronizar oportunidades com deals:", error);
+      await logIntegrationAction('crm', 'sync_opportunities_deals', 'error', null, String(error));
+      return false;
+    }
+  }
+
+  private stageToProbalitity(stage?: string): number {
+    const stageMap: Record<string, number> = {
+      'prospecto': 20,
+      'qualificacao': 40,
+      'proposta': 60,
+      'negociacao': 80,
+      'fechamento': 95,
+      'lead': 10
+    };
+    return stageMap[stage || 'lead'] || 20;
+  }
+
+  /**
+   * Sincroniza dados de planilha com o CRM
+   */
+  async syncSpreadsheetData(csvContent: string) {
+    try {
+      console.log("Iniciando sincronização de planilha com CRM");
+      
+      await logIntegrationAction('spreadsheet', 'sync_start', 'pending');
+      
+      // Processar dados da planilha
+      const rows = this.parseSpreadsheetData(csvContent);
+      
+      // Sincronizar transações
+      const transactionResults = await this.syncFinancialTransactions(rows);
+      
+      // Atualizar métricas do CRM
+      await this.updateCRMMetrics(transactionResults);
+      
+      await logIntegrationAction('spreadsheet', 'sync_complete', 'success', {
+        transactions_synced: transactionResults.success,
+        total_processed: transactionResults.total
+      });
+      
+      console.log("Sincronização de planilha concluída com sucesso");
+      return transactionResults;
+    } catch (error) {
+      console.error("Erro na sincronização de planilha:", error);
+      await logIntegrationAction('spreadsheet', 'sync_error', 'error', null, String(error));
+      throw error;
+    }
+  }
+
+  /**
+   * Processa dados da planilha
+   */
+  private parseSpreadsheetData(csvContent: string) {
+    const lines = csvContent.split('\n').filter(line => line.trim());
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    
+    return lines.slice(1).map(line => {
+      const values = line.split(',');
+      const row: any = {};
+      
+      headers.forEach((header, index) => {
+        const value = values[index]?.trim() || '';
+        
+        switch (header) {
+          case 'data':
+          case 'date':
+            row.date = this.parseDate(value);
+            break;
+          case 'descrição':
+          case 'descricao':
+          case 'description':
+            row.description = value;
+            break;
+          case 'categoria':
+          case 'category':
+            row.category = value;
+            break;
+          case 'tipo':
+          case 'type':
+            row.type = value.toLowerCase().includes('entrada') ? 'receita' : 'despesa';
+            break;
+          case 'valor':
+          case 'value':
+          case 'amount':
+            row.amount = this.parseAmount(value);
+            break;
+          case 'status':
+            row.status = this.parseStatus(value);
+            break;
+          case 'método':
+          case 'metodo':
+          case 'method':
+            row.method = value;
+            break;
+          case 'cliente':
+          case 'client':
+            row.client = value;
+            break;
+        }
+      });
+      
+      return row;
+    }).filter(row => row.description && row.amount);
+  }
+
+  /**
+   * Sincroniza transações financeiras
+   */
+  private async syncFinancialTransactions(rows: any[]) {
+    let successCount = 0;
+    let errorCount = 0;
+    const total = rows.length;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    for (const row of rows) {
+      try {
+        // Verificar se cliente existe e criar se necessário
+        let customerId = null;
+        if (row.client) {
+          customerId = await this.findOrCreateCustomer(row.client);
+        }
+
+        const transactionData = {
+          type: row.type,
+          title: row.description,
+          amount: Math.abs(row.amount),
+          category: row.category || 'Importado da Planilha',
+          date: row.date,
+          status: row.status,
+          payment_method: row.method || '',
+          description: `Importado da planilha Winnet: ${row.description}`,
+          client_name: row.client || '',
+          user_id: user.id
+        };
+
+        // Verificar duplicatas
+        const isDuplicate = await this.checkTransactionDuplicate(transactionData);
+        
+        if (!isDuplicate) {
+          const { error } = await supabase
+            .from('transactions')
+            .insert(transactionData);
+
+          if (error) throw error;
+
+          // Se for uma receita e tiver cliente, criar interação
+          if (row.type === 'receita' && customerId) {
+            await this.createCustomerInteraction(customerId, row);
+          }
+
+          successCount++;
+        }
+      } catch (error) {
+        console.error('Erro ao sincronizar transação:', error);
+        errorCount++;
+      }
+    }
+
+    return { success: successCount, errors: errorCount, total };
+  }
+
+  /**
+   * Encontra ou cria cliente
+   */
+  private async findOrCreateCustomer(clientName: string) {
+    try {
+      // Buscar cliente existente
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('id')
+        .ilike('name', clientName)
+        .limit(1)
+        .single();
+
+      if (existingCustomer) {
+        return existingCustomer.id;
+      }
+
+      // Criar novo cliente
+      const { data: newCustomer, error } = await supabase
+        .from('customers')
+        .insert({
+          name: clientName,
+          lead_source: 'planilha_financeira',
+          status: 'ativo',
+          notes: 'Cliente importado automaticamente da planilha financeira'
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      return newCustomer.id;
+    } catch (error) {
+      console.error('Erro ao encontrar/criar cliente:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Verifica se transação já existe
+   */
+  private async checkTransactionDuplicate(transactionData: any): Promise<boolean> {
+    try {
+      const { data } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('title', transactionData.title)
+        .eq('amount', transactionData.amount)
+        .eq('date', transactionData.date)
+        .limit(1);
+
+      return data && data.length > 0;
+    } catch (error) {
+      console.error('Erro ao verificar duplicata:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Cria interação com cliente
+   */
+  private async createCustomerInteraction(customerId: string, row: any) {
+    try {
+      await supabase
+        .from('customer_interactions')
+        .insert({
+          customer_id: customerId,
+          interaction_type: 'financial_transaction',
+          subject: `Transação: ${row.description}`,
+          description: `Valor: R$ ${row.amount.toFixed(2)} - Importado da planilha`,
+          date: row.date,
+          created_by: 'Sistema de Sincronização'
+        });
+    } catch (error) {
+      console.error('Erro ao criar interação:', error);
+    }
+  }
+
+  /**
+   * Atualiza métricas do CRM
+   */
+  private async updateCRMMetrics(results: any) {
+    try {
+      const metricsData = {
+        last_sync: new Date().toISOString(),
+        transactions_imported: results.success,
+        sync_errors: results.errors,
+        total_processed: results.total
+      };
+
+      await supabase
+        .from('integration_logs')
+        .insert({
+          integration_type: 'spreadsheet_metrics',
+          action: 'update_metrics',
+          status: 'success',
+          data: metricsData
+        });
+    } catch (error) {
+      console.error('Erro ao atualizar métricas:', error);
+    }
+  }
+
+  /**
+   * Utilitários de parsing
+   */
+  private parseDate(dateStr: string): string {
+    if (dateStr.includes('/')) {
+      const [day, month, year] = dateStr.split('/');
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    return dateStr || new Date().toISOString().split('T')[0];
+  }
+
+  private parseAmount(amountStr: string): number {
+    const cleaned = amountStr.replace(/[^\d.,-]/g, '');
+    const normalized = cleaned.replace(',', '.');
+    return parseFloat(normalized) || 0;
+  }
+
+  private parseStatus(statusStr: string): 'pendente' | 'pago' | 'vencido' {
+    const status = statusStr.toLowerCase();
+    if (status.includes('pago') || status.includes('recebido')) {
+      return 'pago';
+    } else if (status.includes('vencido') || status.includes('atrasado')) {
+      return 'vencido';
+    }
+    return 'pendente';
+  }
+
+  async getIntegrationStats() {
+    const { data: tokens, error } = await supabase
+      .from('ad_tokens')
+      .select('*')
+      .eq('active', true);
+
+    if (error) {
+      console.error("Erro ao obter estatísticas:", error);
+      await logIntegrationAction('crm', 'get_stats', 'error', null, error.message);
+      return [];
+    }
+
+    await logIntegrationAction('crm', 'get_stats', 'success', { tokens_found: tokens?.length || 0 });
+    return tokens || [];
+  }
+
+  async validateIntegrations() {
+    const { data: campaigns, error } = await supabase
+      .from('campaigns')
+      .select('platform, updated_at')
+      .gte('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+    if (error) {
+      console.error("Erro ao validar integrações:", error);
+      await logIntegrationAction('crm', 'validate', 'error', null, error.message);
+      return { valid: false, issues: ["Erro ao acessar dados"] };
+    }
+
+    const activePlatforms = new Set(campaigns?.map(c => c.platform) || []);
+    const expectedPlatforms = ['google', 'facebook', 'linkedin'];
+    const missingPlatforms = expectedPlatforms.filter(p => !activePlatforms.has(p));
+
+    const result = {
+      valid: missingPlatforms.length === 0,
+      activePlatforms: Array.from(activePlatforms),
+      missingPlatforms,
+      lastUpdate: campaigns?.[0]?.updated_at
+    };
+
+    await logIntegrationAction('crm', 'validate', 'success', result);
+    return result;
+  }
+
   async syncOpportunitiesWithDeals() {
     try {
       const { data: opportunities } = await supabase
