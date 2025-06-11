@@ -34,6 +34,7 @@ export const SpreadsheetSync = () => {
     total: number;
     duplicates: number;
     validationErrors: string[];
+    processedRows: any[];
   } | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,24 +58,41 @@ export const SpreadsheetSync = () => {
   const parseCSV = (csv: string): SpreadsheetRow[] => {
     try {
       const lines = csv.split('\n').filter(line => line.trim());
-      if (lines.length === 0) return [];
+      if (lines.length === 0) {
+        console.log('CSV vazio');
+        return [];
+      }
 
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
       console.log('Cabeçalhos CSV detectados:', headers);
+      console.log('Total de linhas no CSV:', lines.length - 1);
       
       const validRows: SpreadsheetRow[] = [];
+      const invalidRows: any[] = [];
       
       for (let i = 1; i < lines.length; i++) {
         try {
           const values = parseCSVLine(lines[i]);
+          console.log(`Processando linha ${i}:`, values);
+          
           const row = parseRowData(headers, values, i);
           
           if (row && isValidRow(row)) {
             validRows.push(row);
+            console.log(`Linha ${i} válida:`, row);
+          } else {
+            invalidRows.push({ line: i, values, reason: 'Validação falhou' });
+            console.log(`Linha ${i} inválida:`, row);
           }
         } catch (error) {
           console.error(`Erro ao processar linha CSV ${i + 1}:`, error);
+          invalidRows.push({ line: i, error: error.message });
         }
+      }
+      
+      console.log(`CSV processado: ${validRows.length} válidas, ${invalidRows.length} inválidas`);
+      if (invalidRows.length > 0) {
+        console.log('Linhas inválidas:', invalidRows);
       }
       
       return validRows;
@@ -95,14 +113,14 @@ export const SpreadsheetSync = () => {
       if (char === '"') {
         inQuotes = !inQuotes;
       } else if (char === ',' && !inQuotes) {
-        result.push(current.trim());
+        result.push(current.trim().replace(/^"(.*)"$/, '$1'));
         current = '';
       } else {
         current += char;
       }
     }
     
-    result.push(current.trim());
+    result.push(current.trim().replace(/^"(.*)"$/, '$1'));
     return result;
   };
 
@@ -118,8 +136,10 @@ export const SpreadsheetSync = () => {
           const worksheet = workbook.Sheets[sheetName];
           
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          console.log('Dados Excel brutos:', jsonData);
           
           if (jsonData.length === 0) {
+            console.log('Excel vazio');
             resolve([]);
             return;
           }
@@ -128,8 +148,10 @@ export const SpreadsheetSync = () => {
             h?.toString().toLowerCase().trim().replace(/['"]/g, '') || ''
           );
           console.log('Cabeçalhos Excel detectados:', headers);
+          console.log('Total de linhas no Excel:', jsonData.length - 1);
           
           const validRows: SpreadsheetRow[] = [];
+          const invalidRows: any[] = [];
           
           for (let i = 1; i < jsonData.length; i++) {
             try {
@@ -137,14 +159,26 @@ export const SpreadsheetSync = () => {
               const values = headers.map((_, colIndex) => 
                 row[colIndex]?.toString().trim() || ''
               );
+              console.log(`Processando linha Excel ${i}:`, values);
+              
               const parsedRow = parseRowData(headers, values, i);
               
               if (parsedRow && isValidRow(parsedRow)) {
                 validRows.push(parsedRow);
+                console.log(`Linha Excel ${i} válida:`, parsedRow);
+              } else {
+                invalidRows.push({ line: i, values, reason: 'Validação falhou', parsedRow });
+                console.log(`Linha Excel ${i} inválida:`, parsedRow);
               }
             } catch (error) {
               console.error(`Erro ao processar linha Excel ${i + 1}:`, error);
+              invalidRows.push({ line: i, error: error.message });
             }
+          }
+
+          console.log(`Excel processado: ${validRows.length} válidas, ${invalidRows.length} inválidas`);
+          if (invalidRows.length > 0) {
+            console.log('Linhas inválidas:', invalidRows);
           }
 
           resolve(validRows);
@@ -165,42 +199,59 @@ export const SpreadsheetSync = () => {
       headers.forEach((header, colIndex) => {
         const value = values[colIndex] || '';
         
-        // Mapeamento melhorado e mais flexível de colunas
+        // Mapeamento mais amplo e flexível de colunas
         if (header.includes('data') || header.includes('date') || header.includes('vencimento')) {
           row.data = value;
         } else if (header.includes('descrição') || header.includes('descricao') || 
                    header.includes('description') || header.includes('nome') ||
-                   header.includes('titulo') || header.includes('title')) {
+                   header.includes('titulo') || header.includes('title') ||
+                   header.includes('historico') || header.includes('lancamento')) {
           row.descricao = value;
-        } else if (header.includes('categoria') || header.includes('category')) {
+        } else if (header.includes('categoria') || header.includes('category') ||
+                   header.includes('classificacao') || header.includes('class')) {
           row.categoria = value;
-        } else if (header.includes('tipo') || header.includes('type')) {
+        } else if (header.includes('tipo') || header.includes('type') ||
+                   header.includes('natureza') || header.includes('operacao')) {
           row.tipo = value.toLowerCase();
         } else if (header.includes('valor') || header.includes('value') || 
                    header.includes('amount') || header.includes('entrada') || 
                    header.includes('saida') || header.includes('preco') ||
-                   header.includes('price')) {
+                   header.includes('price') || header.includes('credito') ||
+                   header.includes('debito') || header.includes('total')) {
+          
           // Para colunas de entrada/saída, determinar o tipo
-          if (header.includes('entrada')) {
+          if (header.includes('entrada') || header.includes('credito')) {
             row.tipo = 'receita';
-          } else if (header.includes('saida')) {
+          } else if (header.includes('saida') || header.includes('debito')) {
             row.tipo = 'despesa';
           }
+          
+          // Processar valor monetário
           const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
           const numValue = parseFloat(cleanValue) || 0;
           if (numValue > 0) {
             row.valor = numValue;
           }
-        } else if (header.includes('status')) {
+        } else if (header.includes('status') || header.includes('situacao')) {
           row.status = value.toLowerCase();
         } else if (header.includes('método') || header.includes('metodo') || 
-                   header.includes('method') || header.includes('pagamento')) {
+                   header.includes('method') || header.includes('pagamento') ||
+                   header.includes('forma') || header.includes('meio')) {
           row.metodo = value;
-        } else if (header.includes('canal') || header.includes('channel')) {
+        } else if (header.includes('canal') || header.includes('channel') ||
+                   header.includes('origem') || header.includes('source')) {
           row.canal = value;
-        } else if (header.includes('cliente') || header.includes('client')) {
+        } else if (header.includes('cliente') || header.includes('client') ||
+                   header.includes('fornecedor') || header.includes('supplier')) {
           row.cliente = value;
         }
+      });
+      
+      // Log detalhado do que foi parseado
+      console.log(`Linha ${index} parseada:`, {
+        original: values,
+        parsed: row,
+        headers
       });
       
       return row;
@@ -211,41 +262,50 @@ export const SpreadsheetSync = () => {
   };
 
   const isValidRow = (row: any): boolean => {
-    // Validações mais rigorosas
-    if (!row.descricao || row.descricao.trim().length < 2) {
+    // Validações mais flexíveis
+    console.log('Validando linha:', row);
+    
+    // Deve ter descrição (mínimo 1 caractere)
+    if (!row.descricao || row.descricao.trim().length < 1) {
+      console.log('Linha rejeitada: sem descrição');
       return false;
     }
     
+    // Deve ter valor positivo
     if (!row.valor || isNaN(row.valor) || row.valor <= 0) {
+      console.log('Linha rejeitada: valor inválido', row.valor);
       return false;
     }
     
-    // Validar se a data é válida antes de aceitar a linha
+    // Se tiver data, deve ser válida (mas data não é obrigatória)
     if (row.data && !isValidDate(row.data)) {
-      console.warn(`Data inválida encontrada: ${row.data}`);
+      console.log(`Linha rejeitada: data inválida "${row.data}"`);
       return false;
     }
     
-    // Se não tiver tipo definido, tentar inferir
+    // Aplicar defaults para campos opcionais
     if (!row.tipo) {
       row.tipo = 'receita'; // Default
     }
     
-    // Se não tiver categoria, usar default
     if (!row.categoria) {
       row.categoria = 'Importado';
     }
     
-    // Se não tiver status, usar default
     if (!row.status) {
       row.status = 'pendente';
     }
     
+    if (!row.metodo) {
+      row.metodo = '';
+    }
+    
+    console.log('Linha válida:', row);
     return true;
   };
 
   const isValidDate = (dateStr: string): boolean => {
-    if (!dateStr) return false;
+    if (!dateStr || dateStr.trim() === '') return true; // Data vazia é permitida
     
     try {
       const parsedDate = parseDate(dateStr);
@@ -291,6 +351,7 @@ export const SpreadsheetSync = () => {
     let duplicateCount = 0;
     const total = data.length;
     const validationErrors: string[] = [];
+    const processedRows: any[] = [];
 
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -305,48 +366,36 @@ export const SpreadsheetSync = () => {
       setProgress(((i + 1) / total) * 100);
 
       try {
-        // Converter data para formato ISO com validação rigorosa
+        // Converter data para formato ISO
         let dateISO = new Date().toISOString().split('T')[0];
         if (row.data) {
           try {
             dateISO = parseDate(row.data);
-            // Validar novamente se a data está no formato correto
-            if (!isValidDate(row.data)) {
-              validationErrors.push(`Linha ${i + 1}: Data inválida "${row.data}"`);
-              errorCount++;
-              continue;
-            }
           } catch (error) {
-            validationErrors.push(`Linha ${i + 1}: Erro ao processar data "${row.data}"`);
-            errorCount++;
-            continue;
+            console.warn(`Erro ao processar data "${row.data}", usando data atual`);
           }
         }
 
-        // Mapear tipo de transação com validação
+        // Mapear tipo de transação
         let transactionType: 'receita' | 'despesa' = 'receita';
         if (row.tipo.includes('saida') || row.tipo.includes('despesa') || 
-            row.tipo.includes('expense') || row.valor < 0) {
+            row.tipo.includes('expense') || row.tipo.includes('debito') ||
+            row.valor < 0) {
           transactionType = 'despesa';
         }
 
-        // Mapear status com validação
+        // Mapear status
         let status: 'pendente' | 'pago' | 'vencido' = 'pendente';
         if (row.status.includes('pago') || row.status.includes('recebido') || 
-            row.status.includes('paid') || row.status.includes('received')) {
+            row.status.includes('paid') || row.status.includes('received') ||
+            row.status.includes('quitado') || row.status.includes('liquidado')) {
           status = 'pago';
         } else if (row.status.includes('vencido') || row.status.includes('atrasado') || 
-                   row.status.includes('overdue')) {
+                   row.status.includes('overdue') || row.status.includes('inadimplente')) {
           status = 'vencido';
         }
 
-        // Validar valor
         const amount = Math.abs(row.valor);
-        if (amount <= 0 || isNaN(amount)) {
-          validationErrors.push(`Linha ${i + 1}: Valor inválido "${row.valor}"`);
-          errorCount++;
-          continue;
-        }
 
         const transactionData = {
           type: transactionType,
@@ -362,45 +411,59 @@ export const SpreadsheetSync = () => {
           user_id: user.id
         };
 
+        console.log(`Preparando transação ${i + 1}:`, transactionData);
+
         // Verificar duplicata
         const isDuplicate = await checkDuplicate(transactionData);
         
         if (isDuplicate) {
           duplicateCount++;
           console.log(`Duplicata ignorada: ${row.descricao}`);
+          processedRows.push({ ...transactionData, status: 'duplicate' });
         } else {
           await transactionService.createTransaction(transactionData);
           successCount++;
           console.log(`Transação criada: ${row.descricao} - R$ ${row.valor}`);
+          processedRows.push({ ...transactionData, status: 'created' });
         }
       } catch (error) {
-        console.error('Erro ao sincronizar linha:', error);
-        validationErrors.push(`Linha ${i + 1}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        console.error(`Erro ao sincronizar linha ${i + 1}:`, error);
+        const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido';
+        validationErrors.push(`Linha ${i + 1}: ${errorMsg}`);
         errorCount++;
+        processedRows.push({ row, error: errorMsg, status: 'error' });
       }
     }
 
     setProgress(100);
     console.log(`Sincronização concluída: ${successCount} sucessos, ${errorCount} erros, ${duplicateCount} duplicatas`);
-    return { success: successCount, errors: errorCount, total, duplicates: duplicateCount, validationErrors };
+    return { 
+      success: successCount, 
+      errors: errorCount, 
+      total, 
+      duplicates: duplicateCount, 
+      validationErrors,
+      processedRows
+    };
   };
 
   const parseDate = (dateStr: string): string => {
-    if (!dateStr || dateStr.trim() === '') return new Date().toISOString().split('T')[0];
+    if (!dateStr || dateStr.trim() === '') {
+      return new Date().toISOString().split('T')[0];
+    }
     
     try {
       // Remover caracteres especiais e espaços
-      const cleanDateStr = dateStr.trim().replace(/[^\d\/\-]/g, '');
+      const cleanDateStr = dateStr.trim().replace(/[^\d\/\-\.]/g, '');
       
-      // Formatos aceitos: dd/mm/yyyy, yyyy-mm-dd, dd-mm-yyyy
+      // Formatos aceitos: dd/mm/yyyy, yyyy-mm-dd, dd-mm-yyyy, dd.mm.yyyy
       if (cleanDateStr.includes('/')) {
         const parts = cleanDateStr.split('/');
         if (parts.length === 3) {
           let day, month, year;
           
-          // Determinar se é dd/mm/yyyy ou mm/dd/yyyy
           if (parts[2].length === 4) {
-            // dd/mm/yyyy ou mm/dd/yyyy
+            // dd/mm/yyyy
             day = parts[0].padStart(2, '0');
             month = parts[1].padStart(2, '0');
             year = parts[2];
@@ -413,7 +476,6 @@ export const SpreadsheetSync = () => {
             throw new Error('Formato de data não reconhecido');
           }
           
-          // Validar ano
           const yearNum = parseInt(year);
           if (yearNum < 1900 || yearNum > 2100) {
             throw new Error('Ano fora do range válido (1900-2100)');
@@ -443,75 +505,77 @@ export const SpreadsheetSync = () => {
             return `${year}-${month}-${day}`;
           }
         }
+      } else if (cleanDateStr.includes('.')) {
+        const parts = cleanDateStr.split('.');
+        if (parts.length === 3) {
+          // dd.mm.yyyy
+          const day = parts[0].padStart(2, '0');
+          const month = parts[1].padStart(2, '0');
+          const year = parts[2];
+          const yearNum = parseInt(year);
+          if (yearNum < 1900 || yearNum > 2100) {
+            throw new Error('Ano fora do range válido (1900-2100)');
+          }
+          return `${year}-${month}-${day}`;
+        }
       }
       
-      // Tentar parseamento direto como último recurso
-      const date = new Date(cleanDateStr);
+      // Se chegou até aqui, tentar interpretar como timestamp
+      const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
-        const year = date.getFullYear();
-        if (year >= 1900 && year <= 2100) {
-          return date.toISOString().split('T')[0];
-        }
+        return date.toISOString().split('T')[0];
       }
       
       throw new Error('Formato de data não reconhecido');
     } catch (error) {
       console.error('Erro ao parsear data:', dateStr, error);
-      throw new Error(`Data inválida: ${dateStr}`);
+      return new Date().toISOString().split('T')[0];
     }
   };
 
-  const handleSync = async () => {
-    if (!file) {
-      toast({
-        title: "Arquivo necessário",
-        description: "Por favor, selecione um arquivo CSV ou Excel primeiro.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleUpload = async () => {
+    if (!file) return;
 
     setIsUploading(true);
     setProgress(0);
 
     try {
-      let data: SpreadsheetRow[];
-      
+      console.log('Iniciando upload do arquivo:', file.name);
+      let data: SpreadsheetRow[] = [];
+
       if (file.name.toLowerCase().endsWith('.csv')) {
         const text = await file.text();
-        console.log('Processando arquivo CSV, tamanho:', text.length);
+        console.log('Arquivo CSV lido, tamanho:', text.length);
         data = parseCSV(text);
       } else {
-        console.log('Processando arquivo Excel:', file.name);
+        console.log('Processando arquivo Excel');
         data = await parseExcel(file);
       }
-      
+
+      console.log(`Dados processados: ${data.length} linhas válidas`);
+
       if (data.length === 0) {
         toast({
-          title: "Nenhum dado válido encontrado",
-          description: "Verifique se o arquivo contém dados válidos com as colunas necessárias (descrição, valor, data válida, etc.).",
+          title: "Nenhum dado válido",
+          description: "Não foram encontrados dados válidos no arquivo. Verifique o formato e conteúdo.",
           variant: "destructive",
         });
         return;
       }
 
-      console.log(`Iniciando sincronização de ${data.length} registros válidos`);
       const results = await syncToDatabase(data);
       setSyncResults(results);
 
-      if (results.validationErrors.length > 0) {
-        console.log('Erros de validação encontrados:', results.validationErrors);
-      }
-
       toast({
         title: "Sincronização concluída",
-        description: `${results.success} registros importados, ${results.errors} erros, ${results.duplicates} duplicatas ignoradas.`,
+        description: `${results.success} transações importadas com sucesso.`,
       });
+
     } catch (error) {
-      console.error('Erro na sincronização:', error);
+      console.error('Erro no upload:', error);
       toast({
         title: "Erro na sincronização",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar o arquivo. Verifique o formato e tente novamente.",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive",
       });
     } finally {
@@ -523,24 +587,17 @@ export const SpreadsheetSync = () => {
   const downloadTemplate = () => {
     const csvContent = [
       "data,descricao,categoria,tipo,valor,status,metodo,canal,cliente",
-      "02/01/2024,Venda Produto,Receita,receita,1500.00,pago,PIX,site,Cliente ABC",
-      "05/01/2024,Fornecedor XYZ,Despesa Operacional,despesa,500.00,pago,Boleto,comercial,Fornecedor XYZ",
-      "10/01/2024,Comissão Vendas,Receita,receita,300.00,pendente,Transferência,mercadoLivre,",
-      "15/01/2024,Energia Elétrica,Despesa Fixa,despesa,450.00,pago,Débito Automático,comercial,"
+      "02/01/2024,Venda de Produtos,Receita,receita,1500.00,pago,PIX,site,Cliente A",
+      "05/01/2024,Compra de Material,Despesa Operacional,despesa,800.00,pago,Boleto,comercial,Fornecedor B",
+      "10/01/2024,Comissão de Vendas,Receita,receita,300.00,pendente,Transferência,mercadoLivre,",
+      "15/01/2024,Energia Elétrica,Despesa Fixa,despesa,450.00,pago,Débito Automático,comercial,Companhia Elétrica"
     ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'modelo_financeiro_winnet.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
 
-    toast({
-      title: "Modelo baixado",
-      description: "Arquivo modelo CSV foi baixado com sucesso.",
-    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'modelo_planilha_financeira.csv';
+    link.click();
   };
 
   return (
@@ -549,127 +606,112 @@ export const SpreadsheetSync = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
-            Sincronização de Planilha Financeira
+            Sincronização com Planilha
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Importe dados da sua planilha financeira para sincronizar com o CRM. 
-              Aceita arquivos CSV e Excel (.xlsx/.xls). Detecta automaticamente colunas como: data, descrição, valor, entrada/saída, categoria, status, método de pagamento.
-              <strong> Datas devem estar entre 1900-2100 no formato DD/MM/AAAA ou AAAA-MM-DD.</strong>
+              Importe transações financeiras de arquivos CSV ou Excel. O sistema processará
+              automaticamente os dados e criará as transações no sistema financeiro.
             </AlertDescription>
           </Alert>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="file-input">Selecionar Arquivo (CSV ou Excel)</Label>
-                <Input
-                  id="file-input"
-                  type="file"
-                  accept=".csv,.xlsx,.xls"
-                  onChange={handleFileSelect}
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Formatos aceitos: .csv, .xlsx, .xls
-                </p>
-              </div>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="file">Selecionar Arquivo (CSV ou Excel)</Label>
+              <Input
+                id="file"
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={handleFileSelect}
+                className="mt-1"
+              />
+            </div>
 
-              {file && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleUpload} 
+                disabled={!file || isUploading}
+                className="flex-1"
+              >
+                {isUploading ? (
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium">Arquivo selecionado:</span>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    Sincronizando...
                   </div>
-                  <p className="text-sm text-green-700 mt-1">{file.name}</p>
-                  <p className="text-xs text-green-600 mt-1">
-                    Tamanho: {(file.size / 1024).toFixed(1)} KB
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleSync} 
-                  disabled={!file || isUploading}
-                  className="flex-1"
-                >
-                  {isUploading ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4 mr-2" />
-                  )}
-                  {isUploading ? 'Sincronizando...' : 'Sincronizar Dados'}
-                </Button>
-              </div>
-
-              {isUploading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progresso da sincronização</span>
-                    <span>{Math.round(progress)}%</span>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Upload className="h-4 w-4" />
+                    Importar Planilha
                   </div>
-                  <Progress value={progress} className="h-2" />
-                </div>
-              )}
+                )}
+              </Button>
+
+              <Button onClick={downloadTemplate} variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Baixar Modelo
+              </Button>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label>Modelo de Planilha</Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Baixe um modelo para organizar seus dados no formato correto.
-                </p>
-                <Button variant="outline" onClick={downloadTemplate} className="w-full">
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar Modelo CSV
-                </Button>
-              </div>
-
-              {syncResults && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">Resultado da Sincronização</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Total de registros:</span>
-                      <span className="font-medium">{syncResults.total}</span>
-                    </div>
-                    <div className="flex justify-between text-green-700">
-                      <span>Importados com sucesso:</span>
-                      <span className="font-medium">{syncResults.success}</span>
-                    </div>
-                    <div className="flex justify-between text-yellow-700">
-                      <span>Duplicatas ignoradas:</span>
-                      <span className="font-medium">{syncResults.duplicates}</span>
-                    </div>
-                    <div className="flex justify-between text-red-700">
-                      <span>Erros:</span>
-                      <span className="font-medium">{syncResults.errors}</span>
-                    </div>
-                  </div>
-                  
-                  {syncResults.validationErrors.length > 0 && (
-                    <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded">
-                      <h5 className="font-medium text-red-800 mb-1">Erros de Validação:</h5>
-                      <div className="max-h-32 overflow-y-auto">
-                        {syncResults.validationErrors.slice(0, 10).map((error, index) => (
-                          <p key={index} className="text-xs text-red-700">{error}</p>
-                        ))}
-                        {syncResults.validationErrors.length > 10 && (
-                          <p className="text-xs text-red-600 font-medium">
-                            ... e mais {syncResults.validationErrors.length - 10} erros
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
+            {isUploading && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Processando transações...</span>
+                  <span>{Math.round(progress)}%</span>
                 </div>
-              )}
-            </div>
+                <Progress value={progress} className="h-2" />
+              </div>
+            )}
           </div>
+
+          {syncResults && (
+            <div className="space-y-4">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-medium text-green-900 mb-2 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Resultado da Sincronização
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Total de registros processados:</span>
+                    <span className="font-medium">{syncResults.total}</span>
+                  </div>
+                  <div className="flex justify-between text-green-700">
+                    <span>Importados com sucesso:</span>
+                    <span className="font-medium">{syncResults.success}</span>
+                  </div>
+                  <div className="flex justify-between text-yellow-700">
+                    <span>Duplicatas ignoradas:</span>
+                    <span className="font-medium">{syncResults.duplicates}</span>
+                  </div>
+                  <div className="flex justify-between text-red-700">
+                    <span>Erros:</span>
+                    <span className="font-medium">{syncResults.errors}</span>
+                  </div>
+                </div>
+              </div>
+
+              {syncResults.validationErrors.length > 0 && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h4 className="font-medium text-red-900 mb-2">Erros de Validação</h4>
+                  <div className="space-y-1 text-sm text-red-700 max-h-40 overflow-y-auto">
+                    {syncResults.validationErrors.map((error, index) => (
+                      <div key={index}>{error}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <details className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <summary className="font-medium cursor-pointer">Ver detalhes dos registros processados</summary>
+                <div className="mt-2 text-sm max-h-60 overflow-y-auto">
+                  <pre>{JSON.stringify(syncResults.processedRows, null, 2)}</pre>
+                </div>
+              </details>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
