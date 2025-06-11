@@ -54,7 +54,7 @@ export const CRMDataValidator = () => {
       const validationResults = (data || []).map(customer => ({
         ...customer,
         validation_errors: Array.isArray(customer.validation_errors) 
-          ? customer.validation_errors 
+          ? customer.validation_errors.map(error => String(error))
           : customer.validation_errors 
             ? [String(customer.validation_errors)]
             : [],
