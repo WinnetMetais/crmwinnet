@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export const SpreadsheetSync = () => {
     errors: number;
     total: number;
     duplicates: number;
+    validationErrors: string[];
   } | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +66,6 @@ export const SpreadsheetSync = () => {
       
       for (let i = 1; i < lines.length; i++) {
         try {
-          // Melhor parsing do CSV considerando vírgulas em aspas
           const values = parseCSVLine(lines[i]);
           const row = parseRowData(headers, values, i);
           
@@ -113,11 +114,9 @@ export const SpreadsheetSync = () => {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           
-          // Pega a primeira planilha
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           
-          // Converte para JSON
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
           
           if (jsonData.length === 0) {
@@ -166,11 +165,12 @@ export const SpreadsheetSync = () => {
       headers.forEach((header, colIndex) => {
         const value = values[colIndex] || '';
         
-        // Mapeamento flexível de colunas
+        // Mapeamento melhorado e mais flexível de colunas
         if (header.includes('data') || header.includes('date') || header.includes('vencimento')) {
           row.data = value;
         } else if (header.includes('descrição') || header.includes('descricao') || 
-                   header.includes('description') || header.includes('nome')) {
+                   header.includes('description') || header.includes('nome') ||
+                   header.includes('titulo') || header.includes('title')) {
           row.descricao = value;
         } else if (header.includes('categoria') || header.includes('category')) {
           row.categoria = value;
@@ -178,7 +178,8 @@ export const SpreadsheetSync = () => {
           row.tipo = value.toLowerCase();
         } else if (header.includes('valor') || header.includes('value') || 
                    header.includes('amount') || header.includes('entrada') || 
-                   header.includes('saida')) {
+                   header.includes('saida') || header.includes('preco') ||
+                   header.includes('price')) {
           // Para colunas de entrada/saída, determinar o tipo
           if (header.includes('entrada')) {
             row.tipo = 'receita';
@@ -210,12 +211,18 @@ export const SpreadsheetSync = () => {
   };
 
   const isValidRow = (row: any): boolean => {
-    // Validações básicas
+    // Validações mais rigorosas
     if (!row.descricao || row.descricao.trim().length < 2) {
       return false;
     }
     
-    if (!row.valor || row.valor <= 0) {
+    if (!row.valor || isNaN(row.valor) || row.valor <= 0) {
+      return false;
+    }
+    
+    // Validar se a data é válida antes de aceitar a linha
+    if (row.data && !isValidDate(row.data)) {
+      console.warn(`Data inválida encontrada: ${row.data}`);
       return false;
     }
     
@@ -235,6 +242,30 @@ export const SpreadsheetSync = () => {
     }
     
     return true;
+  };
+
+  const isValidDate = (dateStr: string): boolean => {
+    if (!dateStr) return false;
+    
+    try {
+      const parsedDate = parseDate(dateStr);
+      const date = new Date(parsedDate);
+      
+      // Verificar se a data é válida
+      if (isNaN(date.getTime())) {
+        return false;
+      }
+      
+      // Verificar se a data está em um range razoável (1900-2100)
+      const year = date.getFullYear();
+      if (year < 1900 || year > 2100) {
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      return false;
+    }
   };
 
   const checkDuplicate = async (transactionData: any): Promise<boolean> => {
@@ -259,35 +290,47 @@ export const SpreadsheetSync = () => {
     let errorCount = 0;
     let duplicateCount = 0;
     const total = data.length;
+    const validationErrors: string[] = [];
 
-    // Obter o usuário atual
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
       throw new Error("Usuário não autenticado");
     }
 
-    console.log(`Iniciando sincronização de ${total} registros`);
+    console.log(`Iniciando sincronização de ${total} registros válidos`);
 
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       setProgress(((i + 1) / total) * 100);
 
       try {
-        // Converter data para formato ISO
+        // Converter data para formato ISO com validação rigorosa
         let dateISO = new Date().toISOString().split('T')[0];
         if (row.data) {
-          dateISO = parseDate(row.data);
+          try {
+            dateISO = parseDate(row.data);
+            // Validar novamente se a data está no formato correto
+            if (!isValidDate(row.data)) {
+              validationErrors.push(`Linha ${i + 1}: Data inválida "${row.data}"`);
+              errorCount++;
+              continue;
+            }
+          } catch (error) {
+            validationErrors.push(`Linha ${i + 1}: Erro ao processar data "${row.data}"`);
+            errorCount++;
+            continue;
+          }
         }
 
-        // Mapear tipo de transação
+        // Mapear tipo de transação com validação
         let transactionType: 'receita' | 'despesa' = 'receita';
         if (row.tipo.includes('saida') || row.tipo.includes('despesa') || 
             row.tipo.includes('expense') || row.valor < 0) {
           transactionType = 'despesa';
         }
 
-        // Mapear status
+        // Mapear status com validação
         let status: 'pendente' | 'pago' | 'vencido' = 'pendente';
         if (row.status.includes('pago') || row.status.includes('recebido') || 
             row.status.includes('paid') || row.status.includes('received')) {
@@ -297,10 +340,18 @@ export const SpreadsheetSync = () => {
           status = 'vencido';
         }
 
+        // Validar valor
+        const amount = Math.abs(row.valor);
+        if (amount <= 0 || isNaN(amount)) {
+          validationErrors.push(`Linha ${i + 1}: Valor inválido "${row.valor}"`);
+          errorCount++;
+          continue;
+        }
+
         const transactionData = {
           type: transactionType,
           title: row.descricao,
-          amount: Math.abs(row.valor),
+          amount: amount,
           category: row.categoria || 'Importado',
           date: dateISO,
           status: status,
@@ -324,50 +375,90 @@ export const SpreadsheetSync = () => {
         }
       } catch (error) {
         console.error('Erro ao sincronizar linha:', error);
+        validationErrors.push(`Linha ${i + 1}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
         errorCount++;
       }
     }
 
     setProgress(100);
     console.log(`Sincronização concluída: ${successCount} sucessos, ${errorCount} erros, ${duplicateCount} duplicatas`);
-    return { success: successCount, errors: errorCount, total, duplicates: duplicateCount };
+    return { success: successCount, errors: errorCount, total, duplicates: duplicateCount, validationErrors };
   };
 
   const parseDate = (dateStr: string): string => {
-    if (!dateStr) return new Date().toISOString().split('T')[0];
+    if (!dateStr || dateStr.trim() === '') return new Date().toISOString().split('T')[0];
     
     try {
+      // Remover caracteres especiais e espaços
+      const cleanDateStr = dateStr.trim().replace(/[^\d\/\-]/g, '');
+      
       // Formatos aceitos: dd/mm/yyyy, yyyy-mm-dd, dd-mm-yyyy
-      if (dateStr.includes('/')) {
-        const parts = dateStr.split('/');
+      if (cleanDateStr.includes('/')) {
+        const parts = cleanDateStr.split('/');
         if (parts.length === 3) {
-          const day = parts[0].padStart(2, '0');
-          const month = parts[1].padStart(2, '0');
-          const year = parts[2];
+          let day, month, year;
+          
+          // Determinar se é dd/mm/yyyy ou mm/dd/yyyy
+          if (parts[2].length === 4) {
+            // dd/mm/yyyy ou mm/dd/yyyy
+            day = parts[0].padStart(2, '0');
+            month = parts[1].padStart(2, '0');
+            year = parts[2];
+          } else if (parts[0].length === 4) {
+            // yyyy/mm/dd
+            year = parts[0];
+            month = parts[1].padStart(2, '0');
+            day = parts[2].padStart(2, '0');
+          } else {
+            throw new Error('Formato de data não reconhecido');
+          }
+          
+          // Validar ano
+          const yearNum = parseInt(year);
+          if (yearNum < 1900 || yearNum > 2100) {
+            throw new Error('Ano fora do range válido (1900-2100)');
+          }
+          
           return `${year}-${month}-${day}`;
         }
-      } else if (dateStr.includes('-')) {
-        const parts = dateStr.split('-');
-        if (parts[0].length === 4) {
-          return dateStr; // Já está em formato ISO
-        } else if (parts.length === 3) {
-          const day = parts[0].padStart(2, '0');
-          const month = parts[1].padStart(2, '0');
-          const year = parts[2];
-          return `${year}-${month}-${day}`;
+      } else if (cleanDateStr.includes('-')) {
+        const parts = cleanDateStr.split('-');
+        if (parts.length === 3) {
+          if (parts[0].length === 4) {
+            // yyyy-mm-dd (formato ISO)
+            const year = parseInt(parts[0]);
+            if (year < 1900 || year > 2100) {
+              throw new Error('Ano fora do range válido (1900-2100)');
+            }
+            return cleanDateStr;
+          } else {
+            // dd-mm-yyyy
+            const day = parts[0].padStart(2, '0');
+            const month = parts[1].padStart(2, '0');
+            const year = parts[2];
+            const yearNum = parseInt(year);
+            if (yearNum < 1900 || yearNum > 2100) {
+              throw new Error('Ano fora do range válido (1900-2100)');
+            }
+            return `${year}-${month}-${day}`;
+          }
         }
       }
       
-      // Tentar parseamento direto
-      const date = new Date(dateStr);
+      // Tentar parseamento direto como último recurso
+      const date = new Date(cleanDateStr);
       if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        if (year >= 1900 && year <= 2100) {
+          return date.toISOString().split('T')[0];
+        }
       }
+      
+      throw new Error('Formato de data não reconhecido');
     } catch (error) {
       console.error('Erro ao parsear data:', dateStr, error);
+      throw new Error(`Data inválida: ${dateStr}`);
     }
-    
-    return new Date().toISOString().split('T')[0]; // Fallback para hoje
   };
 
   const handleSync = async () => {
@@ -398,7 +489,7 @@ export const SpreadsheetSync = () => {
       if (data.length === 0) {
         toast({
           title: "Nenhum dado válido encontrado",
-          description: "Verifique se o arquivo contém dados válidos com as colunas necessárias (descrição, valor, etc.).",
+          description: "Verifique se o arquivo contém dados válidos com as colunas necessárias (descrição, valor, data válida, etc.).",
           variant: "destructive",
         });
         return;
@@ -407,6 +498,10 @@ export const SpreadsheetSync = () => {
       console.log(`Iniciando sincronização de ${data.length} registros válidos`);
       const results = await syncToDatabase(data);
       setSyncResults(results);
+
+      if (results.validationErrors.length > 0) {
+        console.log('Erros de validação encontrados:', results.validationErrors);
+      }
 
       toast({
         title: "Sincronização concluída",
@@ -463,6 +558,7 @@ export const SpreadsheetSync = () => {
             <AlertDescription>
               Importe dados da sua planilha financeira para sincronizar com o CRM. 
               Aceita arquivos CSV e Excel (.xlsx/.xls). Detecta automaticamente colunas como: data, descrição, valor, entrada/saída, categoria, status, método de pagamento.
+              <strong> Datas devem estar entre 1900-2100 no formato DD/MM/AAAA ou AAAA-MM-DD.</strong>
             </AlertDescription>
           </Alert>
 
@@ -554,6 +650,22 @@ export const SpreadsheetSync = () => {
                       <span className="font-medium">{syncResults.errors}</span>
                     </div>
                   </div>
+                  
+                  {syncResults.validationErrors.length > 0 && (
+                    <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded">
+                      <h5 className="font-medium text-red-800 mb-1">Erros de Validação:</h5>
+                      <div className="max-h-32 overflow-y-auto">
+                        {syncResults.validationErrors.slice(0, 10).map((error, index) => (
+                          <p key={index} className="text-xs text-red-700">{error}</p>
+                        ))}
+                        {syncResults.validationErrors.length > 10 && (
+                          <p className="text-xs text-red-600 font-medium">
+                            ... e mais {syncResults.validationErrors.length - 10} erros
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
