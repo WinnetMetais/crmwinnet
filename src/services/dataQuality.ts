@@ -69,18 +69,19 @@ export class DataQualityService {
   // Método auxiliar para buscar transações com tipos explícitos
   private static async getCustomerTransactions(customerId: string): Promise<SimpleTransaction[]> {
     try {
-      const response = await supabase
+      // Usar uma query direta sem inferência complexa
+      const { data, error } = await supabase
         .from('transactions')
         .select('id')
         .eq('customer_id', customerId);
 
-      if (response.error) {
-        console.error(`Erro ao buscar transações para cliente ${customerId}:`, response.error);
+      if (error) {
+        console.error(`Erro ao buscar transações para cliente ${customerId}:`, error);
         return [];
       }
 
       // Mapear explicitamente para nossa interface simples
-      return (response.data || []).map((item: any): SimpleTransaction => ({
+      return (data || []).map((item: any): SimpleTransaction => ({
         id: item.id
       }));
     } catch (error) {
