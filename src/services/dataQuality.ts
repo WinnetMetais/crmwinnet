@@ -113,24 +113,30 @@ export class DataQualityService {
   // Método simplificado para buscar transações
   private static async getBasicTransactions(customerId: string): Promise<BasicTransaction[]> {
     try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('id')
-        .eq('customer_id', customerId);
-      
-      if (error) {
-        console.error(`Erro ao buscar transações:`, error);
+      // Usar query raw para evitar problemas de tipos complexos
+      const response = await fetch(`${supabase.supabaseUrl}/rest/v1/transactions?customer_id=eq.${customerId}&select=id`, {
+        headers: {
+          'apikey': supabase.supabaseKey,
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.error('Erro ao buscar transações via fetch');
         return [];
       }
 
-      if (!data || !Array.isArray(data)) {
+      const data = await response.json();
+      
+      if (!Array.isArray(data)) {
         return [];
       }
 
       // Mapear manualmente para evitar problemas de tipo
       const transactions: BasicTransaction[] = [];
       for (let i = 0; i < data.length; i++) {
-        const row = data[i] as SupabaseRow;
+        const row = data[i];
         if (row && row.id) {
           transactions.push({ id: String(row.id) });
         }
