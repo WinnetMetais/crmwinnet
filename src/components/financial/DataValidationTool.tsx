@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,7 +54,7 @@ export const DataValidationTool = () => {
           date: transaction.date,
           category: transaction.category,
           channel: transaction.channel || 'não informado',
-          type: transaction.type,
+          type: transaction.type as 'receita' | 'despesa',
           status: transaction.status,
           client_name: transaction.client_name,
           isValid: validation.isValid,
