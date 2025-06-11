@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -56,21 +55,78 @@ export const DataQualityDashboard = () => {
   const loadQualityData = async () => {
     try {
       const modules = [
-        { name: 'customers', table: 'customers', icon: Users },
-        { name: 'deals', table: 'deals', icon: Target },
-        { name: 'opportunities', table: 'opportunities', icon: TrendingUp },
-        { name: 'transactions', table: 'transactions', icon: FileText }
+        { name: 'customers', table: 'customers' as const, icon: Users },
+        { name: 'deals', table: 'deals' as const, icon: Target },
+        { name: 'opportunities', table: 'opportunities' as const, icon: TrendingUp },
+        { name: 'transactions', table: 'transactions' as const, icon: FileText }
       ];
 
       const moduleResults = await Promise.all(
         modules.map(async (module) => {
-          // Buscar métricas do módulo
-          const { data, error } = await supabase
-            .from(module.table)
-            .select('data_quality_score, validation_errors');
+          try {
+            // Buscar métricas do módulo
+            const { data, error } = await supabase
+              .from(module.table)
+              .select('*');
 
-          if (error) {
-            console.error(`Erro ao carregar dados de ${module.name}:`, error);
+            if (error) {
+              console.error(`Erro ao carregar dados de ${module.name}:`, error);
+              return {
+                module: module.name,
+                metrics: {
+                  totalRecords: 0,
+                  validRecords: 0,
+                  invalidRecords: 0,
+                  averageScore: 0,
+                  completenessPercentage: 0
+                },
+                recentLogs: []
+              };
+            }
+
+            const records = data || [];
+            const totalRecords = records.length;
+            
+            // Verificar se a coluna data_quality_score existe
+            const hasQualityScore = records.length > 0 && 'data_quality_score' in records[0];
+            
+            let validRecords = 0;
+            let averageScore = 0;
+            
+            if (hasQualityScore) {
+              validRecords = records.filter(r => (r.data_quality_score || 0) >= 60).length;
+              averageScore = totalRecords > 0 
+                ? records.reduce((sum, r) => sum + (r.data_quality_score || 0), 0) / totalRecords 
+                : 0;
+            } else {
+              // Se não tem score, assumir que todos precisam de validação
+              validRecords = 0;
+              averageScore = 0;
+            }
+            
+            const invalidRecords = totalRecords - validRecords;
+
+            // Buscar logs recentes
+            const { data: logsData } = await supabase
+              .from('data_validation_logs')
+              .select('*')
+              .eq('table_name', module.table)
+              .order('created_at', { ascending: false })
+              .limit(5);
+
+            return {
+              module: module.name,
+              metrics: {
+                totalRecords,
+                validRecords,
+                invalidRecords,
+                averageScore: Math.round(averageScore),
+                completenessPercentage: totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0
+              },
+              recentLogs: logsData || []
+            };
+          } catch (moduleError) {
+            console.error(`Erro no módulo ${module.name}:`, moduleError);
             return {
               module: module.name,
               metrics: {
@@ -83,34 +139,6 @@ export const DataQualityDashboard = () => {
               recentLogs: []
             };
           }
-
-          const records = data || [];
-          const totalRecords = records.length;
-          const validRecords = records.filter(r => (r.data_quality_score || 0) >= 60).length;
-          const invalidRecords = totalRecords - validRecords;
-          const averageScore = totalRecords > 0 
-            ? records.reduce((sum, r) => sum + (r.data_quality_score || 0), 0) / totalRecords 
-            : 0;
-
-          // Buscar logs recentes
-          const { data: logsData } = await supabase
-            .from('data_validation_logs')
-            .select('*')
-            .eq('table_name', module.table)
-            .order('created_at', { ascending: false })
-            .limit(5);
-
-          return {
-            module: module.name,
-            metrics: {
-              totalRecords,
-              validRecords,
-              invalidRecords,
-              averageScore: Math.round(averageScore),
-              completenessPercentage: totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0
-            },
-            recentLogs: logsData || []
-          };
         })
       );
 
@@ -140,18 +168,23 @@ export const DataQualityDashboard = () => {
   const runQualityCheck = async () => {
     setRefreshing(true);
     try {
-      // Trigger para atualizar scores de clientes
+      // Buscar todos os clientes para executar a função de cálculo
       const { data: customers } = await supabase
         .from('customers')
         .select('id');
 
-      if (customers) {
-        for (const customer of customers) {
-          const { error } = await supabase.rpc('calculate_customer_data_quality', { 
-            customer_id: customer.id 
-          });
-          if (error) {
-            console.error('Erro ao calcular qualidade do cliente:', error);
+      if (customers && customers.length > 0) {
+        // Executar validação para cada cliente
+        for (const customer of customers.slice(0, 10)) { // Limitar a 10 para não sobrecarregar
+          try {
+            const { error } = await supabase.rpc('calculate_customer_data_quality', { 
+              customer_id: customer.id 
+            });
+            if (error) {
+              console.error('Erro ao calcular qualidade do cliente:', error);
+            }
+          } catch (rpcError) {
+            console.error('Erro na chamada RPC:', rpcError);
           }
         }
       }
