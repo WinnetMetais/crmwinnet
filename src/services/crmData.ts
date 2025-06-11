@@ -46,6 +46,8 @@ export class CRMDataService {
 
       return (data || []).map(customer => ({
         ...customer,
+        // Garante que o status seja um dos valores válidos
+        status: this.normalizeStatus(customer.status),
         validation_errors: this.processValidationErrors(customer.validation_errors),
         severity: this.calculateSeverity(customer.data_quality_score || 0)
       }));
@@ -108,17 +110,23 @@ export class CRMDataService {
   // Obter métricas de qualidade por módulo
   static async getQualityMetrics(): Promise<{ [module: string]: QualityMetrics }> {
     try {
-      const modules = ['customers', 'deals', 'opportunities', 'transactions'];
+      const modules: Array<{ name: string; table: 'customers' | 'deals' | 'opportunities' | 'transactions' }> = [
+        { name: 'customers', table: 'customers' },
+        { name: 'deals', table: 'deals' },
+        { name: 'opportunities', table: 'opportunities' },
+        { name: 'transactions', table: 'transactions' }
+      ];
+      
       const metrics: { [module: string]: QualityMetrics } = {};
 
       for (const module of modules) {
         const { data, error } = await supabase
-          .from(module)
+          .from(module.table)
           .select('data_quality_score');
 
         if (error) {
-          console.error(`Erro ao buscar métricas para ${module}:`, error);
-          metrics[module] = this.getEmptyMetrics();
+          console.error(`Erro ao buscar métricas para ${module.name}:`, error);
+          metrics[module.name] = this.getEmptyMetrics();
           continue;
         }
 
@@ -129,7 +137,7 @@ export class CRMDataService {
           ? Math.round(records.reduce((sum, r) => sum + (r.data_quality_score || 0), 0) / totalRecords)
           : 0;
 
-        metrics[module] = {
+        metrics[module.name] = {
           totalRecords,
           validRecords,
           invalidRecords: totalRecords - validRecords,
@@ -156,7 +164,12 @@ export class CRMDataService {
 
       if (error) throw error;
 
-      return data || [];
+      return (data || []).map(log => ({
+        ...log,
+        validation_status: this.normalizeValidationStatus(log.validation_status),
+        errors: this.processValidationErrors(log.errors),
+        suggestions: this.processValidationErrors(log.suggestions)
+      }));
     } catch (error) {
       console.error('Erro ao carregar logs:', error);
       return [];
@@ -176,6 +189,22 @@ export class CRMDataService {
     if (score >= 80) return 'low';
     if (score >= 50) return 'medium';
     return 'high';
+  }
+
+  private static normalizeStatus(status: any): 'prospecto' | 'qualificado' | 'negociacao' | 'cliente' | 'inativo' {
+    const validStatuses = ['prospecto', 'qualificado', 'negociacao', 'cliente', 'inativo'];
+    if (typeof status === 'string' && validStatuses.includes(status)) {
+      return status as 'prospecto' | 'qualificado' | 'negociacao' | 'cliente' | 'inativo';
+    }
+    return 'prospecto'; // valor padrão
+  }
+
+  private static normalizeValidationStatus(status: any): 'passed' | 'failed' | 'warning' {
+    const validStatuses = ['passed', 'failed', 'warning'];
+    if (typeof status === 'string' && validStatuses.includes(status)) {
+      return status as 'passed' | 'failed' | 'warning';
+    }
+    return 'failed'; // valor padrão
   }
 
   private static async getAllCustomerIds(): Promise<string[]> {

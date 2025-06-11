@@ -68,6 +68,10 @@ export const DataQualityDashboard = () => {
     value: metrics.totalRecords
   }));
 
+  const handleRunValidation = () => {
+    runValidation(); // Sem argumentos, vai validar todos os clientes
+  };
+
   if (metricsLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -88,7 +92,7 @@ export const DataQualityDashboard = () => {
             <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button onClick={() => runValidation()} disabled={isValidating}>
+          <Button onClick={handleRunValidation} disabled={isValidating}>
             <CheckCircle className="h-4 w-4 mr-2" />
             Executar Verificação
           </Button>
