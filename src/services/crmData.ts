@@ -44,13 +44,44 @@ export class CRMDataService {
 
       if (error) throw error;
 
-      const customers = (data || []) as any[];
-      return customers.map(customer => ({
-        ...customer,
-        status: this.normalizeStatus(customer.status),
-        validation_errors: this.processValidationErrors(customer.validation_errors),
-        severity: this.calculateSeverity(customer.data_quality_score || 0)
-      }));
+      // Explicitly type the raw data to avoid infinite recursion
+      const rawCustomers = data as any[] || [];
+      
+      // Transform to ValidationResult with explicit typing
+      const results: ValidationResult[] = rawCustomers.map((customer: any): ValidationResult => {
+        return {
+          id: customer.id,
+          name: customer.name || '',
+          email: customer.email || undefined,
+          phone: customer.phone || undefined,
+          company: customer.company || undefined,
+          cnpj: customer.cnpj || undefined,
+          address: customer.address || undefined,
+          city: customer.city || undefined,
+          state: customer.state || undefined,
+          zip_code: customer.zip_code || undefined,
+          website: customer.website || undefined,
+          contact_person: customer.contact_person || undefined,
+          contact_role: customer.contact_role || undefined,
+          whatsapp: customer.whatsapp || undefined,
+          notes: customer.notes || undefined,
+          status: this.normalizeStatus(customer.status),
+          lead_source: customer.lead_source || undefined,
+          priority: customer.priority || undefined,
+          segment_id: customer.segment_id || undefined,
+          created_at: customer.created_at,
+          updated_at: customer.updated_at,
+          last_contact_date: customer.last_contact_date || undefined,
+          created_by: customer.created_by || undefined,
+          data_quality_score: customer.data_quality_score || 0,
+          last_validated_at: customer.last_validated_at || undefined,
+          validation_errors: this.processValidationErrors(customer.validation_errors),
+          data_completeness_percentage: customer.data_completeness_percentage || 0,
+          severity: this.calculateSeverity(customer.data_quality_score || 0)
+        };
+      });
+
+      return results;
 
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
@@ -245,11 +276,18 @@ export class CRMDataService {
       if (error) throw error;
 
       const logs = (data || []) as any[];
-      return logs.map(log => ({
-        ...log,
+      return logs.map((log: any): DataValidationLog => ({
+        id: log.id,
+        module_name: log.module_name,
+        table_name: log.table_name,
+        record_id: log.record_id,
+        validation_type: log.validation_type,
         validation_status: this.normalizeValidationStatus(log.validation_status),
         errors: this.processValidationErrors(log.errors),
-        suggestions: this.processValidationErrors(log.suggestions)
+        suggestions: this.processValidationErrors(log.suggestions),
+        validated_by: log.validated_by,
+        validated_at: log.validated_at,
+        created_at: log.created_at
       }));
     } catch (error) {
       console.error('Erro ao carregar logs:', error);
