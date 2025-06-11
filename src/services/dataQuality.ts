@@ -13,6 +13,12 @@ interface SupabaseRow {
   [key: string]: any;
 }
 
+// Constantes do Supabase centralizadas
+const SUPABASE_CONFIG = {
+  URL: "https://fgabadpelymhgvbtemwa.supabase.co",
+  ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnYWJhZHBlbHltaGd2YnRlbXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjI5MDQsImV4cCI6MjA2MzIzODkwNH0.f80W3Pj1uS7GYpnLMRj5FAXM08ogYXd-wX1_LWlfXCM"
+};
+
 export class DataQualityService {
   // Executar validação de qualidade dos dados
   static async runDataValidation(customerIds?: string[]): Promise<void> {
@@ -81,16 +87,22 @@ export class DataQualityService {
   // Método simplificado para buscar IDs de clientes
   private static async getCustomerIds(): Promise<string[]> {
     try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('id');
-      
-      if (error) {
-        console.error('Erro ao buscar clientes:', error);
+      const response = await fetch(`${SUPABASE_CONFIG.URL}/rest/v1/customers?select=id`, {
+        headers: {
+          'apikey': SUPABASE_CONFIG.ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_CONFIG.ANON_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.error('Erro ao buscar clientes via fetch');
         return [];
       }
 
-      if (!data || !Array.isArray(data)) {
+      const data = await response.json();
+      
+      if (!Array.isArray(data)) {
         return [];
       }
 
@@ -113,14 +125,10 @@ export class DataQualityService {
   // Método simplificado para buscar transações
   private static async getBasicTransactions(customerId: string): Promise<BasicTransaction[]> {
     try {
-      // Usar query raw para evitar problemas de tipos complexos
-      const SUPABASE_URL = "https://fgabadpelymhgvbtemwa.supabase.co";
-      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnYWJhZHBlbHltaGd2YnRlbXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjI5MDQsImV4cCI6MjA2MzIzODkwNH0.f80W3Pj1uS7GYpnLMRj5FAXM08ogYXd-wX1_LWlfXCM";
-      
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/transactions?customer_id=eq.${customerId}&select=id`, {
+      const response = await fetch(`${SUPABASE_CONFIG.URL}/rest/v1/transactions?customer_id=eq.${customerId}&select=id`, {
         headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'apikey': SUPABASE_CONFIG.ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_CONFIG.ANON_KEY}`,
           'Content-Type': 'application/json'
         }
       });
