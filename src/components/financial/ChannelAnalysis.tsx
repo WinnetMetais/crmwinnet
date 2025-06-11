@@ -10,7 +10,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineCh
 import { TrendingUp, TrendingDown, Eye, ShoppingCart, DollarSign } from "lucide-react";
 
 interface ChannelAnalysisProps {
-  channels: any;
+  channels: {
+    [key: string]: {
+      revenue: number;
+      transactions: number;
+    };
+  };
 }
 
 export const ChannelAnalysis = ({ channels }: ChannelAnalysisProps) => {

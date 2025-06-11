@@ -42,8 +42,17 @@ export const FinancialBulkOperations = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTransactions(data || []);
-      console.log(`Carregadas ${data?.length || 0} transações para operações em massa`);
+      
+      // Garantir que o tipo seja válido
+      const validTransactions = (data || []).map(transaction => ({
+        ...transaction,
+        type: (transaction.type === 'receita' || transaction.type === 'despesa') 
+          ? transaction.type 
+          : 'receita' as const
+      })) as Transaction[];
+      
+      setTransactions(validTransactions);
+      console.log(`Carregadas ${validTransactions.length} transações para operações em massa`);
     } catch (error) {
       console.error('Erro ao carregar transações:', error);
       toast({

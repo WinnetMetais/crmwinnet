@@ -145,15 +145,14 @@ export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransacti
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+    <div className="w-full max-w-3xl mx-auto">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
               {editingTransaction ? 'Editar Transação' : 'Nova Transação Financeira'}
             </div>
-            <Button variant="outline" onClick={onClose}>✕</Button>
           </CardTitle>
         </CardHeader>
         <CardContent>

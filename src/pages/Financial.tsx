@@ -16,6 +16,24 @@ import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOpe
 
 const Financial = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showNewTransactionForm, setShowNewTransactionForm] = useState(false);
+
+  // Dados mock para o dashboard
+  const dashboardData = {
+    totalReceitas: 186028.2,
+    totalDespesas: 31112.84,
+    saldo: 154915.36,
+    transacoes: 483
+  };
+
+  // Dados mock para canais
+  const channelsData = {
+    site: { revenue: 86728, transactions: 265 },
+    mercadoLivre: { revenue: 64739, transactions: 193 },
+    madeiraMadeira: { revenue: 7971.67, transactions: 4 },
+    via: { revenue: 2495.42, transactions: 3 },
+    comercial: { revenue: 22093.86, transactions: 8 }
+  };
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -47,11 +65,15 @@ const Financial = () => {
               </TabsList>
 
               <TabsContent value="dashboard">
-                <FinancialDashboard />
+                <FinancialDashboard data={dashboardData} />
               </TabsContent>
 
               <TabsContent value="new">
-                <NewTransactionForm />
+                {showNewTransactionForm ? (
+                  <NewTransactionForm onClose={() => setShowNewTransactionForm(false)} />
+                ) : (
+                  <NewTransactionForm onClose={() => setShowNewTransactionForm(false)} />
+                )}
               </TabsContent>
 
               <TabsContent value="cashflow">
@@ -67,7 +89,7 @@ const Financial = () => {
               </TabsContent>
 
               <TabsContent value="channels">
-                <ChannelAnalysis />
+                <ChannelAnalysis channels={channelsData} />
               </TabsContent>
 
               <TabsContent value="spreadsheet">

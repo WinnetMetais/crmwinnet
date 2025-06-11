@@ -5,7 +5,12 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
 interface FinancialDashboardProps {
-  data: any;
+  data: {
+    totalReceitas: number;
+    totalDespesas: number;
+    saldo: number;
+    transacoes: number;
+  };
 }
 
 export const FinancialDashboard = ({ data }: FinancialDashboardProps) => {
