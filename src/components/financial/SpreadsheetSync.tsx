@@ -8,9 +8,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Upload, Download, RefreshCw, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useCreateTransaction } from "@/hooks/useTransactions";
-import { transactionService } from "@/services/transactions";
 import { supabase } from "@/integrations/supabase/client";
+import { transactionService } from "@/services/transactions";
 
 interface SpreadsheetRow {
   data: string;
@@ -20,6 +19,8 @@ interface SpreadsheetRow {
   valor: number;
   status: string;
   metodo: string;
+  canal?: string;
+  cliente?: string;
 }
 
 export const SpreadsheetSync = () => {
@@ -30,9 +31,8 @@ export const SpreadsheetSync = () => {
     success: number;
     errors: number;
     total: number;
+    duplicates: number;
   } | null>(null);
-
-  const createTransaction = useCreateTransaction();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -40,6 +40,7 @@ export const SpreadsheetSync = () => {
       if (selectedFile.type === 'text/csv' || selectedFile.name.endsWith('.csv')) {
         setFile(selectedFile);
         setSyncResults(null);
+        console.log('Arquivo CSV selecionado:', selectedFile.name);
       } else {
         toast({
           title: "Formato inválido",
@@ -51,58 +52,77 @@ export const SpreadsheetSync = () => {
   };
 
   const parseCSV = (csv: string): SpreadsheetRow[] => {
-    const lines = csv.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const lines = csv.split('\n').filter(line => line.trim());
+    if (lines.length === 0) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    console.log('Cabeçalhos detectados:', headers);
     
-    return lines.slice(1).map(line => {
-      const values = line.split(',');
-      const row: any = {};
-      
-      headers.forEach((header, index) => {
-        const value = values[index]?.trim() || '';
+    const rows = lines.slice(1).map((line, index) => {
+      try {
+        const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+        const row: any = {};
         
-        // Mapear colunas da planilha para campos do sistema
-        switch (header) {
-          case 'data':
-          case 'date':
+        headers.forEach((header, colIndex) => {
+          const value = values[colIndex] || '';
+          
+          // Mapear colunas da planilha para campos do sistema
+          if (header.includes('data') || header.includes('date')) {
             row.data = value;
-            break;
-          case 'descrição':
-          case 'descricao':
-          case 'description':
+          } else if (header.includes('descrição') || header.includes('descricao') || header.includes('description')) {
             row.descricao = value;
-            break;
-          case 'categoria':
-          case 'category':
+          } else if (header.includes('categoria') || header.includes('category')) {
             row.categoria = value;
-            break;
-          case 'tipo':
-          case 'type':
+          } else if (header.includes('tipo') || header.includes('type')) {
             row.tipo = value.toLowerCase();
-            break;
-          case 'valor':
-          case 'value':
-          case 'amount':
-            row.valor = parseFloat(value.replace(/[^\d.-]/g, '')) || 0;
-            break;
-          case 'status':
+          } else if (header.includes('valor') || header.includes('value') || header.includes('amount')) {
+            const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
+            row.valor = parseFloat(cleanValue) || 0;
+          } else if (header.includes('status')) {
             row.status = value.toLowerCase();
-            break;
-          case 'método':
-          case 'metodo':
-          case 'method':
+          } else if (header.includes('método') || header.includes('metodo') || header.includes('method')) {
             row.metodo = value;
-            break;
-        }
-      });
-      
-      return row;
-    }).filter(row => row.descricao && row.valor); // Filtrar linhas válidas
+          } else if (header.includes('canal') || header.includes('channel')) {
+            row.canal = value;
+          } else if (header.includes('cliente') || header.includes('client')) {
+            row.cliente = value;
+          }
+        });
+        
+        return row;
+      } catch (error) {
+        console.error(`Erro ao processar linha ${index + 2}:`, error);
+        return null;
+      }
+    }).filter((row): row is SpreadsheetRow => 
+      row !== null && row.descricao && row.valor && row.valor > 0
+    );
+
+    console.log(`Processadas ${rows.length} linhas válidas de ${lines.length - 1} linhas totais`);
+    return rows;
+  };
+
+  const checkDuplicate = async (transactionData: any): Promise<boolean> => {
+    try {
+      const { data } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('title', transactionData.title)
+        .eq('amount', transactionData.amount)
+        .eq('date', transactionData.date)
+        .limit(1);
+
+      return data && data.length > 0;
+    } catch (error) {
+      console.error('Erro ao verificar duplicata:', error);
+      return false;
+    }
   };
 
   const syncToDatabase = async (data: SpreadsheetRow[]) => {
     let successCount = 0;
     let errorCount = 0;
+    let duplicateCount = 0;
     const total = data.length;
 
     // Obter o usuário atual
@@ -112,6 +132,8 @@ export const SpreadsheetSync = () => {
       throw new Error("Usuário não autenticado");
     }
 
+    console.log(`Iniciando sincronização de ${total} registros`);
+
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       setProgress((i / total) * 100);
@@ -120,23 +142,33 @@ export const SpreadsheetSync = () => {
         // Converter data para formato ISO
         let dateISO = new Date().toISOString().split('T')[0];
         if (row.data) {
-          const dateParts = row.data.split('/');
-          if (dateParts.length === 3) {
-            dateISO = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}`;
+          if (row.data.includes('/')) {
+            const dateParts = row.data.split('/');
+            if (dateParts.length === 3) {
+              const day = dateParts[0].padStart(2, '0');
+              const month = dateParts[1].padStart(2, '0');
+              const year = dateParts[2];
+              dateISO = `${year}-${month}-${day}`;
+            }
+          } else if (row.data.includes('-')) {
+            dateISO = row.data;
           }
         }
 
         // Mapear tipo de transação
         let transactionType: 'receita' | 'despesa' = 'receita';
-        if (row.tipo.includes('saida') || row.tipo.includes('despesa') || row.valor < 0) {
+        if (row.tipo.includes('saida') || row.tipo.includes('despesa') || 
+            row.tipo.includes('expense') || row.valor < 0) {
           transactionType = 'despesa';
         }
 
         // Mapear status
         let status: 'pendente' | 'pago' | 'vencido' = 'pendente';
-        if (row.status.includes('pago') || row.status.includes('recebido')) {
+        if (row.status.includes('pago') || row.status.includes('recebido') || 
+            row.status.includes('paid') || row.status.includes('received')) {
           status = 'pago';
-        } else if (row.status.includes('vencido') || row.status.includes('atrasado')) {
+        } else if (row.status.includes('vencido') || row.status.includes('atrasado') || 
+                   row.status.includes('overdue')) {
           status = 'vencido';
         }
 
@@ -144,16 +176,27 @@ export const SpreadsheetSync = () => {
           type: transactionType,
           title: row.descricao,
           amount: Math.abs(row.valor),
-          category: row.categoria || 'Outros',
+          category: row.categoria || 'Importado',
           date: dateISO,
           status: status,
           payment_method: row.metodo || '',
           description: `Importado da planilha - ${row.descricao}`,
+          channel: row.canal || '',
+          client_name: row.cliente || '',
           user_id: user.id
         };
 
-        await transactionService.createTransaction(transactionData);
-        successCount++;
+        // Verificar duplicata
+        const isDuplicate = await checkDuplicate(transactionData);
+        
+        if (isDuplicate) {
+          duplicateCount++;
+          console.log(`Duplicata ignorada: ${row.descricao}`);
+        } else {
+          await transactionService.createTransaction(transactionData);
+          successCount++;
+          console.log(`Transação criada: ${row.descricao} - R$ ${row.valor}`);
+        }
       } catch (error) {
         console.error('Erro ao sincronizar linha:', error);
         errorCount++;
@@ -161,17 +204,27 @@ export const SpreadsheetSync = () => {
     }
 
     setProgress(100);
-    return { success: successCount, errors: errorCount, total };
+    console.log(`Sincronização concluída: ${successCount} sucessos, ${errorCount} erros, ${duplicateCount} duplicatas`);
+    return { success: successCount, errors: errorCount, total, duplicates: duplicateCount };
   };
 
   const handleSync = async () => {
-    if (!file) return;
+    if (!file) {
+      toast({
+        title: "Arquivo necessário",
+        description: "Por favor, selecione um arquivo CSV primeiro.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsUploading(true);
     setProgress(0);
 
     try {
       const text = await file.text();
+      console.log('Conteúdo do arquivo carregado, tamanho:', text.length);
+      
       const data = parseCSV(text);
       
       if (data.length === 0) {
@@ -183,12 +236,13 @@ export const SpreadsheetSync = () => {
         return;
       }
 
+      console.log(`Iniciando sincronização de ${data.length} registros válidos`);
       const results = await syncToDatabase(data);
       setSyncResults(results);
 
       toast({
         title: "Sincronização concluída",
-        description: `${results.success} registros importados com sucesso, ${results.errors} erros.`,
+        description: `${results.success} registros importados, ${results.errors} erros, ${results.duplicates} duplicatas ignoradas.`,
       });
     } catch (error) {
       console.error('Erro na sincronização:', error);
@@ -204,18 +258,26 @@ export const SpreadsheetSync = () => {
   };
 
   const downloadTemplate = () => {
-    const csvContent = "data,descricao,categoria,tipo,valor,status,metodo\n" +
-                      "02/01/2024,Venda Produto,Receita,ENTRADA,1500.00,Recebido,PIX\n" +
-                      "05/01/2024,Fornecedor XYZ,Despesa Fixa,SAIDA,500.00,Pago,Boleto\n" +
-                      "10/01/2024,Comissão Vendas,Receita,ENTRADA,300.00,Pendente,Transferência";
+    const csvContent = [
+      "data,descricao,categoria,tipo,valor,status,metodo,canal,cliente",
+      "02/01/2024,Venda Produto,Receita,receita,1500.00,pago,PIX,site,Cliente ABC",
+      "05/01/2024,Fornecedor XYZ,Despesa Operacional,despesa,500.00,pago,Boleto,comercial,Fornecedor XYZ",
+      "10/01/2024,Comissão Vendas,Receita,receita,300.00,pendente,Transferência,mercadoLivre,",
+      "15/01/2024,Energia Elétrica,Despesa Fixa,despesa,450.00,pago,Débito Automático,comercial,"
+    ].join('\n');
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'modelo_financeiro_winnet.csv';
     a.click();
     window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Modelo baixado",
+      description: "Arquivo modelo CSV foi baixado com sucesso.",
+    });
   };
 
   return (
@@ -232,7 +294,7 @@ export const SpreadsheetSync = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Importe dados da sua planilha financeira para sincronizar com o CRM. 
-              O arquivo deve estar no formato CSV com as colunas: data, descrição, categoria, tipo, valor, status, método.
+              O arquivo deve estar no formato CSV com as colunas: data, descrição, categoria, tipo, valor, status, método, canal, cliente.
             </AlertDescription>
           </Alert>
 
@@ -256,6 +318,9 @@ export const SpreadsheetSync = () => {
                     <span className="text-sm font-medium">Arquivo selecionado:</span>
                   </div>
                   <p className="text-sm text-green-700 mt-1">{file.name}</p>
+                  <p className="text-xs text-green-600 mt-1">
+                    Tamanho: {(file.size / 1024).toFixed(1)} KB
+                  </p>
                 </div>
               )}
 
@@ -308,6 +373,10 @@ export const SpreadsheetSync = () => {
                     <div className="flex justify-between text-green-700">
                       <span>Importados com sucesso:</span>
                       <span className="font-medium">{syncResults.success}</span>
+                    </div>
+                    <div className="flex justify-between text-yellow-700">
+                      <span>Duplicatas ignoradas:</span>
+                      <span className="font-medium">{syncResults.duplicates}</span>
                     </div>
                     <div className="flex justify-between text-red-700">
                       <span>Erros:</span>

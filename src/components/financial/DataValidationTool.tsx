@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, AlertTriangle, CheckCircle, Search, Filter } from "lucide-react";
+import { Trash2, AlertTriangle, CheckCircle, Search, Filter, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -63,6 +64,7 @@ export const DataValidationTool = () => {
       }) || [];
 
       setTransactions(validatedTransactions);
+      console.log(`Carregadas ${validatedTransactions.length} transações para validação`);
     } catch (error) {
       console.error('Erro ao carregar transações:', error);
       toast({
@@ -86,23 +88,32 @@ export const DataValidationTool = () => {
     }
 
     // Validar data
-    const transactionDate = new Date(transaction.date);
-    const now = new Date();
-    if (transactionDate > now) {
-      issues.push('Data futura');
+    if (!transaction.date) {
+      issues.push('Data não informada');
       isValid = false;
-    }
+    } else {
+      const transactionDate = new Date(transaction.date);
+      const now = new Date();
+      
+      if (isNaN(transactionDate.getTime())) {
+        issues.push('Data inválida');
+        isValid = false;
+      } else if (transactionDate > now) {
+        issues.push('Data futura');
+        isValid = false;
+      }
 
-    // Validar dados muito antigos (mais de 2 anos)
-    const twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(now.getFullYear() - 2);
-    if (transactionDate < twoYearsAgo) {
-      issues.push('Transação muito antiga (>2 anos)');
+      // Validar dados muito antigos (mais de 3 anos)
+      const threeYearsAgo = new Date();
+      threeYearsAgo.setFullYear(now.getFullYear() - 3);
+      if (transactionDate < threeYearsAgo) {
+        issues.push('Transação muito antiga (>3 anos)');
+      }
     }
 
     // Validar valores suspeitos
-    if (transaction.amount > 100000) {
-      issues.push('Valor muito alto (>R$ 100.000)');
+    if (transaction.amount > 500000) {
+      issues.push('Valor muito alto (>R$ 500.000)');
     }
 
     // Validar descrição
@@ -117,16 +128,20 @@ export const DataValidationTool = () => {
       isValid = false;
     }
 
-    // Validar transações duplicatas suspeitas
-    if (transaction.title?.toLowerCase().includes('teste') || 
-        transaction.title?.toLowerCase().includes('exemplo')) {
+    // Validar transações de teste
+    const testKeywords = ['teste', 'test', 'exemplo', 'example', 'demo'];
+    if (testKeywords.some(keyword => 
+      transaction.title?.toLowerCase().includes(keyword) ||
+      transaction.category?.toLowerCase().includes(keyword)
+    )) {
       issues.push('Possível dado de teste');
       isValid = false;
     }
 
-    // Validar valores decimais estranhos
-    if (transaction.amount % 1 !== 0 && transaction.amount.toString().split('.')[1]?.length > 2) {
-      issues.push('Valor com muitas casas decimais');
+    // Validar tipo de transação
+    if (!transaction.type || !['receita', 'despesa'].includes(transaction.type)) {
+      issues.push('Tipo de transação inválido');
+      isValid = false;
     }
 
     return { isValid, issues };
@@ -147,6 +162,18 @@ export const DataValidationTool = () => {
       .filter(t => !t.isValid)
       .map(t => t.id);
     setSelectedForDeletion(new Set(invalidIds));
+    toast({
+      title: "Seleção atualizada",
+      description: `${invalidIds.length} transações inválidas selecionadas`,
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedForDeletion(new Set());
+    toast({
+      title: "Seleção limpa",
+      description: "Todas as seleções foram removidas",
+    });
   };
 
   const deleteSelectedTransactions = async () => {
@@ -274,11 +301,30 @@ export const DataValidationTool = () => {
             </div>
 
             <Button
+              onClick={loadTransactions}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+
+            <Button
               onClick={selectAllInvalid}
               variant="outline"
               size="sm"
             >
-              Selecionar Todas Inválidas
+              Selecionar Inválidas
+            </Button>
+
+            <Button
+              onClick={clearSelection}
+              variant="outline"
+              size="sm"
+              disabled={selectedForDeletion.size === 0}
+            >
+              Limpar Seleção
             </Button>
 
             <Button
@@ -297,7 +343,7 @@ export const DataValidationTool = () => {
       {/* Lista de Transações */}
       <Card>
         <CardHeader>
-          <CardTitle>Transações para Validação</CardTitle>
+          <CardTitle>Transações para Validação ({filteredTransactions.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
