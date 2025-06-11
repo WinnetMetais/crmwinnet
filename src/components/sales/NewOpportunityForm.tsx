@@ -71,7 +71,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     clientPhone: '',
     clientAddress: '',
     clientCnpj: '',
-    opportunityTitle: '',
+    opportunityTitle: 'Venda de Produto', // Valor padrão
     stage: 'prospecto',
     probability: 20,
     expectedCloseDate: '',
@@ -271,13 +271,18 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="opportunityTitle">Título da Oportunidade *</Label>
-                      <Input
-                        id="opportunityTitle"
-                        value={formData.opportunityTitle}
-                        onChange={(e) => setFormData(prev => ({ ...prev, opportunityTitle: e.target.value }))}
-                        placeholder="Ex: Fornecimento de chapas de aço"
-                        required
-                      />
+                      <Select value={formData.opportunityTitle} onValueChange={(value) => setFormData(prev => ({ ...prev, opportunityTitle: value }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo de oportunidade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Venda de Produto">Venda de Produto</SelectItem>
+                          <SelectItem value="Venda de Serviço">Venda de Serviço</SelectItem>
+                          <SelectItem value="Fornecimento de Material">Fornecimento de Material</SelectItem>
+                          <SelectItem value="Projeto Customizado">Projeto Customizado</SelectItem>
+                          <SelectItem value="Manutenção">Manutenção</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="estimatedValue">Valor Estimado (R$)</Label>
@@ -356,10 +361,9 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
                           <SelectValue placeholder="Selecione o responsável" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="carlos">Carlos Silva</SelectItem>
-                          <SelectItem value="ana">Ana Oliveira</SelectItem>
-                          <SelectItem value="joao">João Santos</SelectItem>
-                          <SelectItem value="maria">Maria Costa</SelectItem>
+                          <SelectItem value="ketellyn-lira">Ketellyn Lira</SelectItem>
+                          <SelectItem value="evandro-pacheco">Evandro Pacheco</SelectItem>
+                          <SelectItem value="dianna-guarnier">Dianna Guarnier</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -599,3 +603,5 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     </>
   );
 };
+
+export default NewOpportunityForm;

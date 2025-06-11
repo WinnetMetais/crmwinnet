@@ -27,12 +27,18 @@ export const OpportunityTab = ({ formData, onUpdateData }: OpportunityTabProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="title">Título da Oportunidade *</Label>
-            <Input
-              id="title"
-              placeholder="Ex: Fornecimento de lixeiras"
-              value={formData.opportunityTitle}
-              onChange={(e) => onUpdateData({ opportunityTitle: e.target.value })}
-            />
+            <Select value={formData.opportunityTitle} onValueChange={(value) => onUpdateData({ opportunityTitle: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de oportunidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Venda de Produto">Venda de Produto</SelectItem>
+                <SelectItem value="Venda de Serviço">Venda de Serviço</SelectItem>
+                <SelectItem value="Fornecimento de Material">Fornecimento de Material</SelectItem>
+                <SelectItem value="Projeto Customizado">Projeto Customizado</SelectItem>
+                <SelectItem value="Manutenção">Manutenção</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="estimatedValue">Valor Estimado (R$)</Label>
@@ -111,10 +117,9 @@ export const OpportunityTab = ({ formData, onUpdateData }: OpportunityTabProps) 
               <SelectValue placeholder="Selecione o responsável" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="carlos-silva">Carlos Silva</SelectItem>
-              <SelectItem value="ana-oliveira">Ana Oliveira</SelectItem>
-              <SelectItem value="joao-santos">João Santos</SelectItem>
-              <SelectItem value="maria-costa">Maria Costa</SelectItem>
+              <SelectItem value="ketellyn-lira">Ketellyn Lira</SelectItem>
+              <SelectItem value="evandro-pacheco">Evandro Pacheco</SelectItem>
+              <SelectItem value="dianna-guarnier">Dianna Guarnier</SelectItem>
             </SelectContent>
           </Select>
         </div>
