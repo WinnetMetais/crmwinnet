@@ -2,8 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-// Interface simples para transações
-interface SimpleTransaction {
+// Interface básica para transações
+interface BasicTransaction {
   id: string;
 }
 
@@ -16,13 +16,16 @@ export class DataQualityService {
       if (customerIds && customerIds.length > 0) {
         targetCustomers = [...customerIds];
       } else {
-        // Se não fornecido, buscar todos os IDs de clientes
-        const { data: customerData, error: customerError } = await supabase
+        // Buscar todos os IDs de clientes de forma simples
+        const customersResult = await supabase
           .from('customers')
           .select('id');
         
-        if (customerError) throw customerError;
-        targetCustomers = (customerData || []).map((item: any) => item.id);
+        if (customersResult.error) throw customersResult.error;
+        
+        if (customersResult.data) {
+          targetCustomers = customersResult.data.map((item: any) => item.id);
+        }
       }
       
       for (const customerId of targetCustomers) {
@@ -36,8 +39,8 @@ export class DataQualityService {
           continue;
         }
 
-        // Buscar transações usando uma query simplificada
-        const transactions = await this.getCustomerTransactions(customerId);
+        // Buscar transações de forma simplificada
+        const transactions = await this.getBasicTransactions(customerId);
         
         if (transactions.length > 0) {
           for (const transaction of transactions) {
@@ -52,7 +55,7 @@ export class DataQualityService {
         }
 
         // Registrar log de validação
-        await this.logValidation(customerId, 'customer', 'data_quality', 'passed');
+        await this.createValidationLog(customerId, 'customer', 'data_quality', 'passed');
       }
 
       toast({
@@ -66,51 +69,50 @@ export class DataQualityService {
     }
   }
 
-  // Método auxiliar para buscar transações com tipos explícitos
-  private static async getCustomerTransactions(customerId: string): Promise<SimpleTransaction[]> {
+  // Método simplificado para buscar transações
+  private static async getBasicTransactions(customerId: string): Promise<BasicTransaction[]> {
     try {
-      // Usar uma consulta mais simples sem encadeamento complexo
-      const transactionsResponse = await supabase
+      // Query básica sem complexidade de tipos
+      const response = await supabase
         .from('transactions')
         .select('id')
         .eq('customer_id', customerId);
       
-      if (transactionsResponse.error) {
-        console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionsResponse.error);
+      if (response.error) {
+        console.error(`Erro ao buscar transações:`, response.error);
         return [];
       }
 
-      // Processar resultado de forma segura
-      const transactionsData = transactionsResponse.data;
-      if (!transactionsData || !Array.isArray(transactionsData)) {
+      // Processar dados de forma segura
+      const data = response.data;
+      if (!data || !Array.isArray(data)) {
         return [];
       }
 
-      // Mapear para nossa interface simples
-      const result: SimpleTransaction[] = [];
-      for (let i = 0; i < transactionsData.length; i++) {
-        const item = transactionsData[i];
-        if (item && item.id) {
-          result.push({ id: String(item.id) });
+      // Mapear manualmente para evitar problemas de tipo
+      const transactions: BasicTransaction[] = [];
+      for (const item of data) {
+        if (item && typeof item === 'object' && 'id' in item) {
+          transactions.push({ id: String(item.id) });
         }
       }
       
-      return result;
+      return transactions;
     } catch (error) {
       console.error('Erro ao buscar transações:', error);
       return [];
     }
   }
 
-  // Registrar log de validação
-  private static async logValidation(
+  // Registrar log de validação de forma simplificada
+  private static async createValidationLog(
     recordId: string, 
     module: string, 
     type: string, 
     status: 'passed' | 'failed' | 'warning'
   ): Promise<void> {
     try {
-      const logData = {
+      const logEntry = {
         module_name: module,
         table_name: module,
         record_id: recordId,
@@ -123,10 +125,10 @@ export class DataQualityService {
 
       const result = await supabase
         .from('data_validation_logs')
-        .insert(logData);
+        .insert(logEntry);
 
       if (result.error) {
-        console.error('Erro ao registrar log de validação:', result.error);
+        console.error('Erro ao registrar log:', result.error);
       }
     } catch (error) {
       console.error('Erro ao registrar log de validação:', error);

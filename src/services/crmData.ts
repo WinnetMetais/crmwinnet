@@ -8,21 +8,41 @@ import { ValidationResult, QualityMetrics, DataValidationLog, CRMFilters } from 
 export class CRMDataService {
   // Carregar clientes com filtros aplicados
   static async getCustomersWithFilters(filters: CRMFilters): Promise<ValidationResult[]> {
-    return CRMCustomersService.getCustomersWithFilters(filters);
+    try {
+      return await CRMCustomersService.getCustomersWithFilters(filters);
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+      return [];
+    }
   }
 
   // Executar validação de qualidade dos dados
   static async runDataValidation(customerIds?: string[]): Promise<void> {
-    return DataQualityService.runDataValidation(customerIds);
+    try {
+      return await DataQualityService.runDataValidation(customerIds);
+    } catch (error) {
+      console.error('Erro na validação:', error);
+      throw error;
+    }
   }
 
   // Obter métricas de qualidade por módulo
   static async getQualityMetrics(): Promise<{ [module: string]: QualityMetrics }> {
-    return QualityMetricsService.getQualityMetrics();
+    try {
+      return await QualityMetricsService.getQualityMetrics();
+    } catch (error) {
+      console.error('Erro ao obter métricas:', error);
+      return {};
+    }
   }
 
   // Obter logs de validação recentes
   static async getRecentValidationLogs(limit = 20): Promise<DataValidationLog[]> {
-    return ValidationLogsService.getRecentValidationLogs(limit);
+    try {
+      return await ValidationLogsService.getRecentValidationLogs(limit);
+    } catch (error) {
+      console.error('Erro ao obter logs:', error);
+      return [];
+    }
   }
 }
