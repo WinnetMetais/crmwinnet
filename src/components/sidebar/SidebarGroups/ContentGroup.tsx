@@ -11,7 +11,12 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-export const ContentGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolean, isActive: (path: string) => boolean }> = ({ isActiveGroup, isActive }) => {
+interface ContentGroupProps {
+  isActive: (path: string) => boolean;
+  isActiveGroup: (paths: string[]) => boolean;
+}
+
+export const ContentGroup = ({ isActive, isActiveGroup }: ContentGroupProps) => {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Conteúdo</SidebarGroupLabel>
@@ -43,11 +48,11 @@ export const ContentGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolea
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive('/marketing-automation')}
+              isActive={isActive('/automation')}
               tooltip="Automação de Marketing"
               asChild
             >
-              <Link to="/marketing-automation">
+              <Link to="/automation">
                 <Megaphone className="mr-2 h-4 w-4" />
                 <span>Automação Marketing</span>
               </Link>

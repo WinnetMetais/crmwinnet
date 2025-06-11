@@ -11,7 +11,12 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-export const AnalysisGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolean, isActive: (path: string) => boolean }> = ({ isActiveGroup, isActive }) => {
+interface AnalysisGroupProps {
+  isActive: (path: string) => boolean;
+  isActiveGroup: (paths: string[]) => boolean;
+}
+
+export const AnalysisGroup = ({ isActive, isActiveGroup }: AnalysisGroupProps) => {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Análises</SidebarGroupLabel>
@@ -43,11 +48,11 @@ export const AnalysisGroup: React.FC<{ isActiveGroup: (paths: string[]) => boole
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive('/crm')}
+              isActive={isActive('/crm-overview')}
               tooltip="Visão Geral CRM"
               asChild
             >
-              <Link to="/crm">
+              <Link to="/crm-overview">
                 <PieChart className="mr-2 h-4 w-4" />
                 <span>Visão Geral CRM</span>
               </Link>
@@ -67,11 +72,11 @@ export const AnalysisGroup: React.FC<{ isActiveGroup: (paths: string[]) => boole
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive('/ai')}
+              isActive={isActive('/ai-dashboard')}
               tooltip="Assistente IA"
               asChild
             >
-              <Link to="/ai">
+              <Link to="/ai-dashboard">
                 <Brain className="mr-2 h-4 w-4" />
                 <span>Assistente IA</span>
               </Link>

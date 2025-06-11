@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { NotificationProvider } from "@/components/notifications/NotificationProvider";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -36,23 +38,6 @@ import ContentPlan from "./pages/content/ContentPlan";
 import Social from "./pages/content/Social";
 import Ads from "./pages/content/Ads";
 import GoogleCampaigns from "./pages/campaigns/GoogleCampaigns";
-import {
-  AccountSettings,
-  Appearance,
-  NotificationsSettings,
-  Privacy,
-} from "./pages/config/sub-routes";
-import {
-  KanbanBoard,
-  ProjectManagement,
-  TaskList,
-} from "./pages/tasks/sub-routes";
-import {
-  FacebookCampaigns,
-  InstagramCampaigns,
-  LinkedInCampaigns,
-  TwitterCampaigns,
-} from "./pages/campaigns/social-media";
 
 const queryClient = new QueryClient();
 
@@ -70,44 +55,46 @@ function App() {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/financial" element={<Financial />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/sales" element={<Sales />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/analysis" element={<Analysis />} />
-                <Route path="/config" element={<Config />} />
-                <Route path="/commercial" element={<Commercial />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/content" element={<Content />} />
-                <Route path="/campaigns" element={<Campaigns />} />
-                <Route path="/crm-overview" element={<CRMOverview />} />
-                <Route path="/module-analysis" element={<ModuleAnalysis />} />
-                <Route path="/filters" element={<Filters />} />
-                <Route path="/templates" element={<Templates />} />
-                <Route path="/promotions" element={<Promotions />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/tasks" element={<TasksNotifications />} />
-                <Route path="/users" element={<UserManagement />} />
-                <Route path="/performance" element={<Performance />} />
-                <Route path="/automation" element={<MarketingAutomation />} />
-                <Route path="/ai-dashboard" element={<AIDashboard />} />
-                <Route path="/backup" element={<Backup />} />
-                <Route path="/data-quality" element={<DataQuality />} />
-                
-                {/* Content sub-routes */}
-                <Route path="/content/plan" element={<ContentPlan />} />
-                <Route path="/content/social" element={<Social />} />
-                <Route path="/content/ads" element={<Ads />} />
-                
-                {/* Campaign sub-routes */}
-                <Route path="/campaigns/google" element={<GoogleCampaigns />} />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AuthProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/financial" element={<Financial />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/sales" element={<Sales />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/analysis" element={<Analysis />} />
+                  <Route path="/config" element={<Config />} />
+                  <Route path="/commercial" element={<Commercial />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/content" element={<Content />} />
+                  <Route path="/campaigns" element={<Campaigns />} />
+                  <Route path="/crm-overview" element={<CRMOverview />} />
+                  <Route path="/module-analysis" element={<ModuleAnalysis />} />
+                  <Route path="/filters" element={<Filters />} />
+                  <Route path="/templates" element={<Templates />} />
+                  <Route path="/promotions" element={<Promotions />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/tasks" element={<TasksNotifications />} />
+                  <Route path="/users" element={<UserManagement />} />
+                  <Route path="/performance" element={<Performance />} />
+                  <Route path="/automation" element={<MarketingAutomation />} />
+                  <Route path="/ai-dashboard" element={<AIDashboard />} />
+                  <Route path="/backup" element={<Backup />} />
+                  <Route path="/data-quality" element={<DataQuality />} />
+                  
+                  {/* Content sub-routes */}
+                  <Route path="/content/plan" element={<ContentPlan />} />
+                  <Route path="/content/social" element={<Social />} />
+                  <Route path="/content/ads" element={<Ads />} />
+                  
+                  {/* Campaign sub-routes */}
+                  <Route path="/campaigns/google" element={<GoogleCampaigns />} />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AuthProvider>
             </BrowserRouter>
           </NotificationProvider>
         </TooltipProvider>

@@ -11,7 +11,12 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-export const ConfigGroup: React.FC<{ isActiveGroup: (paths: string[]) => boolean, isActive: (path: string) => boolean }> = ({ isActiveGroup, isActive }) => {
+interface ConfigGroupProps {
+  isActive: (path: string) => boolean;
+  isActiveGroup: (paths: string[]) => boolean;
+}
+
+export const ConfigGroup = ({ isActive, isActiveGroup }: ConfigGroupProps) => {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Configurações</SidebarGroupLabel>
