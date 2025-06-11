@@ -61,18 +61,18 @@ export class CRMDataService {
   // Executar validação de qualidade dos dados
   static async runDataValidation(customerIds?: string[]): Promise<void> {
     try {
-      let customersToValidate: string[];
+      let customersToValidate: string[] = [];
       
       if (customerIds && customerIds.length > 0) {
         customersToValidate = customerIds;
       } else {
         // Se não fornecido, buscar todos os IDs de clientes
-        const { data, error } = await supabase
+        const { data: customerData, error: customerError } = await supabase
           .from('customers')
           .select('id');
         
-        if (error) throw error;
-        customersToValidate = (data || []).map(customer => customer.id);
+        if (customerError) throw customerError;
+        customersToValidate = (customerData || []).map((customer: any) => customer.id);
       }
       
       for (const customerId of customersToValidate) {
@@ -87,10 +87,15 @@ export class CRMDataService {
         }
 
         // Executar validação de transações se existirem
-        const { data: transactions } = await supabase
+        const { data: transactions, error: transactionError } = await supabase
           .from('transactions')
           .select('id')
           .eq('customer_id', customerId);
+
+        if (transactionError) {
+          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionError);
+          continue;
+        }
 
         if (transactions && transactions.length > 0) {
           for (const transaction of transactions) {
@@ -125,51 +130,83 @@ export class CRMDataService {
       const metrics: { [module: string]: QualityMetrics } = {};
 
       // Buscar métricas para customers
-      const { data: customersData, error: customersError } = await supabase
-        .from('customers')
-        .select('data_quality_score');
+      try {
+        const { data: customersData, error: customersError } = await supabase
+          .from('customers')
+          .select('data_quality_score');
 
-      if (customersError) {
-        console.error('Erro ao buscar métricas para customers:', customersError);
+        if (customersError) {
+          console.error('Erro ao buscar métricas para customers:', customersError);
+          metrics.customers = this.getEmptyMetrics();
+        } else {
+          const records = (customersData || []).map((item: any) => ({ 
+            data_quality_score: item.data_quality_score 
+          }));
+          metrics.customers = this.calculateModuleMetrics(records);
+        }
+      } catch (error) {
+        console.error('Erro ao processar métricas de customers:', error);
         metrics.customers = this.getEmptyMetrics();
-      } else {
-        metrics.customers = this.calculateModuleMetrics(customersData || []);
       }
 
       // Buscar métricas para deals
-      const { data: dealsData, error: dealsError } = await supabase
-        .from('deals')
-        .select('data_quality_score');
+      try {
+        const { data: dealsData, error: dealsError } = await supabase
+          .from('deals')
+          .select('data_quality_score');
 
-      if (dealsError) {
-        console.error('Erro ao buscar métricas para deals:', dealsError);
+        if (dealsError) {
+          console.error('Erro ao buscar métricas para deals:', dealsError);
+          metrics.deals = this.getEmptyMetrics();
+        } else {
+          const records = (dealsData || []).map((item: any) => ({ 
+            data_quality_score: item.data_quality_score 
+          }));
+          metrics.deals = this.calculateModuleMetrics(records);
+        }
+      } catch (error) {
+        console.error('Erro ao processar métricas de deals:', error);
         metrics.deals = this.getEmptyMetrics();
-      } else {
-        metrics.deals = this.calculateModuleMetrics(dealsData || []);
       }
 
       // Buscar métricas para opportunities
-      const { data: opportunitiesData, error: opportunitiesError } = await supabase
-        .from('opportunities')
-        .select('data_quality_score');
+      try {
+        const { data: opportunitiesData, error: opportunitiesError } = await supabase
+          .from('opportunities')
+          .select('data_quality_score');
 
-      if (opportunitiesError) {
-        console.error('Erro ao buscar métricas para opportunities:', opportunitiesError);
+        if (opportunitiesError) {
+          console.error('Erro ao buscar métricas para opportunities:', opportunitiesError);
+          metrics.opportunities = this.getEmptyMetrics();
+        } else {
+          const records = (opportunitiesData || []).map((item: any) => ({ 
+            data_quality_score: item.data_quality_score 
+          }));
+          metrics.opportunities = this.calculateModuleMetrics(records);
+        }
+      } catch (error) {
+        console.error('Erro ao processar métricas de opportunities:', error);
         metrics.opportunities = this.getEmptyMetrics();
-      } else {
-        metrics.opportunities = this.calculateModuleMetrics(opportunitiesData || []);
       }
 
       // Buscar métricas para transactions
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from('transactions')
-        .select('data_quality_score');
+      try {
+        const { data: transactionsData, error: transactionsError } = await supabase
+          .from('transactions')
+          .select('data_quality_score');
 
-      if (transactionsError) {
-        console.error('Erro ao buscar métricas para transactions:', transactionsError);
+        if (transactionsError) {
+          console.error('Erro ao buscar métricas para transactions:', transactionsError);
+          metrics.transactions = this.getEmptyMetrics();
+        } else {
+          const records = (transactionsData || []).map((item: any) => ({ 
+            data_quality_score: item.data_quality_score 
+          }));
+          metrics.transactions = this.calculateModuleMetrics(records);
+        }
+      } catch (error) {
+        console.error('Erro ao processar métricas de transactions:', error);
         metrics.transactions = this.getEmptyMetrics();
-      } else {
-        metrics.transactions = this.calculateModuleMetrics(transactionsData || []);
       }
 
       return metrics;
@@ -207,7 +244,7 @@ export class CRMDataService {
 
       if (error) throw error;
 
-      return (data || []).map(log => ({
+      return (data || []).map((log: any) => ({
         ...log,
         validation_status: this.normalizeValidationStatus(log.validation_status),
         errors: this.processValidationErrors(log.errors),
