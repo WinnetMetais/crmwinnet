@@ -30,7 +30,13 @@ export interface CRMDeal {
   pipeline_stage_id?: string;
   created_at: string;
   updated_at: string;
-  customers?: CRMCustomer;
+  customers?: {
+    id: string;
+    name: string;
+    company?: string;
+    email?: string;
+    phone?: string;
+  };
 }
 
 export interface CRMTask {
@@ -45,6 +51,7 @@ export interface CRMTask {
   due_date?: string;
   created_at: string;
   updated_at: string;
+  user_id: string;
 }
 
 // Hook para clientes
@@ -121,10 +128,21 @@ export const useCreateCustomer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (customerData: Partial<CRMCustomer>) => {
+    mutationFn: async (customerData: Omit<CRMCustomer, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('customers')
-        .insert(customerData)
+        .insert({
+          name: customerData.name,
+          email: customerData.email,
+          phone: customerData.phone,
+          company: customerData.company,
+          address: customerData.address,
+          city: customerData.city,
+          state: customerData.state,
+          status: customerData.status || 'active',
+          lead_source: customerData.lead_source,
+          notes: customerData.notes
+        })
         .select()
         .single();
       
@@ -146,10 +164,23 @@ export const useUpdateCustomer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<CRMCustomer> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<CRMCustomer, 'id' | 'created_at' | 'updated_at'>> }) => {
+      const updateData: any = {};
+      
+      if (data.name) updateData.name = data.name;
+      if (data.email !== undefined) updateData.email = data.email;
+      if (data.phone !== undefined) updateData.phone = data.phone;
+      if (data.company !== undefined) updateData.company = data.company;
+      if (data.address !== undefined) updateData.address = data.address;
+      if (data.city !== undefined) updateData.city = data.city;
+      if (data.state !== undefined) updateData.state = data.state;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.lead_source !== undefined) updateData.lead_source = data.lead_source;
+      if (data.notes !== undefined) updateData.notes = data.notes;
+
       const { data: result, error } = await supabase
         .from('customers')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -173,10 +204,18 @@ export const useCreateDeal = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (dealData: Partial<CRMDeal>) => {
+    mutationFn: async (dealData: Omit<CRMDeal, 'id' | 'created_at' | 'updated_at' | 'customers'>) => {
       const { data, error } = await supabase
         .from('deals')
-        .insert(dealData)
+        .insert({
+          title: dealData.title,
+          customer_id: dealData.customer_id,
+          estimated_value: dealData.estimated_value,
+          actual_value: dealData.actual_value,
+          status: dealData.status || 'lead',
+          assigned_to: dealData.assigned_to,
+          pipeline_stage_id: dealData.pipeline_stage_id
+        })
         .select()
         .single();
       
@@ -199,10 +238,20 @@ export const useUpdateDeal = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<CRMDeal> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<CRMDeal, 'id' | 'created_at' | 'updated_at' | 'customers'>> }) => {
+      const updateData: any = {};
+      
+      if (data.title) updateData.title = data.title;
+      if (data.customer_id) updateData.customer_id = data.customer_id;
+      if (data.estimated_value !== undefined) updateData.estimated_value = data.estimated_value;
+      if (data.actual_value !== undefined) updateData.actual_value = data.actual_value;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.assigned_to !== undefined) updateData.assigned_to = data.assigned_to;
+      if (data.pipeline_stage_id !== undefined) updateData.pipeline_stage_id = data.pipeline_stage_id;
+
       const { data: result, error } = await supabase
         .from('deals')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -226,10 +275,20 @@ export const useCreateTask = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (taskData: Partial<CRMTask>) => {
+    mutationFn: async (taskData: Omit<CRMTask, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('tasks')
-        .insert(taskData)
+        .insert({
+          title: taskData.title,
+          description: taskData.description,
+          customer_id: taskData.customer_id,
+          deal_id: taskData.deal_id,
+          assigned_to: taskData.assigned_to,
+          status: taskData.status,
+          priority: taskData.priority,
+          due_date: taskData.due_date,
+          user_id: taskData.user_id
+        })
         .select()
         .single();
       
@@ -251,10 +310,22 @@ export const useUpdateTask = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<CRMTask> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<CRMTask, 'id' | 'created_at' | 'updated_at'>> }) => {
+      const updateData: any = {};
+      
+      if (data.title) updateData.title = data.title;
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.customer_id !== undefined) updateData.customer_id = data.customer_id;
+      if (data.deal_id !== undefined) updateData.deal_id = data.deal_id;
+      if (data.assigned_to !== undefined) updateData.assigned_to = data.assigned_to;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.priority !== undefined) updateData.priority = data.priority;
+      if (data.due_date !== undefined) updateData.due_date = data.due_date;
+      if (data.user_id) updateData.user_id = data.user_id;
+
       const { data: result, error } = await supabase
         .from('tasks')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
