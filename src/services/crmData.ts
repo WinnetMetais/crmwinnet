@@ -97,44 +97,45 @@ export class CRMDataService {
         targetCustomers = [...customerIds];
       } else {
         // Se não fornecido, buscar todos os IDs de clientes
-        const { data: customerData, error: customerError } = await supabase
+        const customerQuery = await supabase
           .from('customers')
           .select('id');
         
-        if (customerError) throw customerError;
-        targetCustomers = (customerData || []).map((item: any) => item.id);
+        if (customerQuery.error) throw customerQuery.error;
+        targetCustomers = (customerQuery.data || []).map((item: any) => item.id);
       }
       
       for (const customerId of targetCustomers) {
         // Executar função de cálculo de qualidade
-        const { error: scoreError } = await supabase.rpc('calculate_customer_data_quality', { 
+        const qualityResult = await supabase.rpc('calculate_customer_data_quality', { 
           customer_id: customerId 
         });
 
-        if (scoreError) {
-          console.error(`Erro ao calcular score para cliente ${customerId}:`, scoreError);
+        if (qualityResult.error) {
+          console.error(`Erro ao calcular score para cliente ${customerId}:`, qualityResult.error);
           continue;
         }
 
         // Executar validação de transações se existirem
-        const { data: transactions, error: transactionError } = await supabase
+        const transactionQuery = await supabase
           .from('transactions')
           .select('id')
           .eq('customer_id', customerId);
 
-        if (transactionError) {
-          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionError);
+        if (transactionQuery.error) {
+          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionQuery.error);
           continue;
         }
 
-        if (transactions && transactions.length > 0) {
+        const transactions = transactionQuery.data || [];
+        if (transactions.length > 0) {
           for (const transaction of transactions) {
-            const { error: validationError } = await supabase.rpc('validate_transaction_data', {
+            const validationResult = await supabase.rpc('validate_transaction_data', {
               transaction_id: transaction.id
             });
 
-            if (validationError) {
-              console.error(`Erro ao validar transação ${transaction.id}:`, validationError);
+            if (validationResult.error) {
+              console.error(`Erro ao validar transação ${transaction.id}:`, validationResult.error);
             }
           }
         }
@@ -342,7 +343,7 @@ export class CRMDataService {
     status: 'passed' | 'failed' | 'warning'
   ): Promise<void> {
     try {
-      const insertData = {
+      const logData = {
         module_name: module,
         table_name: module,
         record_id: recordId,
@@ -353,12 +354,12 @@ export class CRMDataService {
         validated_by: 'Sistema Automático'
       };
 
-      const { error } = await supabase
+      const result = await supabase
         .from('data_validation_logs')
-        .insert(insertData);
+        .insert(logData);
 
-      if (error) {
-        console.error('Erro ao registrar log de validação:', error);
+      if (result.error) {
+        console.error('Erro ao registrar log de validação:', result.error);
       }
     } catch (error) {
       console.error('Erro ao registrar log de validação:', error);
