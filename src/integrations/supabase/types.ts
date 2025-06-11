@@ -72,6 +72,39 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_reports: {
+        Row: {
+          data: Json
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          period_end: string | null
+          period_start: string | null
+          report_name: string
+          report_type: string
+        }
+        Insert: {
+          data: Json
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          report_name: string
+          report_type: string
+        }
+        Update: {
+          data?: Json
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          report_name?: string
+          report_type?: string
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
           budget: number | null
@@ -350,6 +383,59 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_interactions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          customer_id: string
+          date: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          interaction_type: string
+          next_action: string | null
+          next_action_date: string | null
+          outcome: string | null
+          subject: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          customer_id: string
+          date?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          interaction_type: string
+          next_action?: string | null
+          next_action_date?: string | null
+          outcome?: string | null
+          subject: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string
+          date?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          interaction_type?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          outcome?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_interactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_segments: {
         Row: {
           active: boolean | null
@@ -406,22 +492,28 @@ export type Database = {
           company: string | null
           contact_person: string | null
           created_at: string
+          created_by: string | null
           custom_data: Json | null
           customer_type_id: string | null
           email: string | null
           id: string
           last_contact_date: string | null
+          lead_score: number | null
           lead_source: string | null
           lead_source_id: string | null
+          lifecycle_stage: string | null
           name: string
           notes: string | null
+          owner: string | null
           phone: string | null
           priority_id: string | null
           qualification_status_id: string | null
           segment_id: string | null
           social_reason: string | null
+          source_details: Json | null
           state: string | null
           status: string | null
+          tags: string[] | null
           updated_at: string
           website: string | null
           zip_code: string | null
@@ -433,22 +525,28 @@ export type Database = {
           company?: string | null
           contact_person?: string | null
           created_at?: string
+          created_by?: string | null
           custom_data?: Json | null
           customer_type_id?: string | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
+          lead_score?: number | null
           lead_source?: string | null
           lead_source_id?: string | null
+          lifecycle_stage?: string | null
           name: string
           notes?: string | null
+          owner?: string | null
           phone?: string | null
           priority_id?: string | null
           qualification_status_id?: string | null
           segment_id?: string | null
           social_reason?: string | null
+          source_details?: Json | null
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           updated_at?: string
           website?: string | null
           zip_code?: string | null
@@ -460,22 +558,28 @@ export type Database = {
           company?: string | null
           contact_person?: string | null
           created_at?: string
+          created_by?: string | null
           custom_data?: Json | null
           customer_type_id?: string | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
+          lead_score?: number | null
           lead_source?: string | null
           lead_source_id?: string | null
+          lifecycle_stage?: string | null
           name?: string
           notes?: string | null
+          owner?: string | null
           phone?: string | null
           priority_id?: string | null
           qualification_status_id?: string | null
           segment_id?: string | null
           social_reason?: string | null
+          source_details?: Json | null
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           updated_at?: string
           website?: string | null
           zip_code?: string | null
@@ -525,6 +629,7 @@ export type Database = {
           assigned_to: string | null
           close_date: string | null
           created_at: string
+          created_by: string | null
           customer_id: string
           description: string | null
           estimated_value: number | null
@@ -532,6 +637,7 @@ export type Database = {
           id: string
           last_contact_date: string | null
           observations: string | null
+          opportunity_id: string | null
           pipeline_stage_id: string | null
           presentation_sent_date: string | null
           priority_id: string | null
@@ -549,6 +655,7 @@ export type Database = {
           assigned_to?: string | null
           close_date?: string | null
           created_at?: string
+          created_by?: string | null
           customer_id: string
           description?: string | null
           estimated_value?: number | null
@@ -556,6 +663,7 @@ export type Database = {
           id?: string
           last_contact_date?: string | null
           observations?: string | null
+          opportunity_id?: string | null
           pipeline_stage_id?: string | null
           presentation_sent_date?: string | null
           priority_id?: string | null
@@ -573,6 +681,7 @@ export type Database = {
           assigned_to?: string | null
           close_date?: string | null
           created_at?: string
+          created_by?: string | null
           customer_id?: string
           description?: string | null
           estimated_value?: number | null
@@ -580,6 +689,7 @@ export type Database = {
           id?: string
           last_contact_date?: string | null
           observations?: string | null
+          opportunity_id?: string | null
           pipeline_stage_id?: string | null
           presentation_sent_date?: string | null
           priority_id?: string | null
@@ -597,6 +707,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
             referencedColumns: ["id"]
           },
           {
@@ -621,6 +738,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      integration_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          data: Json | null
+          error_message: string | null
+          id: string
+          integration_type: string
+          status: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          data?: Json | null
+          error_message?: string | null
+          id?: string
+          integration_type: string
+          status: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          data?: Json | null
+          error_message?: string | null
+          id?: string
+          integration_type?: string
+          status?: string
+        }
+        Relationships: []
       }
       lead_sources: {
         Row: {
@@ -799,6 +946,119 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      opportunities: {
+        Row: {
+          actual_close_date: string | null
+          assigned_to: string | null
+          created_at: string | null
+          created_by: string | null
+          customer_id: string
+          description: string | null
+          expected_close_date: string | null
+          id: string
+          lead_source: string | null
+          probability: number | null
+          stage: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          value: number | null
+        }
+        Insert: {
+          actual_close_date?: string | null
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_id: string
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_source?: string | null
+          probability?: number | null
+          stage?: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          value?: number | null
+        }
+        Update: {
+          actual_close_date?: string | null
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_source?: string | null
+          probability?: number | null
+          stage?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_items: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          opportunity_id: string
+          product_id: string | null
+          quantity: number
+          total: number
+          unit: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          opportunity_id: string
+          product_id?: string | null
+          quantity?: number
+          total?: number
+          unit?: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          opportunity_id?: string
+          product_id?: string | null
+          quantity?: number
+          total?: number
+          unit?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_items_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunity_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_methods: {
         Row: {
@@ -993,6 +1253,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_configurations: {
+        Row: {
+          active: boolean | null
+          configuration_data: Json
+          configuration_type: string
+          created_at: string | null
+          id: string
+          product_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          configuration_data: Json
+          configuration_type: string
+          created_at?: string | null
+          id?: string
+          product_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          configuration_data?: Json
+          configuration_type?: string
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_configurations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean | null
@@ -1154,6 +1452,7 @@ export type Database = {
           approved_at: string | null
           contact_person: string | null
           created_at: string | null
+          created_by: string | null
           custom_data: Json | null
           customer_address: string | null
           customer_cnpj: string | null
@@ -1162,11 +1461,13 @@ export type Database = {
           customer_name: string
           customer_phone: string | null
           date: string
+          deal_id: string | null
           delivery_terms: string | null
           discount: number | null
           id: string
           internal_notes: string | null
           notes: string | null
+          opportunity_id: string | null
           payment_terms: string | null
           quote_number: string
           requested_by: string | null
@@ -1183,6 +1484,7 @@ export type Database = {
           approved_at?: string | null
           contact_person?: string | null
           created_at?: string | null
+          created_by?: string | null
           custom_data?: Json | null
           customer_address?: string | null
           customer_cnpj?: string | null
@@ -1191,11 +1493,13 @@ export type Database = {
           customer_name: string
           customer_phone?: string | null
           date: string
+          deal_id?: string | null
           delivery_terms?: string | null
           discount?: number | null
           id?: string
           internal_notes?: string | null
           notes?: string | null
+          opportunity_id?: string | null
           payment_terms?: string | null
           quote_number: string
           requested_by?: string | null
@@ -1212,6 +1516,7 @@ export type Database = {
           approved_at?: string | null
           contact_person?: string | null
           created_at?: string | null
+          created_by?: string | null
           custom_data?: Json | null
           customer_address?: string | null
           customer_cnpj?: string | null
@@ -1220,11 +1525,13 @@ export type Database = {
           customer_name?: string
           customer_phone?: string | null
           date?: string
+          deal_id?: string | null
           delivery_terms?: string | null
           discount?: number | null
           id?: string
           internal_notes?: string | null
           notes?: string | null
+          opportunity_id?: string | null
           payment_terms?: string | null
           quote_number?: string
           requested_by?: string | null
@@ -1243,6 +1550,20 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
             referencedColumns: ["id"]
           },
         ]
@@ -1283,6 +1604,33 @@ export type Database = {
           salesperson?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
         }
         Relationships: []
       }
