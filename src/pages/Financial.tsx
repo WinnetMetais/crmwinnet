@@ -9,9 +9,10 @@ import { ExpenseControl } from "@/components/financial/ExpenseControl";
 import { RevenueAnalysis } from "@/components/financial/RevenueAnalysis";
 import { ChannelAnalysis } from "@/components/financial/ChannelAnalysis";
 import { SpreadsheetSync } from "@/components/financial/SpreadsheetSync";
+import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
 
 const Financial = () => {
-  // Dados de exemplo para os canais
+  // Dados de exemplo para os canais (serão atualizados com dados reais após importação)
   const channelsData = {
     site: { revenue: 86728.00, transactions: 265 },
     mercadoLivre: { revenue: 64739.00, transactions: 193 },
@@ -36,12 +37,13 @@ const Financial = () => {
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6">
-              <TabsList className="grid grid-cols-6 w-full">
+              <TabsList className="grid grid-cols-7 w-full">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="cashflow">Fluxo de Caixa</TabsTrigger>
                 <TabsTrigger value="expenses">Despesas</TabsTrigger>
                 <TabsTrigger value="revenue">Receitas</TabsTrigger>
                 <TabsTrigger value="channels">Canais</TabsTrigger>
+                <TabsTrigger value="winnet-import">Dados Winnet</TabsTrigger>
                 <TabsTrigger value="sync">Sincronização</TabsTrigger>
               </TabsList>
 
@@ -63,6 +65,10 @@ const Financial = () => {
 
               <TabsContent value="channels">
                 <ChannelAnalysis channels={channelsData} />
+              </TabsContent>
+
+              <TabsContent value="winnet-import">
+                <WinnetDataImporter />
               </TabsContent>
 
               <TabsContent value="sync">
