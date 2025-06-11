@@ -44,9 +44,9 @@ export class CRMDataService {
 
       if (error) throw error;
 
-      return (data || []).map((customer: any) => ({
+      const customers = (data || []) as any[];
+      return customers.map(customer => ({
         ...customer,
-        // Garante que o status seja um dos valores válidos
         status: this.normalizeStatus(customer.status),
         validation_errors: this.processValidationErrors(customer.validation_errors),
         severity: this.calculateSeverity(customer.data_quality_score || 0)
@@ -244,7 +244,8 @@ export class CRMDataService {
 
       if (error) throw error;
 
-      return (data || []).map((log: any) => ({
+      const logs = (data || []) as any[];
+      return logs.map(log => ({
         ...log,
         validation_status: this.normalizeValidationStatus(log.validation_status),
         errors: this.processValidationErrors(log.errors),

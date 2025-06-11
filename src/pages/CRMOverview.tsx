@@ -5,6 +5,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataQualityDashboard } from "@/components/crm/DataQualityDashboard";
 import { CRMDataValidator } from "@/components/crm/CRMDataValidator";
+import { CRMSystemStatus } from "@/components/crm/CRMSystemStatus";
 
 const CRMOverview = () => {
   return (
@@ -22,11 +23,16 @@ const CRMOverview = () => {
               </div>
             </div>
 
-            <Tabs defaultValue="quality" className="space-y-6">
-              <TabsList className="grid grid-cols-2 w-full max-w-md">
+            <Tabs defaultValue="status" className="space-y-6">
+              <TabsList className="grid grid-cols-3 w-full max-w-lg">
+                <TabsTrigger value="status">Status do Sistema</TabsTrigger>
                 <TabsTrigger value="quality">Qualidade dos Dados</TabsTrigger>
                 <TabsTrigger value="validator">Validador</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="status">
+                <CRMSystemStatus />
+              </TabsContent>
 
               <TabsContent value="quality">
                 <DataQualityDashboard />
