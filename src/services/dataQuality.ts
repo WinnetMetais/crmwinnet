@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { QualityMetrics } from "@/types/crm";
 import { toast } from "@/hooks/use-toast";
 
 export class DataQualityService {
@@ -18,7 +17,7 @@ export class DataQualityService {
           .select('id');
         
         if (customerQuery.error) throw customerQuery.error;
-        targetCustomers = (customerQuery.data || []).map((item: { id: string }) => item.id);
+        targetCustomers = (customerQuery.data || []).map((item: any) => item.id);
       }
       
       for (const customerId of targetCustomers) {
