@@ -114,10 +114,13 @@ export class DataQualityService {
   private static async getBasicTransactions(customerId: string): Promise<BasicTransaction[]> {
     try {
       // Usar query raw para evitar problemas de tipos complexos
-      const response = await fetch(`${supabase.supabaseUrl}/rest/v1/transactions?customer_id=eq.${customerId}&select=id`, {
+      const SUPABASE_URL = "https://fgabadpelymhgvbtemwa.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnYWJhZHBlbHltaGd2YnRlbXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjI5MDQsImV4cCI6MjA2MzIzODkwNH0.f80W3Pj1uS7GYpnLMRj5FAXM08ogYXd-wX1_LWlfXCM";
+      
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/transactions?customer_id=eq.${customerId}&select=id`, {
         headers: {
-          'apikey': supabase.supabaseKey,
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Content-Type': 'application/json'
         }
       });
