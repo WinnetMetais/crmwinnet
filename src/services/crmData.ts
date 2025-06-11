@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Customer, ValidationResult, QualityMetrics, DataValidationLog, CRMFilters } from "@/types/crm";
 import { toast } from "@/hooks/use-toast";
@@ -343,18 +342,24 @@ export class CRMDataService {
     status: 'passed' | 'failed' | 'warning'
   ): Promise<void> {
     try {
-      await supabase
+      const insertData = {
+        module_name: module,
+        table_name: module,
+        record_id: recordId,
+        validation_type: type,
+        validation_status: status,
+        errors: [],
+        suggestions: [],
+        validated_by: 'Sistema Automático'
+      };
+
+      const { error } = await supabase
         .from('data_validation_logs')
-        .insert({
-          module_name: module,
-          table_name: module,
-          record_id: recordId,
-          validation_type: type,
-          validation_status: status,
-          errors: [],
-          suggestions: [],
-          validated_by: 'Sistema Automático'
-        });
+        .insert(insertData);
+
+      if (error) {
+        console.error('Erro ao registrar log de validação:', error);
+      }
     } catch (error) {
       console.error('Erro ao registrar log de validação:', error);
     }
