@@ -1,148 +1,125 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 import { 
   CheckCircle, 
   AlertTriangle, 
   XCircle, 
-  RefreshCw, 
+  TrendingUp, 
   Users, 
-  DollarSign, 
-  FileText,
   Target,
-  TrendingUp,
-  AlertCircle
+  FileText,
+  RefreshCw
 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { dataValidationService } from "@/services/dataValidation";
+import { toast } from "@/hooks/use-toast";
 
 interface QualityMetrics {
-  customers: {
-    total: number;
-    highQuality: number;
-    mediumQuality: number;
-    lowQuality: number;
-    averageScore: number;
-  };
-  transactions: {
-    total: number;
-    valid: number;
-    invalid: number;
-    averageScore: number;
-  };
-  deals: {
-    total: number;
-    complete: number;
-    incomplete: number;
-    averageScore: number;
-  };
-  opportunities: {
-    total: number;
-    complete: number;
-    incomplete: number;
-    averageScore: number;
-  };
+  totalRecords: number;
+  validRecords: number;
+  invalidRecords: number;
+  averageScore: number;
+  completenessPercentage: number;
+}
+
+interface ModuleData {
+  module: string;
+  metrics: QualityMetrics;
+  recentLogs: any[];
 }
 
 export const DataQualityDashboard = () => {
-  const [metrics, setMetrics] = useState<QualityMetrics | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [validationLogs, setValidationLogs] = useState<any[]>([]);
+  const [moduleData, setModuleData] = useState<ModuleData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    loadQualityMetrics();
-    loadRecentLogs();
+    loadQualityData();
   }, []);
 
-  const loadQualityMetrics = async () => {
-    setLoading(true);
+  const loadQualityData = async () => {
     try {
-      // Carregar métricas de clientes
-      const { data: customersData, error: customersError } = await supabase
-        .from('customers')
-        .select('data_quality_score');
+      const modules = [
+        { name: 'customers', table: 'customers', icon: Users },
+        { name: 'deals', table: 'deals', icon: Target },
+        { name: 'opportunities', table: 'opportunities', icon: TrendingUp },
+        { name: 'transactions', table: 'transactions', icon: FileText }
+      ];
 
-      if (customersError) throw customersError;
+      const moduleResults = await Promise.all(
+        modules.map(async (module) => {
+          // Buscar métricas do módulo
+          const { data, error } = await supabase
+            .from(module.table)
+            .select('data_quality_score, validation_errors');
 
-      // Carregar métricas de transações
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from('transactions')
-        .select('data_quality_score');
+          if (error) {
+            console.error(`Erro ao carregar dados de ${module.name}:`, error);
+            return {
+              module: module.name,
+              metrics: {
+                totalRecords: 0,
+                validRecords: 0,
+                invalidRecords: 0,
+                averageScore: 0,
+                completenessPercentage: 0
+              },
+              recentLogs: []
+            };
+          }
 
-      if (transactionsError) throw transactionsError;
+          const records = data || [];
+          const totalRecords = records.length;
+          const validRecords = records.filter(r => (r.data_quality_score || 0) >= 60).length;
+          const invalidRecords = totalRecords - validRecords;
+          const averageScore = totalRecords > 0 
+            ? records.reduce((sum, r) => sum + (r.data_quality_score || 0), 0) / totalRecords 
+            : 0;
 
-      // Carregar métricas de deals
-      const { data: dealsData, error: dealsError } = await supabase
-        .from('deals')
-        .select('data_quality_score');
+          // Buscar logs recentes
+          const { data: logsData } = await supabase
+            .from('data_validation_logs')
+            .select('*')
+            .eq('table_name', module.table)
+            .order('created_at', { ascending: false })
+            .limit(5);
 
-      if (dealsError) throw dealsError;
+          return {
+            module: module.name,
+            metrics: {
+              totalRecords,
+              validRecords,
+              invalidRecords,
+              averageScore: Math.round(averageScore),
+              completenessPercentage: totalRecords > 0 ? Math.round((validRecords / totalRecords) * 100) : 0
+            },
+            recentLogs: logsData || []
+          };
+        })
+      );
 
-      // Carregar métricas de oportunidades
-      const { data: opportunitiesData, error: opportunitiesError } = await supabase
-        .from('opportunities')
-        .select('data_quality_score');
-
-      if (opportunitiesError) throw opportunitiesError;
-
-      // Processar métricas de clientes
-      const customerScores = customersData?.map(c => c.data_quality_score || 0) || [];
-      const customerMetrics = {
-        total: customerScores.length,
-        highQuality: customerScores.filter(score => score >= 80).length,
-        mediumQuality: customerScores.filter(score => score >= 50 && score < 80).length,
-        lowQuality: customerScores.filter(score => score < 50).length,
-        averageScore: customerScores.length > 0 ? 
-          Math.round(customerScores.reduce((sum, score) => sum + score, 0) / customerScores.length) : 0
-      };
-
-      // Processar métricas de transações
-      const transactionScores = transactionsData?.map(t => t.data_quality_score || 0) || [];
-      const transactionMetrics = {
-        total: transactionScores.length,
-        valid: transactionScores.filter(score => score >= 70).length,
-        invalid: transactionScores.filter(score => score < 70).length,
-        averageScore: transactionScores.length > 0 ? 
-          Math.round(transactionScores.reduce((sum, score) => sum + score, 0) / transactionScores.length) : 0
-      };
-
-      // Processar métricas de deals
-      const dealScores = dealsData?.map(d => d.data_quality_score || 0) || [];
-      const dealMetrics = {
-        total: dealScores.length,
-        complete: dealScores.filter(score => score >= 70).length,
-        incomplete: dealScores.filter(score => score < 70).length,
-        averageScore: dealScores.length > 0 ? 
-          Math.round(dealScores.reduce((sum, score) => sum + score, 0) / dealScores.length) : 0
-      };
-
-      // Processar métricas de oportunidades
-      const opportunityScores = opportunitiesData?.map(o => o.data_quality_score || 0) || [];
-      const opportunityMetrics = {
-        total: opportunityScores.length,
-        complete: opportunityScores.filter(score => score >= 70).length,
-        incomplete: opportunityScores.filter(score => score < 70).length,
-        averageScore: opportunityScores.length > 0 ? 
-          Math.round(opportunityScores.reduce((sum, score) => sum + score, 0) / opportunityScores.length) : 0
-      };
-
-      setMetrics({
-        customers: customerMetrics,
-        transactions: transactionMetrics,
-        deals: dealMetrics,
-        opportunities: opportunityMetrics
-      });
-
+      setModuleData(moduleResults);
     } catch (error) {
-      console.error('Erro ao carregar métricas de qualidade:', error);
+      console.error('Erro ao carregar dados de qualidade:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível carregar as métricas de qualidade",
+        description: "Não foi possível carregar os dados de qualidade",
         variant: "destructive",
       });
     } finally {
@@ -150,41 +127,49 @@ export const DataQualityDashboard = () => {
     }
   };
 
-  const loadRecentLogs = async () => {
-    const logs = await dataValidationService.getValidationLogs({ limit: 10 });
-    setValidationLogs(logs);
+  const refreshData = async () => {
+    setRefreshing(true);
+    await loadQualityData();
+    setRefreshing(false);
+    toast({
+      title: "Dados atualizados",
+      description: "Os dados de qualidade foram atualizados com sucesso",
+    });
   };
 
-  const runFullValidation = async () => {
-    setLoading(true);
+  const runQualityCheck = async () => {
+    setRefreshing(true);
     try {
-      toast({
-        title: "Iniciando validação completa",
-        description: "Isso pode levar alguns minutos...",
-      });
+      // Trigger para atualizar scores de clientes
+      const { data: customers } = await supabase
+        .from('customers')
+        .select('id');
 
-      // Atualizar scores de clientes usando a função do banco
-      const { error: customersError } = await supabase.rpc('calculate_customer_data_quality', {});
-      if (customersError) {
-        console.error('Erro ao atualizar scores de clientes:', customersError);
+      if (customers) {
+        for (const customer of customers) {
+          const { error } = await supabase.rpc('calculate_customer_data_quality', { 
+            customer_id: customer.id 
+          });
+          if (error) {
+            console.error('Erro ao calcular qualidade do cliente:', error);
+          }
+        }
       }
 
-      await loadQualityMetrics();
-      await loadRecentLogs();
-
+      await loadQualityData();
       toast({
-        title: "Validação concluída",
-        description: "Todos os dados foram revalidados com sucesso",
+        title: "Verificação concluída",
+        description: "A verificação de qualidade foi executada com sucesso",
       });
     } catch (error) {
-      console.error('Erro na validação completa:', error);
+      console.error('Erro na verificação de qualidade:', error);
       toast({
-        title: "Erro na validação",
-        description: "Ocorreu um erro durante a validação dos dados",
+        title: "Erro na verificação",
+        description: "Ocorreu um erro durante a verificação de qualidade",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -194,17 +179,32 @@ export const DataQualityDashboard = () => {
     return 'text-red-600';
   };
 
-  const getScoreBadge = (score: number) => {
-    if (score >= 80) return <Badge className="bg-green-100 text-green-800">Excelente</Badge>;
-    if (score >= 50) return <Badge className="bg-yellow-100 text-yellow-800">Bom</Badge>;
-    return <Badge className="bg-red-100 text-red-800">Precisa melhorar</Badge>;
+  const getScoreBadgeVariant = (score: number) => {
+    if (score >= 80) return 'default';
+    if (score >= 50) return 'secondary';
+    return 'destructive';
   };
 
-  if (loading && !metrics) {
+  // Dados para gráficos
+  const chartData = moduleData.map(module => ({
+    name: module.module.charAt(0).toUpperCase() + module.module.slice(1),
+    score: module.metrics.averageScore,
+    valid: module.metrics.validRecords,
+    invalid: module.metrics.invalidRecords,
+    total: module.metrics.totalRecords
+  }));
+
+  const pieData = moduleData.map(module => ({
+    name: module.module,
+    value: module.metrics.totalRecords
+  }));
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-        Carregando métricas de qualidade...
+      <div className="flex items-center justify-center min-h-96">
+        <RefreshCw className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -213,241 +213,188 @@ export const DataQualityDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Qualidade dos Dados</h1>
-          <p className="text-muted-foreground">Monitor e validação da qualidade dos dados do CRM</p>
+          <h1 className="text-3xl font-bold">Dashboard de Qualidade dos Dados</h1>
+          <p className="text-muted-foreground">Visão geral da qualidade dos dados no CRM</p>
         </div>
-        <Button onClick={runFullValidation} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Validar Todos os Dados
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={refreshData} variant="outline" disabled={refreshing}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+          <Button onClick={runQualityCheck} disabled={refreshing}>
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Executar Verificação
+          </Button>
+        </div>
       </div>
 
-      {metrics && (
-        <>
-          {/* Cards de Métricas Principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
+      {/* Cards de Resumo */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {moduleData.map((module) => {
+          const IconComponent = module.module === 'customers' ? Users :
+                              module.module === 'deals' ? Target :
+                              module.module === 'opportunities' ? TrendingUp : FileText;
+          
+          return (
+            <Card key={module.module}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Clientes</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium capitalize">
+                  {module.module}
+                </CardTitle>
+                <IconComponent className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{metrics.customers.total}</div>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Progress value={(metrics.customers.highQuality / metrics.customers.total) * 100} className="flex-1" />
-                  <span className={`text-sm font-medium ${getScoreColor(metrics.customers.averageScore)}`}>
-                    {metrics.customers.averageScore}%
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>Alta: {metrics.customers.highQuality}</span>
-                  <span>Média: {metrics.customers.mediumQuality}</span>
-                  <span>Baixa: {metrics.customers.lowQuality}</span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold">{module.metrics.totalRecords}</span>
+                    <Badge variant={getScoreBadgeVariant(module.metrics.averageScore)}>
+                      {module.metrics.averageScore}%
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Qualidade Média</span>
+                      <span className={getScoreColor(module.metrics.averageScore)}>
+                        {module.metrics.averageScore}%
+                      </span>
+                    </div>
+                    <Progress value={module.metrics.averageScore} className="h-2" />
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3 text-green-600" />
+                      <span>{module.metrics.validRecords} válidos</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <XCircle className="h-3 w-3 text-red-600" />
+                      <span>{module.metrics.invalidRecords} inválidos</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+          );
+        })}
+      </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Transações</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{metrics.transactions.total}</div>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Progress value={(metrics.transactions.valid / metrics.transactions.total) * 100} className="flex-1" />
-                  <span className={`text-sm font-medium ${getScoreColor(metrics.transactions.averageScore)}`}>
-                    {metrics.transactions.averageScore}%
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>Válidas: {metrics.transactions.valid}</span>
-                  <span>Inválidas: {metrics.transactions.invalid}</span>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Score de Qualidade por Módulo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="score" fill="#8884d8" name="Score Médio" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Deals</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{metrics.deals.total}</div>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Progress value={(metrics.deals.complete / metrics.deals.total) * 100} className="flex-1" />
-                  <span className={`text-sm font-medium ${getScoreColor(metrics.deals.averageScore)}`}>
-                    {metrics.deals.averageScore}%
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>Completos: {metrics.deals.complete}</span>
-                  <span>Incompletos: {metrics.deals.incomplete}</span>
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribuição de Registros</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Oportunidades</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{metrics.opportunities.total}</div>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Progress value={(metrics.opportunities.complete / metrics.opportunities.total) * 100} className="flex-1" />
-                  <span className={`text-sm font-medium ${getScoreColor(metrics.opportunities.averageScore)}`}>
-                    {metrics.opportunities.averageScore}%
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>Completas: {metrics.opportunities.complete}</span>
-                  <span>Incompletas: {metrics.opportunities.incomplete}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Score Geral */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Score Geral de Qualidade
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-2">
-                    <span className={getScoreColor(metrics.customers.averageScore)}>
-                      {metrics.customers.averageScore}%
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-2">Clientes</div>
-                  {getScoreBadge(metrics.customers.averageScore)}
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-2">
-                    <span className={getScoreColor(metrics.transactions.averageScore)}>
-                      {metrics.transactions.averageScore}%
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-2">Transações</div>
-                  {getScoreBadge(metrics.transactions.averageScore)}
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-2">
-                    <span className={getScoreColor(metrics.deals.averageScore)}>
-                      {metrics.deals.averageScore}%
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-2">Deals</div>
-                  {getScoreBadge(metrics.deals.averageScore)}
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-2">
-                    <span className={getScoreColor(metrics.opportunities.averageScore)}>
-                      {metrics.opportunities.averageScore}%
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-2">Oportunidades</div>
-                  {getScoreBadge(metrics.opportunities.averageScore)}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+      {/* Registros Válidos vs Inválidos */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Status de Validação por Módulo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="valid" fill="#10b981" name="Válidos" />
+              <Bar dataKey="invalid" fill="#ef4444" name="Inválidos" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
       {/* Logs Recentes */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Logs de Validação Recentes
-          </CardTitle>
+          <CardTitle>Logs de Validação Recentes</CardTitle>
         </CardHeader>
         <CardContent>
-          {validationLogs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum log de validação encontrado
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {validationLogs.map((log) => (
+          <div className="space-y-4">
+            {moduleData.flatMap(module => 
+              module.recentLogs.map(log => (
                 <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    {log.validation_status === 'passed' && <CheckCircle className="h-4 w-4 text-green-600" />}
-                    {log.validation_status === 'warning' && <AlertTriangle className="h-4 w-4 text-yellow-600" />}
-                    {log.validation_status === 'failed' && <XCircle className="h-4 w-4 text-red-600" />}
+                  <div className="flex items-center gap-3">
+                    {log.validation_status === 'passed' ? (
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    ) : log.validation_status === 'warning' ? (
+                      <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-600" />
+                    )}
                     <div>
-                      <div className="font-medium">
-                        {log.module_name} - {log.table_name}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {log.validation_type} • {new Date(log.validated_at).toLocaleString('pt-BR')}
-                      </div>
+                      <p className="font-medium">{log.table_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {log.validation_type} - {log.validated_by}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant={
-                    log.validation_status === 'passed' ? 'default' :
-                    log.validation_status === 'warning' ? 'secondary' : 'destructive'
-                  }>
-                    {log.validation_status === 'passed' ? 'Aprovado' :
-                     log.validation_status === 'warning' ? 'Atenção' : 'Falhou'}
-                  </Badge>
+                  <div className="text-right">
+                    <Badge variant={
+                      log.validation_status === 'passed' ? 'default' :
+                      log.validation_status === 'warning' ? 'secondary' : 'destructive'
+                    }>
+                      {log.validation_status}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(log.created_at).toLocaleString('pt-BR')}
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+            
+            {moduleData.every(module => module.recentLogs.length === 0) && (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhum log de validação encontrado
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
-
-      {/* Alertas e Recomendações */}
-      {metrics && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Recomendações
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {metrics.customers.lowQuality > 0 && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    {metrics.customers.lowQuality} clientes têm qualidade de dados baixa. 
-                    Revise informações como email, telefone e endereço.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {metrics.transactions.invalid > 0 && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    {metrics.transactions.invalid} transações têm dados inválidos. 
-                    Verifique valores, datas e categorias.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {metrics.deals.incomplete > 0 && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    {metrics.deals.incomplete} deals estão incompletos. 
-                    Adicione valores, datas de fechamento e responsáveis.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

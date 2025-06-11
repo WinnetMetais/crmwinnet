@@ -390,11 +390,16 @@ export const dataValidationService = {
       return [];
     }
 
-    return data || [];
+    return (data || []).map(item => ({
+      ...item,
+      validation_status: item.validation_status as 'passed' | 'failed' | 'warning',
+      errors: Array.isArray(item.errors) ? item.errors : [],
+      suggestions: Array.isArray(item.suggestions) ? item.suggestions : []
+    }));
   },
 
   // Atualizar score de qualidade
-  async updateDataQualityScore(tableName: string, recordId: string, score: number, errors: any[] = []) {
+  async updateDataQualityScore(tableName: 'customers' | 'deals' | 'opportunities' | 'transactions', recordId: string, score: number, errors: any[] = []) {
     const { error } = await supabase
       .from(tableName)
       .update({

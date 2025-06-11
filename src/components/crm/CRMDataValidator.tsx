@@ -97,7 +97,7 @@ export const CRMDataValidator = () => {
       type: 'customer' as const,
       score: customer.data_quality_score || 0,
       isValid: (customer.data_quality_score || 0) >= 60,
-      errors: customer.validation_errors || [],
+      errors: Array.isArray(customer.validation_errors) ? customer.validation_errors : [],
       warnings: [],
       suggestions: [],
       lastValidated: customer.last_validated_at || ''
@@ -118,7 +118,7 @@ export const CRMDataValidator = () => {
       type: 'deal' as const,
       score: deal.data_quality_score || 0,
       isValid: (deal.data_quality_score || 0) >= 60,
-      errors: deal.validation_errors || [],
+      errors: Array.isArray(deal.validation_errors) ? deal.validation_errors : [],
       warnings: [],
       suggestions: [],
       lastValidated: deal.last_validated_at || ''
@@ -139,7 +139,7 @@ export const CRMDataValidator = () => {
       type: 'opportunity' as const,
       score: opportunity.data_quality_score || 0,
       isValid: (opportunity.data_quality_score || 0) >= 60,
-      errors: opportunity.validation_errors || [],
+      errors: Array.isArray(opportunity.validation_errors) ? opportunity.validation_errors : [],
       warnings: [],
       suggestions: [],
       lastValidated: opportunity.last_validated_at || ''
@@ -160,7 +160,7 @@ export const CRMDataValidator = () => {
       type: 'transaction' as const,
       score: transaction.data_quality_score || 0,
       isValid: (transaction.data_quality_score || 0) >= 60,
-      errors: transaction.validation_errors || [],
+      errors: Array.isArray(transaction.validation_errors) ? transaction.validation_errors : [],
       warnings: [],
       suggestions: [],
       lastValidated: transaction.last_validated_at || ''
@@ -204,8 +204,9 @@ export const CRMDataValidator = () => {
         }
 
         // Atualizar score no banco
+        const tableName = `${item.type}s` as 'customers' | 'deals' | 'opportunities' | 'transactions';
         await dataValidationService.updateDataQualityScore(
-          `${item.type}s`,
+          tableName,
           itemId,
           validationResult.score,
           validationResult.errors
@@ -214,7 +215,7 @@ export const CRMDataValidator = () => {
         // Registrar log
         await dataValidationService.logValidation({
           module_name: 'crm',
-          table_name: `${item.type}s`,
+          table_name: tableName,
           record_id: itemId,
           validation_type: 'manual',
           validation_status: validationResult.isValid ? 'passed' : 'failed',
@@ -261,7 +262,7 @@ export const CRMDataValidator = () => {
 
     setLoading(true);
     try {
-      const tableName = activeTab;
+      const tableName = activeTab as 'customers' | 'deals' | 'opportunities' | 'transactions';
       const { error } = await supabase
         .from(tableName)
         .delete()
@@ -314,12 +315,6 @@ export const CRMDataValidator = () => {
 
     return matchesSearch && matchesFilter;
   });
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
-  };
 
   const getScoreBadge = (score: number) => {
     if (score >= 80) return 'default';
