@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Upload, Download, RefreshCw, FileSpreadsheet, CheckCircle, AlertCircle 
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { transactionService } from "@/services/transactions";
+import * as XLSX from 'xlsx';
 
 interface SpreadsheetRow {
   data: string;
@@ -37,14 +37,15 @@ export const SpreadsheetSync = () => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.type === 'text/csv' || selectedFile.name.endsWith('.csv')) {
+      const fileExtension = selectedFile.name.toLowerCase();
+      if (fileExtension.endsWith('.csv') || fileExtension.endsWith('.xlsx') || fileExtension.endsWith('.xls')) {
         setFile(selectedFile);
         setSyncResults(null);
-        console.log('Arquivo CSV selecionado:', selectedFile.name);
+        console.log('Arquivo selecionado:', selectedFile.name, 'Tipo:', selectedFile.type);
       } else {
         toast({
           title: "Formato inválido",
-          description: "Por favor, selecione um arquivo CSV.",
+          description: "Por favor, selecione um arquivo CSV ou Excel (.xlsx/.xls).",
           variant: "destructive",
         });
       }
@@ -56,50 +57,97 @@ export const SpreadsheetSync = () => {
     if (lines.length === 0) return [];
 
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-    console.log('Cabeçalhos detectados:', headers);
+    console.log('Cabeçalhos CSV detectados:', headers);
     
-    const rows = lines.slice(1).map((line, index) => {
+    return lines.slice(1).map((line, index) => {
       try {
         const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-        const row: any = {};
-        
-        headers.forEach((header, colIndex) => {
-          const value = values[colIndex] || '';
-          
-          // Mapear colunas da planilha para campos do sistema
-          if (header.includes('data') || header.includes('date')) {
-            row.data = value;
-          } else if (header.includes('descrição') || header.includes('descricao') || header.includes('description')) {
-            row.descricao = value;
-          } else if (header.includes('categoria') || header.includes('category')) {
-            row.categoria = value;
-          } else if (header.includes('tipo') || header.includes('type')) {
-            row.tipo = value.toLowerCase();
-          } else if (header.includes('valor') || header.includes('value') || header.includes('amount')) {
-            const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
-            row.valor = parseFloat(cleanValue) || 0;
-          } else if (header.includes('status')) {
-            row.status = value.toLowerCase();
-          } else if (header.includes('método') || header.includes('metodo') || header.includes('method')) {
-            row.metodo = value;
-          } else if (header.includes('canal') || header.includes('channel')) {
-            row.canal = value;
-          } else if (header.includes('cliente') || header.includes('client')) {
-            row.cliente = value;
-          }
-        });
-        
-        return row;
+        return parseRowData(headers, values, index);
       } catch (error) {
-        console.error(`Erro ao processar linha ${index + 2}:`, error);
+        console.error(`Erro ao processar linha CSV ${index + 2}:`, error);
         return null;
       }
     }).filter((row): row is SpreadsheetRow => 
       row !== null && row.descricao && row.valor && row.valor > 0
     );
+  };
 
-    console.log(`Processadas ${rows.length} linhas válidas de ${lines.length - 1} linhas totais`);
-    return rows;
+  const parseExcel = (file: File): Promise<SpreadsheetRow[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Pega a primeira planilha
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          
+          // Converte para JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length === 0) {
+            resolve([]);
+            return;
+          }
+
+          const headers = (jsonData[0] as string[]).map(h => h?.toString().toLowerCase().trim() || '');
+          console.log('Cabeçalhos Excel detectados:', headers);
+          
+          const rows = jsonData.slice(1).map((row: any, index) => {
+            try {
+              const values = headers.map((_, colIndex) => row[colIndex]?.toString() || '');
+              return parseRowData(headers, values, index);
+            } catch (error) {
+              console.error(`Erro ao processar linha Excel ${index + 2}:`, error);
+              return null;
+            }
+          }).filter((row): row is SpreadsheetRow => 
+            row !== null && row.descricao && row.valor && row.valor > 0
+          );
+
+          resolve(rows);
+        } catch (error) {
+          console.error('Erro ao processar arquivo Excel:', error);
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  const parseRowData = (headers: string[], values: string[], index: number): SpreadsheetRow | null => {
+    const row: any = {};
+    
+    headers.forEach((header, colIndex) => {
+      const value = values[colIndex] || '';
+      
+      // Mapear colunas da planilha para campos do sistema
+      if (header.includes('data') || header.includes('date')) {
+        row.data = value;
+      } else if (header.includes('descrição') || header.includes('descricao') || header.includes('description')) {
+        row.descricao = value;
+      } else if (header.includes('categoria') || header.includes('category')) {
+        row.categoria = value;
+      } else if (header.includes('tipo') || header.includes('type')) {
+        row.tipo = value.toLowerCase();
+      } else if (header.includes('valor') || header.includes('value') || header.includes('amount')) {
+        const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
+        row.valor = parseFloat(cleanValue) || 0;
+      } else if (header.includes('status')) {
+        row.status = value.toLowerCase();
+      } else if (header.includes('método') || header.includes('metodo') || header.includes('method')) {
+        row.metodo = value;
+      } else if (header.includes('canal') || header.includes('channel')) {
+        row.canal = value;
+      } else if (header.includes('cliente') || header.includes('client')) {
+        row.cliente = value;
+      }
+    });
+    
+    return row;
   };
 
   const checkDuplicate = async (transactionData: any): Promise<boolean> => {
@@ -212,7 +260,7 @@ export const SpreadsheetSync = () => {
     if (!file) {
       toast({
         title: "Arquivo necessário",
-        description: "Por favor, selecione um arquivo CSV primeiro.",
+        description: "Por favor, selecione um arquivo CSV ou Excel primeiro.",
         variant: "destructive",
       });
       return;
@@ -222,10 +270,16 @@ export const SpreadsheetSync = () => {
     setProgress(0);
 
     try {
-      const text = await file.text();
-      console.log('Conteúdo do arquivo carregado, tamanho:', text.length);
+      let data: SpreadsheetRow[];
       
-      const data = parseCSV(text);
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        const text = await file.text();
+        console.log('Processando arquivo CSV, tamanho:', text.length);
+        data = parseCSV(text);
+      } else {
+        console.log('Processando arquivo Excel:', file.name);
+        data = await parseExcel(file);
+      }
       
       if (data.length === 0) {
         toast({
@@ -294,21 +348,24 @@ export const SpreadsheetSync = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Importe dados da sua planilha financeira para sincronizar com o CRM. 
-              O arquivo deve estar no formato CSV com as colunas: data, descrição, categoria, tipo, valor, status, método, canal, cliente.
+              Aceita arquivos CSV e Excel (.xlsx/.xls) com as colunas: data, descrição, categoria, tipo, valor, status, método, canal, cliente.
             </AlertDescription>
           </Alert>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="csv-file">Selecionar Arquivo CSV</Label>
+                <Label htmlFor="file-input">Selecionar Arquivo (CSV ou Excel)</Label>
                 <Input
-                  id="csv-file"
+                  id="file-input"
                   type="file"
-                  accept=".csv"
+                  accept=".csv,.xlsx,.xls"
                   onChange={handleFileSelect}
                   className="mt-1"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Formatos aceitos: .csv, .xlsx, .xls
+                </p>
               </div>
 
               {file && (
