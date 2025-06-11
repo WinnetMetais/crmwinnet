@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomReportsGenerator } from "@/components/tools/CustomReportsGenerator";
 import { ExportSystem } from "@/components/tools/ExportSystem";

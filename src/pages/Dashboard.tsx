@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { KpiCards } from "@/components/dashboard/KpiCards";
 import { CampaignCharts } from "@/components/dashboard/CampaignCharts";

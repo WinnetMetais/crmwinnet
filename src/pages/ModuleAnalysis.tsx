@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, AlertCircle, Target, BarChart3, TrendingUp, PieChart } from "lucide-react";

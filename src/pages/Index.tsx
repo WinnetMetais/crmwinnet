@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, TrendingUp, Users, ShoppingBag, BarChart3, Calendar, ArrowUp, ArrowDown } from "lucide-react";
