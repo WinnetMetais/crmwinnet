@@ -11,9 +11,10 @@ import { getCustomerSegments } from "@/services/pipeline";
 interface ClientTabProps {
   selectedCustomer: Customer | null;
   onSelectCustomer: () => void;
+  onNewCustomer: () => void;
 }
 
-export const ClientTab = ({ selectedCustomer, onSelectCustomer }: ClientTabProps) => {
+export const ClientTab = ({ selectedCustomer, onSelectCustomer, onNewCustomer }: ClientTabProps) => {
   const { data: segments = [] } = useQuery({
     queryKey: ['customer-segments'],
     queryFn: getCustomerSegments
@@ -28,9 +29,14 @@ export const ClientTab = ({ selectedCustomer, onSelectCustomer }: ClientTabProps
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Dados do Cliente</h3>
-        <Button type="button" variant="outline" onClick={onSelectCustomer}>
-          Selecionar Cliente
-        </Button>
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" onClick={onSelectCustomer}>
+            Selecionar Cliente
+          </Button>
+          <Button type="button" variant="default" onClick={onNewCustomer}>
+            Novo Cliente
+          </Button>
+        </div>
       </div>
 
       {selectedCustomer ? (
@@ -119,7 +125,7 @@ export const ClientTab = ({ selectedCustomer, onSelectCustomer }: ClientTabProps
             Nenhum cliente selecionado
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            Clique em "Selecionar Cliente" para escolher ou cadastrar um cliente
+            Clique em "Selecionar Cliente" para escolher ou "Novo Cliente" para cadastrar um cliente
           </p>
         </div>
       )}
