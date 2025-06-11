@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataQualityDashboard } from "@/components/crm/DataQualityDashboard";
 import { CRMDataValidator } from "@/components/crm/CRMDataValidator";
 import { CRMSystemStatus } from "@/components/crm/CRMSystemStatus";
+import { CRMAnalysisReport } from "@/components/crm/CRMAnalysisReport";
 
 const CRMOverview = () => {
   return (
@@ -23,12 +24,17 @@ const CRMOverview = () => {
               </div>
             </div>
 
-            <Tabs defaultValue="status" className="space-y-6">
-              <TabsList className="grid grid-cols-3 w-full max-w-lg">
-                <TabsTrigger value="status">Status do Sistema</TabsTrigger>
-                <TabsTrigger value="quality">Qualidade dos Dados</TabsTrigger>
+            <Tabs defaultValue="analysis" className="space-y-6">
+              <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+                <TabsTrigger value="analysis">Análise</TabsTrigger>
+                <TabsTrigger value="status">Status</TabsTrigger>
+                <TabsTrigger value="quality">Qualidade</TabsTrigger>
                 <TabsTrigger value="validator">Validador</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="analysis">
+                <CRMAnalysisReport />
+              </TabsContent>
 
               <TabsContent value="status">
                 <CRMSystemStatus />

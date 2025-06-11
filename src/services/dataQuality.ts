@@ -12,12 +12,12 @@ export class DataQualityService {
         targetCustomers = [...customerIds];
       } else {
         // Se não fornecido, buscar todos os IDs de clientes
-        const customerQuery = await supabase
+        const { data: customerData, error: customerError } = await supabase
           .from('customers')
           .select('id');
         
-        if (customerQuery.error) throw customerQuery.error;
-        targetCustomers = (customerQuery.data || []).map((item: any) => item.id);
+        if (customerError) throw customerError;
+        targetCustomers = (customerData || []).map(item => item.id);
       }
       
       for (const customerId of targetCustomers) {
@@ -32,17 +32,17 @@ export class DataQualityService {
         }
 
         // Executar validação de transações se existirem
-        const transactionQuery = await supabase
+        const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .select('id')
           .eq('customer_id', customerId);
 
-        if (transactionQuery.error) {
-          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionQuery.error);
+        if (transactionError) {
+          console.error(`Erro ao buscar transações para cliente ${customerId}:`, transactionError);
           continue;
         }
 
-        const transactions = transactionQuery.data || [];
+        const transactions = transactionData || [];
         if (transactions.length > 0) {
           for (const transaction of transactions) {
             const validationResult = await supabase.rpc('validate_transaction_data', {
