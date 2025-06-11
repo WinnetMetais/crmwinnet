@@ -311,7 +311,7 @@ const TasksNotifications = () => {
                               <h4 className="font-medium">{notification.title}</h4>
                               <p className="text-sm text-muted-foreground">{notification.message}</p>
                               <p className="text-xs text-muted-foreground">
-                                {new Date(notification.timestamp || Date.now()).toLocaleString('pt-BR')}
+                                {new Date(notification.created_at).toLocaleString('pt-BR')}
                               </p>
                             </div>
                             <div className="flex space-x-2">
