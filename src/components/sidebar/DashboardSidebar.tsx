@@ -26,16 +26,16 @@ const DashboardSidebar = () => {
   const isActiveGroup = (paths: string[]) => paths.some(path => location.pathname.startsWith(path));
 
   return (
-    <Sidebar variant="inset" className="border-r bg-slate-50">
+    <Sidebar variant="inset" className="border-r border-slate-200 bg-white">
       <SidebarHeader>
-        <div className="flex h-16 items-center px-4 bg-blue-600 text-white rounded-lg mx-2 mt-2">
+        <div className="flex h-16 items-center px-4 bg-blue-600 text-white rounded-lg mx-2 mt-2 shadow-sm">
           <div className="flex flex-col">
             <span className="font-bold text-lg">Winnet Metais</span>
             <span className="text-xs opacity-90">CRM & Gestão Comercial</span>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-white">
         <AnalysisGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ContentGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <CommercialGroup isActive={isActive} isActiveGroup={isActiveGroup} />
@@ -43,12 +43,13 @@ const DashboardSidebar = () => {
         <ToolsGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ConfigGroup isActive={isActive} isActiveGroup={isActiveGroup} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="bg-white border-t border-slate-200">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 
               isActive={isActive('/config')}
               asChild
+              className="text-blue-700 hover:bg-blue-50 hover:text-blue-800 data-[state=open]:bg-blue-100 data-[state=open]:text-blue-800"
             >
               <Link 
                 to="/config"

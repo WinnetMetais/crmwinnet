@@ -24,13 +24,14 @@ interface FinancialGroupProps {
 export const FinancialGroup = ({ isActive, isActiveGroup }: FinancialGroupProps) => {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Financeiro</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-blue-700 font-medium">Financeiro</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 
               isActive={isActive('/financial')}
               asChild
+              className="text-blue-700 hover:bg-blue-50 hover:text-blue-800 data-[state=open]:bg-blue-100 data-[state=open]:text-blue-800"
             >
               <Link 
                 to="/financial"
