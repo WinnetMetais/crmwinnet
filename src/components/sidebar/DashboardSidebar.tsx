@@ -27,7 +27,7 @@ const DashboardSidebar = () => {
   return (
     <Sidebar variant="inset" className="border-r border-slate-200 bg-white shadow-sm">
       <SidebarHeader>
-        <div className="flex h-16 items-center px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl mx-3 mt-3 shadow-sm">
+        <div className="flex h-16 items-center px-4 bg-blue-600 text-white rounded-lg mx-3 mt-3 shadow-sm">
           <div className="flex flex-col">
             <span className="font-bold text-lg">Winnet Metais</span>
             <span className="text-xs opacity-90">CRM & Gestão Comercial</span>
@@ -50,7 +50,7 @@ const DashboardSidebar = () => {
             <SidebarMenuButton 
               isActive={isActive('/config')}
               asChild
-              className="text-blue-700 hover:bg-blue-50 hover:text-blue-800 data-[state=open]:bg-blue-100 data-[state=open]:text-blue-800 rounded-lg"
+              className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 data-[state=open]:bg-blue-100 data-[state=open]:text-blue-700 rounded-md transition-colors"
             >
               <Link 
                 to="/config"
