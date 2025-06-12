@@ -25,8 +25,8 @@ const DashboardSidebar = () => {
   const isActiveGroup = (paths: string[]) => paths.some(path => location.pathname.startsWith(path));
 
   return (
-    <Sidebar variant="inset" className="border-r border-slate-200 bg-white shadow-lg">
-      <SidebarHeader>
+    <Sidebar variant="inset" className="border-r border-slate-200 bg-white shadow-lg" style={{ background: 'white' }}>
+      <SidebarHeader style={{ background: 'white' }}>
         <div className="flex h-16 items-center justify-center px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg mx-3 mt-3 shadow-md border border-blue-500">
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-1">
@@ -38,7 +38,7 @@ const DashboardSidebar = () => {
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="bg-white px-3 py-2">
+      <SidebarContent className="bg-white px-3 py-2" style={{ background: 'white' }}>
         <AnalysisGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ContentGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <CommercialGroup isActive={isActive} isActiveGroup={isActiveGroup} />
@@ -47,7 +47,7 @@ const DashboardSidebar = () => {
         <ConfigGroup isActive={isActive} isActiveGroup={isActiveGroup} />
       </SidebarContent>
       
-      <SidebarFooter className="bg-white border-t border-slate-200 p-3">
+      <SidebarFooter className="bg-white border-t border-slate-200 p-3" style={{ background: 'white' }}>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 

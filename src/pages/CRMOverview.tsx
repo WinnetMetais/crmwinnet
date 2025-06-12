@@ -33,74 +33,76 @@ const CRMOverview = () => {
   const isLoadingData = customersLoading || dealsLoading || tasksLoading;
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="page-wrapper">
-        <DashboardSidebar />
-        
-        <div className="flex-1">
-          {/* Header elegante e profissional */}
-          <header className="header-clean">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <SidebarTrigger className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-lg transition-all duration-200" />
-                  <div className="flex items-center gap-4">
-                    <div className="icon-wrapper icon-blue">
-                      <BarChart3 className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h1 className="heading-1 flex items-center gap-2">
-                        CRM Overview
-                        <Sparkles className="h-6 w-6 text-blue-500" />
-                      </h1>
-                      <p className="body-medium text-slate-600">Painel de gestão centralizado - Winnet Metais</p>
+    <div className="min-h-screen bg-white" style={{ background: 'white' }}>
+      <SidebarProvider defaultOpen={true}>
+        <div className="page-wrapper" style={{ background: 'white' }}>
+          <DashboardSidebar />
+          
+          <div className="flex-1" style={{ background: 'white' }}>
+            {/* Header elegante e profissional */}
+            <header className="header-clean" style={{ background: 'white' }}>
+              <div className="max-w-7xl mx-auto">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-6">
+                    <SidebarTrigger className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-lg transition-all duration-200" />
+                    <div className="flex items-center gap-4">
+                      <div className="icon-wrapper icon-blue">
+                        <BarChart3 className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h1 className="heading-1 flex items-center gap-2">
+                          CRM Overview
+                          <Sparkles className="h-6 w-6 text-blue-500" />
+                        </h1>
+                        <p className="body-medium text-slate-600">Painel de gestão centralizado - Winnet Metais</p>
+                      </div>
                     </div>
                   </div>
+                  <Button 
+                    onClick={handleSyncData} 
+                    disabled={isLoading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 font-medium"
+                  >
+                    <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    Sincronizar
+                  </Button>
                 </div>
-                <Button 
-                  onClick={handleSyncData} 
-                  disabled={isLoading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 font-medium"
-                >
-                  <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                  Sincronizar
-                </Button>
               </div>
-            </div>
-          </header>
+            </header>
 
-          {/* Área de conteúdo com gradiente sutil */}
-          <main className="content-area bg-gradient-to-br from-white to-slate-50/30">
-            <div className="max-w-7xl mx-auto section-spacing">
-              
-              {/* Métricas principais com animação */}
-              <div className="animate-fade-in">
-                <MetricsSection 
-                  metrics={metrics} 
-                  isLoadingData={isLoadingData} 
-                />
+            {/* Área de conteúdo com fundo branco forçado */}
+            <main className="content-area bg-white" style={{ background: 'white' }}>
+              <div className="max-w-7xl mx-auto section-spacing">
+                
+                {/* Métricas principais com animação */}
+                <div className="animate-fade-in">
+                  <MetricsSection 
+                    metrics={metrics} 
+                    isLoadingData={isLoadingData} 
+                  />
+                </div>
+
+                {/* Atividade Recente com delay na animação */}
+                <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
+                  <RealtimeDataSection 
+                    customers={customers} 
+                    deals={deals} 
+                    tasks={tasks} 
+                    isLoadingData={isLoadingData} 
+                  />
+                </div>
+
+                {/* Relatórios e Análises com delay na animação */}
+                <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
+                  <AnalysisSection />
+                </div>
+
               </div>
-
-              {/* Atividade Recente com delay na animação */}
-              <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
-                <RealtimeDataSection 
-                  customers={customers} 
-                  deals={deals} 
-                  tasks={tasks} 
-                  isLoadingData={isLoadingData} 
-                />
-              </div>
-
-              {/* Relatórios e Análises com delay na animação */}
-              <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
-                <AnalysisSection />
-              </div>
-
-            </div>
-          </main>
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </div>
   );
 };
 
