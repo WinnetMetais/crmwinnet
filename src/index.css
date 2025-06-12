@@ -6,82 +6,63 @@
 @layer base {
   :root {
     --background: 255 255 255;
-    --foreground: 30 41 59;
-
+    --foreground: 15 23 42;
     --card: 255 255 255;
-    --card-foreground: 30 41 59;
-
+    --card-foreground: 15 23 42;
     --popover: 255 255 255;
-    --popover-foreground: 30 41 59;
-
-    --primary: 37 99 235;
+    --popover-foreground: 15 23 42;
+    --primary: 59 130 246;
     --primary-foreground: 255 255 255;
-
     --secondary: 248 250 252;
     --secondary-foreground: 51 65 85;
-
-    --muted: 241 245 249;
+    --muted: 248 250 252;
     --muted-foreground: 100 116 139;
-
     --accent: 239 246 255;
-    --accent-foreground: 37 99 235;
-
+    --accent-foreground: 59 130 246;
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
-
     --border: 226 232 240;
     --input: 226 232 240;
-    --ring: 37 99 235;
-
+    --ring: 59 130 246;
     --radius: 0.5rem;
-
     --sidebar-background: 255 255 255;
     --sidebar-foreground: 51 65 85;
-    --sidebar-primary: 37 99 235;
+    --sidebar-primary: 59 130 246;
     --sidebar-primary-foreground: 255 255 255;
     --sidebar-accent: 239 246 255;
-    --sidebar-accent-foreground: 37 99 235;
+    --sidebar-accent-foreground: 59 130 246;
     --sidebar-border: 226 232 240;
-    --sidebar-ring: 37 99 235;
+    --sidebar-ring: 59 130 246;
   }
 
   .dark {
     --background: 255 255 255;
-    --foreground: 30 41 59;
-
+    --foreground: 15 23 42;
     --card: 255 255 255;
-    --card-foreground: 30 41 59;
-
+    --card-foreground: 15 23 42;
     --popover: 255 255 255;
-    --popover-foreground: 30 41 59;
-
-    --primary: 37 99 235;
+    --popover-foreground: 15 23 42;
+    --primary: 59 130 246;
     --primary-foreground: 255 255 255;
-
     --secondary: 248 250 252;
     --secondary-foreground: 51 65 85;
-
-    --muted: 241 245 249;
+    --muted: 248 250 252;
     --muted-foreground: 100 116 139;
-
     --accent: 239 246 255;
-    --accent-foreground: 37 99 235;
-
+    --accent-foreground: 59 130 246;
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
-
     --border: 226 232 240;
     --input: 226 232 240;
-    --ring: 37 99 235;
-    
+    --ring: 59 130 246;
     --sidebar-background: 255 255 255;
     --sidebar-foreground: 51 65 85;
-    --sidebar-primary: 37 99 235;
+    --sidebar-primary: 59 130 246;
     --sidebar-primary-foreground: 255 255 255;
     --sidebar-accent: 239 246 255;
-    --sidebar-accent-foreground: 37 99 235;
+    --sidebar-accent-foreground: 59 130 246;
     --sidebar-border: 226 232 240;
-    --sidebar-ring: 37 99 235;
+    --sidebar-ring: 59 130 246;
   }
 }
 
@@ -100,92 +81,82 @@
   }
 }
 
+/* Layout utilities with clean design */
 @layer utilities {
-  .crm-header {
+  .page-container {
+    @apply min-h-screen bg-white;
+  }
+  
+  .page-header {
     @apply bg-white border-b border-slate-200 shadow-sm;
   }
   
-  .crm-card {
-    @apply bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+  .page-content {
+    @apply bg-slate-50 min-h-screen;
   }
   
-  .crm-metric-card {
-    @apply bg-white border border-slate-200 rounded-lg p-6 hover:shadow-md transition-all duration-200 hover:border-blue-300;
+  .content-wrapper {
+    @apply max-w-7xl mx-auto p-6 space-y-8;
   }
   
-  .crm-section-header {
+  .section-header {
     @apply flex items-center gap-3 mb-6;
   }
   
-  .crm-section-divider {
-    @apply h-1 w-8 bg-blue-600 rounded-full;
+  .section-divider {
+    @apply h-1 w-12 bg-blue-600 rounded-full;
   }
   
-  .crm-section-title {
-    @apply text-xl font-semibold text-slate-800;
+  .section-title {
+    @apply text-2xl font-bold text-slate-900;
   }
   
-  .crm-data-card {
-    @apply bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all duration-200;
+  .metric-card {
+    @apply bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-200;
   }
   
-  .crm-data-header {
+  .data-card {
+    @apply bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200;
+  }
+  
+  .card-header {
     @apply bg-slate-50 border-b border-slate-200 px-6 py-4;
   }
   
-  .crm-data-content {
+  .card-content {
     @apply p-6;
   }
   
-  .crm-data-item {
-    @apply flex items-center justify-between p-4 rounded-lg border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-all duration-200;
+  .icon-container {
+    @apply p-3 rounded-lg;
   }
   
-  .crm-badge-active {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200;
-  }
-  
-  .crm-badge-inactive {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200;
-  }
-  
-  .crm-badge-priority-high {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200;
-  }
-  
-  .crm-badge-priority-medium {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200;
-  }
-  
-  .crm-badge-priority-low {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200;
-  }
-  
-  .crm-icon-container {
-    @apply p-3 rounded-lg transition-colors duration-200;
-  }
-  
-  .crm-icon-blue {
+  .icon-blue {
     @apply bg-blue-50 text-blue-600;
   }
   
-  .crm-icon-emerald {
+  .icon-emerald {
     @apply bg-emerald-50 text-emerald-600;
   }
   
-  .crm-icon-orange {
+  .icon-orange {
     @apply bg-orange-50 text-orange-600;
   }
   
-  .crm-icon-purple {
+  .icon-purple {
     @apply bg-purple-50 text-purple-600;
   }
   
-  .crm-icon-red {
-    @apply bg-red-50 text-red-600;
+  .badge-active {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200;
+  }
+  
+  .badge-inactive {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200;
   }
 }
 
+/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
