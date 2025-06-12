@@ -33,14 +33,14 @@ const CRMOverview = () => {
   const isLoadingData = customersLoading || dealsLoading || tasksLoading;
 
   return (
-    <div className="min-h-screen bg-white" style={{ background: 'white' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'white' }}>
       <SidebarProvider defaultOpen={true}>
-        <div className="page-wrapper" style={{ background: 'white' }}>
+        <div className="page-wrapper" style={{ backgroundColor: 'white' }}>
           <DashboardSidebar />
           
-          <div className="flex-1" style={{ background: 'white' }}>
+          <div className="flex-1" style={{ backgroundColor: 'white' }}>
             {/* Header elegante e profissional */}
-            <header className="header-clean" style={{ background: 'white' }}>
+            <header className="header-clean" style={{ backgroundColor: 'white' }}>
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-6">
@@ -71,11 +71,11 @@ const CRMOverview = () => {
             </header>
 
             {/* Área de conteúdo com fundo branco forçado */}
-            <main className="content-area bg-white" style={{ background: 'white' }}>
-              <div className="max-w-7xl mx-auto section-spacing">
+            <main className="content-area" style={{ backgroundColor: 'white' }}>
+              <div className="max-w-7xl mx-auto section-spacing" style={{ backgroundColor: 'white' }}>
                 
                 {/* Métricas principais com animação */}
-                <div className="animate-fade-in">
+                <div className="animate-fade-in" style={{ backgroundColor: 'white' }}>
                   <MetricsSection 
                     metrics={metrics} 
                     isLoadingData={isLoadingData} 
@@ -83,7 +83,7 @@ const CRMOverview = () => {
                 </div>
 
                 {/* Atividade Recente com delay na animação */}
-                <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
+                <div className="animate-fade-in" style={{animationDelay: '0.2s', backgroundColor: 'white'}}>
                   <RealtimeDataSection 
                     customers={customers} 
                     deals={deals} 
@@ -93,7 +93,7 @@ const CRMOverview = () => {
                 </div>
 
                 {/* Relatórios e Análises com delay na animação */}
-                <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
+                <div className="animate-fade-in" style={{animationDelay: '0.4s', backgroundColor: 'white'}}>
                   <AnalysisSection />
                 </div>
 
