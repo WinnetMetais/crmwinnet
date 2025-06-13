@@ -36,7 +36,27 @@
   }
 }
 
+/* FORÇA BRANCO EM TUDO - ELIMINA QUALQUER AMARELO */
 @layer base {
+  *, 
+  *::before, 
+  *::after,
+  html,
+  body,
+  #root,
+  .page-wrapper,
+  main,
+  div,
+  section,
+  header,
+  article,
+  aside,
+  nav {
+    background: white !important;
+    background-color: white !important;
+    border-color: rgb(226, 232, 240) !important;
+  }
+
   * {
     @apply border-border;
   }
@@ -53,6 +73,23 @@
   }
 
   #root {
+    background: white !important;
+    background-color: white !important;
+  }
+
+  /* Remove qualquer cor de fundo que não seja branca */
+  .bg-yellow-50,
+  .bg-yellow-100,
+  .bg-yellow-200,
+  .bg-yellow-300,
+  .bg-yellow-400,
+  .bg-yellow-500,
+  .bg-amber-50,
+  .bg-amber-100,
+  .bg-amber-200,
+  .bg-amber-300,
+  .bg-amber-400,
+  .bg-amber-500 {
     background: white !important;
     background-color: white !important;
   }
@@ -100,15 +137,21 @@
 /* Layout profissional e limpo - FORÇANDO BRANCO */
 @layer utilities {
   .page-wrapper {
-    @apply min-h-screen bg-white;
+    @apply min-h-screen;
+    background: white !important;
+    background-color: white !important;
   }
   
   .header-clean {
-    @apply border-b border-slate-200 px-6 py-5 shadow-sm bg-white;
+    @apply border-b border-slate-200 px-6 py-5 shadow-sm;
+    background: white !important;
+    background-color: white !important;
   }
   
   .content-area {
-    @apply p-6 min-h-screen bg-white;
+    @apply p-6 min-h-screen;
+    background: white !important;
+    background-color: white !important;
   }
   
   .section-spacing {
@@ -116,19 +159,27 @@
   }
   
   .card-clean {
-    @apply rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 bg-white;
+    @apply rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300;
+    background: white !important;
+    background-color: white !important;
   }
   
   .card-header-clean {
-    @apply p-6 border-b border-slate-100 bg-slate-50;
+    @apply p-6 border-b border-slate-100;
+    background: rgb(248, 250, 252) !important;
+    background-color: rgb(248, 250, 252) !important;
   }
   
   .card-content-clean {
-    @apply p-6 bg-white;
+    @apply p-6;
+    background: white !important;
+    background-color: white !important;
   }
   
   .metric-container {
-    @apply p-6 rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 bg-white;
+    @apply p-6 rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300;
+    background: white !important;
+    background-color: white !important;
   }
   
   .icon-wrapper {

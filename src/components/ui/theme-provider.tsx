@@ -30,24 +30,40 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
+    
+    // Remove qualquer classe dark
     root.classList.remove("dark");
     root.classList.add("light");
     
-    // Force white background
-    document.body.style.backgroundColor = "white";
-    document.documentElement.style.backgroundColor = "white";
+    // FORÇA FUNDO BRANCO AGRESSIVAMENTE
+    root.style.setProperty('background', 'white', 'important');
+    root.style.setProperty('background-color', 'white', 'important');
+    document.body.style.setProperty('background', 'white', 'important');
+    document.body.style.setProperty('background-color', 'white', 'important');
+    
+    // Remove qualquer variável CSS que possa estar causando o amarelo
+    root.style.removeProperty('--tw-bg-opacity');
+    root.style.removeProperty('--tw-text-opacity');
+    
+    // Força as variáveis CSS para branco
+    root.style.setProperty('--background', '255 255 255');
+    root.style.setProperty('--card', '255 255 255');
+    root.style.setProperty('--popover', '255 255 255');
+    
   }, [theme]);
 
   const value = {
     theme: "light" as Theme,
     setTheme: () => {
-      // Always keep light theme
+      // Always keep light theme and white background
     },
   };
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
+      <div style={{backgroundColor: 'white'}}>
+        {children}
+      </div>
     </ThemeProviderContext.Provider>
   );
 }
