@@ -9,10 +9,10 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-slate-200 text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-200",
+      "rounded-lg border border-slate-200 bg-white text-slate-900 shadow-sm hover:shadow-md transition-shadow duration-200",
       className
     )}
-    style={{backgroundColor: 'white'}}
+    style={{backgroundColor: 'white', color: 'rgb(15, 23, 42)'}}
     {...props}
   />
 ))
@@ -24,8 +24,8 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    style={{backgroundColor: 'white'}}
+    className={cn("flex flex-col space-y-1.5 p-6 bg-slate-50", className)}
+    style={{backgroundColor: 'rgb(248, 250, 252)', color: 'rgb(15, 23, 42)'}}
     {...props}
   />
 ))
@@ -41,6 +41,7 @@ const CardTitle = React.forwardRef<
       "text-lg font-semibold leading-none tracking-tight text-slate-900",
       className
     )}
+    style={{color: 'rgb(15, 23, 42)'}}
     {...props}
   />
 ))
@@ -53,6 +54,7 @@ const CardDescription = React.forwardRef<
   <p
     ref={ref}
     className={cn("text-sm text-slate-600", className)}
+    style={{color: 'rgb(71, 85, 105)'}}
     {...props}
   />
 ))
@@ -64,8 +66,8 @@ const CardContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div 
     ref={ref} 
-    className={cn("p-6 pt-0", className)}
-    style={{backgroundColor: 'white'}}
+    className={cn("p-6 pt-0 bg-white", className)}
+    style={{backgroundColor: 'white', color: 'rgb(51, 65, 85)'}}
     {...props} 
   />
 ))
@@ -77,8 +79,8 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    style={{backgroundColor: 'white'}}
+    className={cn("flex items-center p-6 pt-0 bg-white", className)}
+    style={{backgroundColor: 'white', color: 'rgb(51, 65, 85)'}}
     {...props}
   />
 ))

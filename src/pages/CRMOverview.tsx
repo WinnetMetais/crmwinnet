@@ -33,14 +33,14 @@ const CRMOverview = () => {
   const isLoadingData = customersLoading || dealsLoading || tasksLoading;
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: 'white'}}>
+    <div className="min-h-screen bg-white" style={{backgroundColor: 'white'}}>
       <SidebarProvider defaultOpen={true}>
-        <div className="page-wrapper" style={{backgroundColor: 'white'}}>
+        <div className="page-wrapper bg-white" style={{backgroundColor: 'white'}}>
           <DashboardSidebar />
           
-          <div className="flex-1" style={{backgroundColor: 'white'}}>
-            {/* Header elegante e profissional */}
-            <header className="header-clean" style={{backgroundColor: 'white'}}>
+          <div className="flex-1 bg-white" style={{backgroundColor: 'white'}}>
+            {/* Header com contraste melhorado */}
+            <header className="header-clean bg-white" style={{backgroundColor: 'white'}}>
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-6">
@@ -50,11 +50,11 @@ const CRMOverview = () => {
                         <BarChart3 className="h-6 w-6" />
                       </div>
                       <div>
-                        <h1 className="heading-1 flex items-center gap-2">
+                        <h1 className="heading-1 flex items-center gap-2" style={{color: 'rgb(15, 23, 42)'}}>
                           CRM Overview
                           <Sparkles className="h-6 w-6 text-blue-500" />
                         </h1>
-                        <p className="body-medium text-slate-600">Painel de gestão centralizado - Winnet Metais</p>
+                        <p className="body-medium" style={{color: 'rgb(71, 85, 105)'}}>Painel de gestão centralizado - Winnet Metais</p>
                       </div>
                     </div>
                   </div>
@@ -70,20 +70,20 @@ const CRMOverview = () => {
               </div>
             </header>
 
-            {/* Área de conteúdo com fundo branco forçado */}
-            <main className="content-area" style={{backgroundColor: 'white'}}>
-              <div className="max-w-7xl mx-auto section-spacing" style={{backgroundColor: 'white'}}>
+            {/* Área de conteúdo com fundo branco */}
+            <main className="content-area bg-white" style={{backgroundColor: 'white'}}>
+              <div className="max-w-7xl mx-auto section-spacing bg-white" style={{backgroundColor: 'white'}}>
                 
-                {/* Métricas principais com animação */}
-                <div className="animate-fade-in" style={{backgroundColor: 'white'}}>
+                {/* Métricas principais */}
+                <div className="animate-fade-in bg-white" style={{backgroundColor: 'white'}}>
                   <MetricsSection 
                     metrics={metrics} 
                     isLoadingData={isLoadingData} 
                   />
                 </div>
 
-                {/* Atividade Recente com delay na animação */}
-                <div className="animate-fade-in" style={{animationDelay: '0.2s', backgroundColor: 'white'}}>
+                {/* Atividade Recente */}
+                <div className="animate-fade-in bg-white" style={{animationDelay: '0.2s', backgroundColor: 'white'}}>
                   <RealtimeDataSection 
                     customers={customers} 
                     deals={deals} 
@@ -92,8 +92,8 @@ const CRMOverview = () => {
                   />
                 </div>
 
-                {/* Relatórios e Análises com delay na animação */}
-                <div className="animate-fade-in" style={{animationDelay: '0.4s', backgroundColor: 'white'}}>
+                {/* Relatórios e Análises */}
+                <div className="animate-fade-in bg-white" style={{animationDelay: '0.4s', backgroundColor: 'white'}}>
                   <AnalysisSection />
                 </div>
 
