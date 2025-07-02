@@ -1,0 +1,57 @@
+
+/* Layout com fundo branco forçado e cores contrastantes */
+@layer utilities {
+  .page-wrapper {
+    @apply min-h-screen;
+    background: white !important;
+    background-color: white !important;
+  }
+  
+  .header-clean {
+    @apply border-b px-6 py-5 shadow-sm;
+    background: white !important;
+    background-color: white !important;
+    border-color: rgb(226, 232, 240) !important;
+  }
+  
+  .content-area {
+    @apply p-6 min-h-screen;
+    background: white !important;
+    background-color: white !important;
+  }
+  
+  .section-spacing {
+    @apply space-y-8;
+  }
+  
+  .card-clean {
+    @apply rounded-xl border shadow-sm hover:shadow-lg transition-all duration-300;
+    background: white !important;
+    background-color: white !important;
+    border-color: rgb(226, 232, 240) !important;
+  }
+  
+  .card-header-clean {
+    @apply p-6 border-b;
+    background: rgb(248, 250, 252) !important;
+    background-color: rgb(248, 250, 252) !important;
+    border-color: rgb(241, 245, 249) !important;
+  }
+  
+  .card-content-clean {
+    @apply p-6;
+    background: white !important;
+    background-color: white !important;
+  }
+  
+  .metric-container {
+    @apply p-6 rounded-xl border hover:border-blue-300 hover:shadow-lg transition-all duration-300;
+    background: white !important;
+    background-color: white !important;
+    border-color: rgb(226, 232, 240) !important;
+  }
+  
+  .icon-wrapper {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center shadow-sm;
+  }
+}

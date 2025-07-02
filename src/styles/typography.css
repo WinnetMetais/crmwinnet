@@ -1,0 +1,46 @@
+
+/* Hierarquia tipográfica com contraste melhorado */
+@layer utilities {
+  .heading-1 {
+    @apply text-3xl font-bold tracking-tight leading-tight;
+    color: rgb(15, 23, 42) !important;
+  }
+  
+  .heading-2 {
+    @apply text-2xl font-semibold tracking-tight leading-tight;
+    color: rgb(15, 23, 42) !important;
+  }
+  
+  .heading-3 {
+    @apply text-xl font-semibold leading-snug;
+    color: rgb(30, 41, 59) !important;
+  }
+  
+  .heading-4 {
+    @apply text-lg font-medium leading-snug;
+    color: rgb(30, 41, 59) !important;
+  }
+  
+  .body-large {
+    @apply text-base leading-relaxed;
+    color: rgb(51, 65, 85) !important;
+  }
+  
+  .body-medium {
+    @apply text-sm leading-relaxed;
+    color: rgb(71, 85, 105) !important;
+  }
+  
+  .body-small {
+    @apply text-xs leading-relaxed;
+    color: rgb(100, 116, 139) !important;
+  }
+  
+  .text-accent {
+    color: rgb(37, 99, 235) !important;
+  }
+  
+  .text-muted {
+    color: rgb(100, 116, 139) !important;
+  }
+}
