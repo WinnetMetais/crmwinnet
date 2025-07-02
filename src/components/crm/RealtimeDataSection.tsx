@@ -131,12 +131,12 @@ export const RealtimeDataSection = ({ customers, deals, tasks, isLoadingData }: 
           <div className="card-header-clean">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="icon-wrapper icon-orange">
+                <div className="icon-wrapper highlight-blue">
                   <AlertCircle className="h-5 w-5" />
                 </div>
                 <span className="heading-4 text-slate-900">Tarefas Urgentes</span>
               </div>
-              <Badge className="badge-warning">
+              <Badge className="badge-info">
                 {tasks?.filter(t => t.priority === 'high' && t.status === 'pending').length || 0}
               </Badge>
             </CardTitle>
@@ -144,10 +144,10 @@ export const RealtimeDataSection = ({ customers, deals, tasks, isLoadingData }: 
           <div className="card-content-clean">
             <div className="space-y-3">
               {tasks?.filter(t => t.priority === 'high' && t.status === 'pending').slice(0, 5).map((task) => (
-                <div key={task.id} className="flex items-center justify-between p-4 rounded-lg border border-slate-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all duration-200">
+                <div key={task.id} className="flex items-center justify-between p-4 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center border border-orange-200">
-                      <AlertCircle className="h-5 w-5 text-orange-600" />
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center border border-blue-200">
+                      <AlertCircle className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
                       <p className="body-medium font-medium text-slate-900">{task.title}</p>
@@ -155,7 +155,7 @@ export const RealtimeDataSection = ({ customers, deals, tasks, isLoadingData }: 
                     </div>
                   </div>
                   <div className="text-right">
-                    <Badge className="badge-warning mb-2">
+                    <Badge className="badge-info mb-2">
                       {task.priority}
                     </Badge>
                     {task.due_date && (

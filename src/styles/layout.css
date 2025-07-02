@@ -51,7 +51,24 @@
     border-color: rgb(226, 232, 240) !important;
   }
   
+  .metric-container:hover {
+    border-color: rgb(147, 197, 253) !important;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1), 0 4px 6px -2px rgba(37, 99, 235, 0.05) !important;
+  }
+  
   .icon-wrapper {
     @apply w-12 h-12 rounded-xl flex items-center justify-center shadow-sm;
+  }
+  
+  /* Elementos com destaque azul */
+  .row-highlight {
+    background: rgb(239, 246, 255) !important;
+    border-left: 3px solid rgb(37, 99, 235) !important;
+    transition: all 0.2s ease-in-out !important;
+  }
+  
+  .row-highlight:hover {
+    background: rgb(219, 234, 254) !important;
+    border-left-width: 4px !important;
   }
 }

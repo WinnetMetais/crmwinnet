@@ -70,7 +70,7 @@ export const MetricsSection = ({ metrics, isLoadingData }: MetricsSectionProps) 
 
         <div className="metric-container hover-lift animate-slide-in" style={{animationDelay: '0.2s'}}>
           <div className="flex items-center justify-between mb-6">
-            <div className="icon-wrapper icon-orange">
+            <div className="icon-wrapper highlight-blue">
               <DollarSign className="h-6 w-6" />
             </div>
             <Badge className="badge-info">Pipeline</Badge>
@@ -93,7 +93,7 @@ export const MetricsSection = ({ metrics, isLoadingData }: MetricsSectionProps) 
             <div className="icon-wrapper icon-purple">
               <CheckSquare className="h-6 w-6" />
             </div>
-            <Badge className={metrics.pendingTasks > 10 ? "badge-warning" : "badge-neutral"} >
+            <Badge className={metrics.pendingTasks > 10 ? "badge-info" : "badge-neutral"} >
               {metrics.pendingTasks > 10 ? (
                 <TrendingDown className="h-3 w-3 mr-1" />
               ) : null}
