@@ -1,16 +1,12 @@
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
 
-// FORÇA FUNDO BRANCO EM TODO O DOCUMENTO
-document.documentElement.style.setProperty('background', 'white', 'important');
-document.documentElement.style.setProperty('background-color', 'white', 'important');
-document.body.style.setProperty('background', 'white', 'important');
-document.body.style.setProperty('background-color', 'white', 'important');
+// Validação do elemento root
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Elemento root não encontrado');
+}
 
-// Adiciona classes de CSS para garantir fundo branco
-document.documentElement.classList.add('bg-white');
-document.body.classList.add('bg-white');
-
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(rootElement).render(<App />);
