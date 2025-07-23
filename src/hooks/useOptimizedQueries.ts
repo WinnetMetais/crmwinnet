@@ -36,8 +36,8 @@ export const useOptimizedCustomers = (page: number = 0, pageSize: number = 10) =
       };
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
-    keepPreviousData: true, // Mantém dados anteriores durante nova busca
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    placeholderData: (previousData) => previousData, // Mantém dados anteriores durante nova busca
   });
 };
 
@@ -90,8 +90,8 @@ export const useOptimizedOpportunities = (page: number = 0, pageSize: number = 1
       };
     },
     staleTime: 3 * 60 * 1000, // 3 minutos
-    cacheTime: 8 * 60 * 1000, // 8 minutos
-    keepPreviousData: true,
+    gcTime: 8 * 60 * 1000, // 8 minutos
+    placeholderData: (previousData) => previousData,
   });
 };
 
@@ -143,8 +143,8 @@ export const useOptimizedTransactions = (page: number = 0, pageSize: number = 10
       };
     },
     staleTime: 2 * 60 * 1000, // 2 minutos
-    cacheTime: 6 * 60 * 1000, // 6 minutos
-    keepPreviousData: true,
+    gcTime: 6 * 60 * 1000, // 6 minutos
+    placeholderData: (previousData) => previousData,
   });
 };
 
@@ -273,6 +273,6 @@ export const useDashboardMetrics = () => {
       };
     },
     staleTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 15 * 60 * 1000, // 15 minutos
+    gcTime: 15 * 60 * 1000, // 15 minutos
   });
 };

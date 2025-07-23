@@ -243,7 +243,7 @@ export const fetchGoogleAdsMetrics = async (
     await supabase.from('analytics_reports').insert({
       report_name: 'Google Ads Metrics',
       report_type: 'metrics',
-      data: { metrics, customer_id: customerId, date_range: { start: startDate, end: endDate } },
+      data: { metrics, customer_id: customerId, date_range: { start: startDate, end: endDate } } as any,
       generated_by: userId,
       period_start: startDate,
       period_end: endDate
