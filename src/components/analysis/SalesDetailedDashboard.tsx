@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Target, Users, DollarSign, Calendar } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { salesService } from '@/services/sales';
+import { toast } from '@/hooks/use-toast';
 
 interface SalesDetailedDashboardProps {
   dateRange: string;
@@ -13,39 +15,41 @@ interface SalesDetailedDashboardProps {
 
 export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDetailedDashboardProps) => {
   const [selectedSeller, setSelectedSeller] = useState('all');
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [sellerPerformance, setSellerPerformance] = useState<any[]>([]);
+  const [productPerformance, setProductPerformance] = useState<any[]>([]);
+  const [kpis, setKpis] = useState<any>({});
+  const [loading, setLoading] = useState(false);
 
-  const salesData = [
-    { month: 'Jan', meta: 150000, realizado: 135000, conversao: 24, leads: 45 },
-    { month: 'Fev', meta: 160000, realizado: 178000, conversao: 28, leads: 52 },
-    { month: 'Mar', meta: 155000, realizado: 142000, conversao: 22, leads: 48 },
-    { month: 'Abr', meta: 170000, realizado: 185000, conversao: 31, leads: 62 },
-    { month: 'Mai', meta: 180000, realizado: 198000, conversao: 35, leads: 68 },
-    { month: 'Jun', meta: 175000, realizado: 165000, conversao: 29, leads: 58 }
-  ];
+  useEffect(() => {
+    fetchSalesData();
+  }, [dateRange, selectedSeller]);
 
-  const sellerPerformance = [
-    { vendedor: 'João Silva', meta: 50000, realizado: 58000, comissao: 2900, deals: 12 },
-    { vendedor: 'Maria Santos', meta: 45000, realizado: 52000, comissao: 2600, deals: 10 },
-    { vendedor: 'Pedro Costa', meta: 40000, realizado: 38000, comissao: 1900, deals: 8 },
-    { vendedor: 'Ana Lima', meta: 55000, realizado: 62000, comissao: 3100, deals: 14 }
-  ];
-
-  const productPerformance = [
-    { produto: 'Lixeira L4090', vendas: 125000, margem: 68, volume: 35, roi: 180 },
-    { produto: 'Lixeira L1618', vendas: 95000, margem: 72, volume: 180, roi: 165 },
-    { produto: 'Lixeira L40120', vendas: 85000, margem: 65, volume: 24, roi: 175 },
-    { produto: 'Lixeira L3020', vendas: 75000, margem: 70, volume: 45, roi: 160 }
-  ];
-
-  const totalMeta = salesData.reduce((acc, item) => acc + item.meta, 0);
-  const totalRealizado = salesData.reduce((acc, item) => acc + item.realizado, 0);
-  const performancePercent = ((totalRealizado / totalMeta) * 100).toFixed(1);
+  const fetchSalesData = async () => {
+    setLoading(true);
+    try {
+      const data = await salesService.getSalesData(dateRange, selectedSeller);
+      setSalesData(data.salesData);
+      setSellerPerformance(data.sellerPerformance);
+      setProductPerformance(data.productPerformance);
+      setKpis(data.kpis);
+    } catch (error) {
+      console.error('Error fetching sales data:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar dados de vendas",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       {/* Controles */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-blue-800">Dashboard de Vendas Detalhado</h2>
+        <h2 className="text-2xl font-bold text-primary">Dashboard de Vendas Detalhado</h2>
         <div className="flex gap-4">
           <Select value={selectedSeller} onValueChange={setSelectedSeller}>
             <SelectTrigger className="w-[200px]">
@@ -80,14 +84,14 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Performance vs Meta</p>
-                <p className="text-3xl font-bold">{performancePercent}%</p>
+                <p className="text-3xl font-bold">{kpis.performancePercent || '0'}%</p>
                 <p className="text-sm text-muted-foreground">
-                  R$ {totalRealizado.toLocaleString()} / R$ {totalMeta.toLocaleString()}
+                  R$ {(kpis.totalRealizado || 0).toLocaleString()} / R$ {(kpis.totalMeta || 0).toLocaleString()}
                 </p>
               </div>
-              {parseFloat(performancePercent) >= 100 ? 
-                <TrendingUp className="h-8 w-8 text-green-600" /> : 
-                <TrendingDown className="h-8 w-8 text-red-600" />
+              {parseFloat(kpis.performancePercent || '0') >= 100 ? 
+                <TrendingUp className="h-8 w-8 text-success" /> : 
+                <TrendingDown className="h-8 w-8 text-destructive" />
               }
             </div>
           </CardContent>
@@ -98,10 +102,10 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Ticket Médio</p>
-                <p className="text-3xl font-bold">R$ 8.450</p>
-                <p className="text-sm text-green-600">+12.5% vs período anterior</p>
+                <p className="text-3xl font-bold">R$ {(kpis.ticketMedio || 0).toLocaleString()}</p>
+                <p className="text-sm text-success">+12.5% vs período anterior</p>
               </div>
-              <DollarSign className="h-8 w-8 text-blue-600" />
+              <DollarSign className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -111,10 +115,10 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Taxa Conversão</p>
-                <p className="text-3xl font-bold">28.4%</p>
-                <p className="text-sm text-green-600">+3.2% vs período anterior</p>
+                <p className="text-3xl font-bold">{(kpis.taxaConversao || 0).toFixed(1)}%</p>
+                <p className="text-sm text-success">+3.2% vs período anterior</p>
               </div>
-              <Target className="h-8 w-8 text-purple-600" />
+              <Target className="h-8 w-8 text-accent" />
             </div>
           </CardContent>
         </Card>
@@ -124,10 +128,10 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Ciclo de Vendas</p>
-                <p className="text-3xl font-bold">14 dias</p>
-                <p className="text-sm text-red-600">+2 dias vs período anterior</p>
+                <p className="text-3xl font-bold">{kpis.cicloVendas || 14} dias</p>
+                <p className="text-sm text-destructive">+2 dias vs período anterior</p>
               </div>
-              <Calendar className="h-8 w-8 text-orange-600" />
+              <Calendar className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -139,20 +143,26 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
           <CardTitle>Performance Mensal - Meta vs Realizado</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={salesData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value, name) => [
-                `R$ ${Number(value).toLocaleString()}`,
-                name === 'meta' ? 'Meta' : 'Realizado'
-              ]} />
-              <Legend />
-              <Bar dataKey="meta" fill="#94a3b8" name="Meta" />
-              <Bar dataKey="realizado" fill="#2563eb" name="Realizado" />
-            </BarChart>
-          </ResponsiveContainer>
+          {loading ? (
+            <div className="h-[300px] flex items-center justify-center">
+              <p className="text-muted-foreground">Carregando dados...</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={salesData} aria-label="Gráfico de Performance Mensal">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value, name) => [
+                  `R$ ${Number(value).toLocaleString()}`,
+                  name === 'meta' ? 'Meta' : 'Realizado'
+                ]} />
+                <Legend />
+                <Bar dataKey="meta" fill="hsl(var(--muted))" name="Meta" />
+                <Bar dataKey="realizado" fill="hsl(var(--primary))" name="Realizado" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -163,15 +173,15 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full" role="grid" aria-label="Performance por Vendedor">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3">Vendedor</th>
-                  <th className="text-right p-3">Meta</th>
-                  <th className="text-right p-3">Realizado</th>
-                  <th className="text-right p-3">Performance</th>
-                  <th className="text-right p-3">Comissão</th>
-                  <th className="text-right p-3">Deals</th>
+                <tr role="row" className="border-b">
+                  <th role="columnheader" className="text-left p-3">Vendedor</th>
+                  <th role="columnheader" className="text-right p-3">Meta</th>
+                  <th role="columnheader" className="text-right p-3">Realizado</th>
+                  <th role="columnheader" className="text-right p-3">Performance</th>
+                  <th role="columnheader" className="text-right p-3">Comissão</th>
+                  <th role="columnheader" className="text-right p-3">Deals</th>
                 </tr>
               </thead>
               <tbody>
@@ -187,7 +197,7 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
                           {performance}%
                         </Badge>
                       </td>
-                      <td className="p-3 text-right text-green-600">R$ {seller.comissao.toLocaleString()}</td>
+                      <td className="p-3 text-right text-success">R$ {seller.comissao.toLocaleString()}</td>
                       <td className="p-3 text-right">{seller.deals}</td>
                     </tr>
                   );
@@ -215,7 +225,7 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-green-600">
+                    <div className="font-bold text-success">
                       R$ {product.vendas.toLocaleString()}
                     </div>
                     <div className="text-sm">
@@ -227,12 +237,12 @@ export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDe
             </div>
             <div>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={productPerformance}>
+                <BarChart data={productPerformance} aria-label="ROI por Produto">
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="produto" angle={-45} textAnchor="end" height={100} />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="roi" fill="#16a34a" name="ROI %" />
+                  <Bar dataKey="roi" fill="hsl(var(--success))" name="ROI %" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

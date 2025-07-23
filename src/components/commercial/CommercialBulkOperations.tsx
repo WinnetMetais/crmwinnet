@@ -5,9 +5,18 @@ import { ValidationErrorDisplay } from "@/components/shared/ValidationErrorDispl
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Users, Building, Mail, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Building, Mail, Phone, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Customer {
   id: string;
@@ -26,21 +35,26 @@ export const CommercialBulkOperations = () => {
   const [selectedCustomers, setSelectedCustomers] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
 
   useEffect(() => {
     loadCustomers();
-  }, []);
+  }, [page]);
 
   const loadCustomers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('customers')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range((page - 1) * pageSize, page * pageSize - 1);
 
       if (error) throw error;
       setCustomers(data || []);
+      setTotalPages(Math.ceil((count || 0) / pageSize));
       console.log(`Carregados ${data?.length || 0} clientes para operações em massa`);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
@@ -54,32 +68,46 @@ export const CommercialBulkOperations = () => {
     }
   };
 
-  const handleBulkUpdate = async (updates: Record<string, any>) => {
-    const { id, ...updateData } = updates;
-    
-    const { error } = await supabase
-      .from('customers')
-      .update(updateData)
-      .eq('id', id);
-
-    if (error) throw error;
+  const handleBulkUpdate = async (updates: any) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update(updates.updates)
+        .in('id', updates.ids);
+      if (error) throw error;
+      await loadCustomers();
+      toast({
+        title: "Sucesso",
+        description: "Atualização em massa concluída",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Falha ao atualizar clientes",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleBulkValidate = async () => {
+    const batchSize = 100;
     const valid: Customer[] = [];
     const invalid: any[] = [];
 
-    for (const customer of customers) {
-      const errors = validateCustomer(customer);
+    for (let i = 0; i < customers.length; i += batchSize) {
+      const batch = customers.slice(i, i + batchSize);
+      const batchResults = await Promise.all(batch.map(async customer => ({
+        customer,
+        errors: await validateCustomer(customer),
+      })));
       
-      if (errors.length === 0) {
-        valid.push(customer);
-      } else {
-        invalid.push({
-          customer,
-          errors
-        });
-      }
+      batchResults.forEach(({ customer, errors }) => {
+        if (errors.length === 0) {
+          valid.push(customer);
+        } else {
+          invalid.push({ customer, errors });
+        }
+      });
     }
 
     // Preparar erros para exibição
@@ -88,15 +116,20 @@ export const CommercialBulkOperations = () => {
         id: item.customer.id,
         field: error.field,
         message: error.message,
-        severity: error.severity as 'error' | 'warning' | 'info'
+        severity: error.severity as 'error' | 'warning' | 'info',
+        details: `Cliente: ${item.customer.name}`,
       }))
     );
 
     setValidationErrors(formattedErrors);
+    toast({
+      title: "Validação Concluída",
+      description: `${valid.length} válidos, ${invalid.length} com problemas`,
+    });
     return { valid, invalid: invalid.map(i => i.customer) };
   };
 
-  const validateCustomer = (customer: Customer) => {
+  const validateCustomer = async (customer: Customer) => {
     const errors = [];
 
     // Validar nome
@@ -292,6 +325,42 @@ export const CommercialBulkOperations = () => {
                   Nenhum cliente encontrado
                 </div>
               )}
+            </div>
+          )}
+          
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => setPage(pageNum)}
+                          isActive={page === pageNum}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setPage(Math.min(totalPages, page + 1))}
+                      className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </CardContent>
