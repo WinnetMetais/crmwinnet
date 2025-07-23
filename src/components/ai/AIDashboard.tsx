@@ -1,10 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Brain, 
   Zap, 
@@ -15,64 +17,62 @@ import {
   Settings,
   Activity,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  RefreshCw
 } from "lucide-react";
 import { aiService } from "@/services/ai";
-import { salesAI } from "@/services/ai/salesAI";
-import { marketingAI } from "@/services/ai/marketingAI";
-import { financialAI } from "@/services/ai/financialAI";
-import { crmAI } from "@/services/ai/crmAI";
+import { useAIMetrics, useAIInsights } from "@/hooks/useAIMetrics";
+import type { AIProvider } from "@/types/ai";
 
 export const AIDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [aiStats, setAiStats] = useState({
-    totalRequests: 0,
-    tokensUsed: 0,
-    tokensRemaining: 100000,
-    activeModels: 3,
-    lastUpdate: new Date()
-  });
+  const { toast } = useToast();
+  
+  // Hooks para dados reais
+  const { data: metrics, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useAIMetrics();
+  const { data: insights, isLoading: insightsLoading, error: insightsError } = useAIInsights();
+  
+  // Providers estáticos (para manter compatibilidade)
+  const providers: AIProvider[] = useMemo(() => 
+    aiService.getProviders().map(p => ({
+      ...p,
+      status: p.apiKey ? 'connected' : 'disconnected'
+    } as AIProvider)), []
+  );
 
-  const [aiInsights, setAiInsights] = useState([
-    {
-      type: 'sales',
-      title: 'Lead Scoring Ativo',
-      description: '15 leads analisados com IA nas últimas 24h',
-      status: 'active',
-      icon: TrendingUp
-    },
-    {
-      type: 'marketing',
-      title: 'Conteúdo Gerado',
-      description: '8 posts criados automaticamente esta semana',
-      status: 'completed',
-      icon: MessageSquare
-    },
-    {
-      type: 'financial',
-      title: 'Anomalias Detectadas',
-      description: '2 transações suspeitas identificadas',
-      status: 'warning',
-      icon: AlertTriangle
-    },
-    {
-      type: 'crm',
-      title: 'Segmentação Atualizada',
-      description: 'Clientes reagrupados em 5 segmentos inteligentes',
-      status: 'completed',
-      icon: Users
+  // Handlers
+  const handleRefresh = async () => {
+    try {
+      await refetchMetrics();
+      toast({
+        title: "Dados atualizados",
+        description: "Métricas de IA foram atualizadas com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao atualizar dados de IA",
+        variant: "destructive",
+      });
     }
-  ]);
+  };
 
-  const providers = aiService.getProviders();
+  // Error handling
+  if (metricsError || insightsError) {
+    toast({
+      title: "Erro",
+      description: "Falha ao carregar dados de IA",
+      variant: "destructive",
+    });
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'warning': return 'bg-orange-100 text-orange-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'warning': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+      case 'error': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -85,83 +85,145 @@ export const AIDashboard = () => {
     }
   };
 
+  const getInsightIcon = (type: string) => {
+    switch (type) {
+      case 'sales': return TrendingUp;
+      case 'marketing': return MessageSquare;
+      case 'financial': return DollarSign;
+      case 'crm': return Users;
+      default: return Activity;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center">
-            <Brain className="h-8 w-8 mr-3 text-purple-600" />
+          <h2 className="text-3xl font-bold tracking-tight flex items-center" aria-label="Central de IA">
+            <Brain className="h-8 w-8 mr-3 text-purple-600" aria-hidden="true" />
             Central de IA
           </h2>
           <p className="text-muted-foreground">
             Painel de controle das funcionalidades de Inteligência Artificial
           </p>
         </div>
-        <Button>
-          <Settings className="h-4 w-4 mr-2" />
-          Configurar IA
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={metricsLoading}
+            aria-label="Atualizar dados"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${metricsLoading ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+          <Button>
+            <Settings className="h-4 w-4 mr-2" />
+            Configurar IA
+          </Button>
+        </div>
       </div>
 
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Tokens Usados</p>
-                <p className="text-2xl font-bold">{aiStats.tokensUsed.toLocaleString()}</p>
+            {metricsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-2 w-full" />
               </div>
-              <Zap className="h-8 w-8 text-yellow-600" />
-            </div>
-            <div className="mt-2">
-              <Progress 
-                value={(aiStats.tokensUsed / (aiStats.tokensUsed + aiStats.tokensRemaining)) * 100} 
-                className="h-2"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {aiStats.tokensRemaining.toLocaleString()} restantes
-              </p>
-            </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Tokens Usados</p>
+                  <p className="text-2xl font-bold">{metrics?.tokensUsed.toLocaleString() || 0}</p>
+                </div>
+                <Zap className="h-8 w-8 text-yellow-600" />
+              </div>
+            )}
+            {!metricsLoading && metrics && (
+              <div className="mt-2">
+                <Progress 
+                  value={(metrics.tokensUsed / (metrics.tokensUsed + metrics.tokensRemaining)) * 100} 
+                  className="h-2"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {metrics.tokensRemaining.toLocaleString()} restantes
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Requisições IA</p>
-                <p className="text-2xl font-bold">{aiStats.totalRequests}</p>
+            {metricsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-3 w-24" />
               </div>
-              <Brain className="h-8 w-8 text-purple-600" />
-            </div>
-            <p className="text-xs text-green-600 mt-2">+32% vs semana anterior</p>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Requisições IA</p>
+                  <p className="text-2xl font-bold">{metrics?.totalRequests || 0}</p>
+                </div>
+                <Brain className="h-8 w-8 text-purple-600" />
+              </div>
+            )}
+            {!metricsLoading && (
+              <p className="text-xs text-green-600 mt-2">+32% vs semana anterior</p>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Modelos Ativos</p>
-                <p className="text-2xl font-bold">{aiStats.activeModels}</p>
+            {metricsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-3 w-32" />
               </div>
-              <Activity className="h-8 w-8 text-green-600" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">OpenAI, Anthropic, HF</p>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Modelos Ativos</p>
+                  <p className="text-2xl font-bold">{metrics?.activeModels || 0}</p>
+                </div>
+                <Activity className="h-8 w-8 text-green-600" />
+              </div>
+            )}
+            {!metricsLoading && (
+              <p className="text-xs text-muted-foreground mt-2">{metrics?.topUsedProvider || 'N/A'}</p>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Economia Gerada</p>
-                <p className="text-2xl font-bold">R$ 12.450</p>
+            {metricsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-3 w-24" />
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
-            </div>
-            <p className="text-xs text-green-600 mt-2">Automação de processos</p>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Economia Gerada</p>
+                  <p className="text-2xl font-bold">R$ {metrics?.costSavings.toLocaleString() || 0}</p>
+                </div>
+                <DollarSign className="h-8 w-8 text-green-600" />
+              </div>
+            )}
+            {!metricsLoading && (
+              <p className="text-xs text-green-600 mt-2">Automação de processos</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -182,23 +244,55 @@ export const AIDashboard = () => {
               <CardTitle>Insights Ativos de IA</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {aiInsights.map((insight, index) => (
-                  <div key={index} className="flex items-start justify-between p-4 border rounded-lg">
-                    <div className="flex items-start space-x-3">
-                      <insight.icon className="h-5 w-5 mt-0.5 text-muted-foreground" />
-                      <div>
-                        <h4 className="font-medium">{insight.title}</h4>
-                        <p className="text-sm text-muted-foreground">{insight.description}</p>
+              {insightsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-start justify-between p-4 border rounded-lg">
+                      <div className="flex items-start space-x-3">
+                        <Skeleton className="h-5 w-5 mt-0.5" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-48" />
+                        </div>
                       </div>
+                      <Skeleton className="h-6 w-16" />
                     </div>
-                    <Badge className={getStatusColor(insight.status)} variant="outline">
-                      {getStatusIcon(insight.status)}
-                      <span className="ml-1 capitalize">{insight.status}</span>
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {insights?.map((insight) => {
+                    const IconComponent = getInsightIcon(insight.type);
+                    return (
+                      <div key={insight.id} className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-start space-x-3">
+                          <IconComponent className="h-5 w-5 mt-0.5 text-muted-foreground" />
+                          <div>
+                            <h4 className="font-medium">{insight.title}</h4>
+                            <p className="text-sm text-muted-foreground">{insight.description}</p>
+                            {insight.confidence && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Confiança: {Math.round(insight.confidence * 100)}%
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge className={getStatusColor(insight.status)} variant="outline">
+                          {getStatusIcon(insight.status)}
+                          <span className="ml-1 capitalize">{insight.status}</span>
+                        </Badge>
+                      </div>
+                    );
+                  }) || []}
+                  {(!insights || insights.length === 0) && !insightsLoading && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Nenhum insight disponível no momento</p>
+                      <p className="text-xs">Os dados serão atualizados automaticamente</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -444,11 +538,23 @@ export const AIDashboard = () => {
                     <span className="text-sm">Tokens Usados</span>
                     <span className="font-medium">{provider.usedTokens.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Modelos</span>
-                    <span className="font-medium">{provider.models.length}</span>
+                  <div className="mt-3">
+                    <Progress 
+                      value={provider.freeTokens > 0 ? (provider.usedTokens / provider.freeTokens) * 100 : 0} 
+                      className="h-2"
+                    />
                   </div>
-                  <Button size="sm" variant="outline" className="w-full">
+                  <div className="mt-3">
+                    <p className="text-xs text-muted-foreground">
+                      Modelos: {provider.models.join(', ')}
+                    </p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-full mt-3"
+                    aria-label={`Configurar ${provider.name}`}
+                  >
                     {provider.apiKey ? "Configurar" : "Conectar"}
                   </Button>
                 </CardContent>
