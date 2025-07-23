@@ -136,7 +136,7 @@ export const fetchGoogleAdsCampaigns = async (customerId: string, userId: string
     await supabase.from('analytics_reports').insert({
       report_name: 'Google Ads Campaigns',
       report_type: 'campaigns',
-      data: { campaigns, customer_id: customerId },
+      data: { campaigns, customer_id: customerId } as any,
       generated_by: userId,
       period_start: new Date().toISOString().split('T')[0],
       period_end: new Date().toISOString().split('T')[0]

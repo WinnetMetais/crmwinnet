@@ -1,9 +1,18 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GoogleAuthSection } from './GoogleAuthSection';
-import { FacebookAuthSection } from './FacebookAuthSection';
-import { LinkedInAuthSection } from './LinkedInAuthSection';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader, ExternalLink, Zap, AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
+import { GoogleAuthSection } from "./GoogleAuthSection";
+import { FacebookAuthSection } from "./FacebookAuthSection";
+import { LinkedInAuthSection } from "./LinkedInAuthSection";
+import { syncGoogleAdsData } from "@/services/googleAds";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { loadAdPlatformTokens, saveAdPlatformTokens, isTokenValid } from "@/utils/googleAuth";
 
 interface AdPlatformTabsProps {
   googleAdsToken: string;
