@@ -44,8 +44,8 @@ export class MarketingAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 800,
         temperature: 0.7
@@ -81,8 +81,8 @@ export class MarketingAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 600,
         temperature: 0.6
@@ -133,8 +133,8 @@ export class MarketingAI {
     `;
 
     const response = await aiService.makeRequest({
-      provider: 'openai',
-      model: 'gpt-4o-mini',
+      provider: 'gemini',
+      model: 'gemini-1.5-flash',
       prompt,
       maxTokens: 200,
       temperature: 0.6
@@ -155,8 +155,8 @@ export class MarketingAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 400,
         temperature: 0.5

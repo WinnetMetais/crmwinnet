@@ -35,6 +35,14 @@ class AIService {
   }
 
   private initializeProviders() {
+    this.providers.set('gemini', {
+      name: 'Google Gemini',
+      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+      models: ['gemini-1.5-flash', 'gemini-1.5-pro'],
+      freeTokens: 1000000,
+      usedTokens: 0
+    });
+
     this.providers.set('openai', {
       name: 'OpenAI',
       endpoint: 'https://api.openai.com/v1/chat/completions',
@@ -69,7 +77,9 @@ class AIService {
     try {
       let response;
       
-      if (request.provider === 'openai') {
+      if (request.provider === 'gemini') {
+        response = await this.callGemini(request, provider);
+      } else if (request.provider === 'openai') {
         response = await this.callOpenAI(request, provider);
       } else if (request.provider === 'anthropic') {
         response = await this.callAnthropic(request, provider);
@@ -87,6 +97,36 @@ class AIService {
       console.error('AI Request failed:', error);
       throw error;
     }
+  }
+
+  private async callGemini(request: AIRequest, provider: AIProvider): Promise<AIResponse> {
+    const response = await fetch(`${provider.endpoint}?key=${provider.apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: request.prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: request.temperature || 0.7,
+          maxOutputTokens: request.maxTokens || 1000,
+        }
+      }),
+    });
+
+    const data = await response.json();
+    
+    return {
+      content: data.candidates[0]?.content?.parts[0]?.text || 'No response',
+      tokens: data.usageMetadata?.totalTokenCount || 0,
+      provider: request.provider,
+      model: request.model,
+      timestamp: new Date()
+    };
   }
 
   private async callOpenAI(request: AIRequest, provider: AIProvider): Promise<AIResponse> {

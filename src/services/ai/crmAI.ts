@@ -57,8 +57,8 @@ export class CRMAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 1000,
         temperature: 0.4
@@ -91,8 +91,8 @@ export class CRMAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 800,
         temperature: 0.3
@@ -124,8 +124,8 @@ export class CRMAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 600,
         temperature: 0.5
@@ -156,8 +156,8 @@ export class CRMAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 700,
         temperature: 0.4
@@ -191,8 +191,8 @@ export class CRMAI {
 
     try {
       const response = await aiService.makeRequest({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
+        provider: 'gemini',
+        model: 'gemini-1.5-flash',
         prompt,
         maxTokens: 300,
         temperature: 0.3
@@ -226,8 +226,8 @@ export class CRMAI {
     `;
 
     const response = await aiService.makeRequest({
-      provider: 'openai',
-      model: 'gpt-4o-mini',
+      provider: 'gemini',
+      model: 'gemini-1.5-flash',
       prompt,
       maxTokens: 300,
       temperature: 0.7

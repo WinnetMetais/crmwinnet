@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,8 +14,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  if (!openAIApiKey) {
-    return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+  if (!geminiApiKey) {
+    return new Response(JSON.stringify({ error: 'Gemini API key not configured' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -51,40 +51,39 @@ serve(async (req) => {
 
     systemMessage += ' Sempre forneça respostas práticas, específicas e acionáveis em português brasileiro.';
 
-    const messages = [
-      { role: 'system', content: systemMessage },
-      { role: 'user', content: prompt }
-    ];
-
+    // Prepare the content for Gemini
+    let fullPrompt = systemMessage + '\n\n' + prompt;
+    
     // Add context if provided
     if (context) {
-      messages.splice(1, 0, {
-        role: 'user',
-        content: `Contexto adicional: ${JSON.stringify(context, null, 2)}`
-      });
+      fullPrompt += '\n\nContexto adicional: ' + JSON.stringify(context, null, 2);
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages,
-        max_tokens: 1000,
-        temperature: 0.7,
+        contents: [{
+          parts: [{
+            text: fullPrompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        }
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+      throw new Error(`Gemini API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
-    const generatedText = data.choices[0]?.message?.content;
+    const generatedText = data.candidates[0]?.content?.parts[0]?.text;
 
     if (!generatedText) {
       throw new Error('No response generated');
@@ -92,7 +91,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       generatedText,
-      usage: data.usage 
+      usage: data.usageMetadata || { totalTokenCount: 0 }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
