@@ -219,10 +219,9 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
                   <SelectValue placeholder="Selecione o responsável" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Carlos Silva">Carlos Silva</SelectItem>
-                  <SelectItem value="Ana Oliveira">Ana Oliveira</SelectItem>
-                  <SelectItem value="João Santos">João Santos</SelectItem>
-                  <SelectItem value="Maria Costa">Maria Costa</SelectItem>
+                  <SelectItem value="ketellyn-lira">Ketellyn Lira</SelectItem>
+                  <SelectItem value="evandro-pacheco">Evandro Pacheco</SelectItem>
+                  <SelectItem value="dianna-guarnier">Dianna Guarnier</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,10 @@ import { QuoteForm } from "@/components/sales/QuoteForm";
 import { CustomerFormData } from "@/types/customer";
 import { Customer, createCustomer } from "@/services/customers";
 import { Product } from "@/services/products";
-import { ClientTab } from "@/components/sales/opportunity/ClientTab";
-import { OpportunityTab } from "@/components/sales/opportunity/OpportunityTab";
-import { ProductsTab } from "@/components/sales/opportunity/ProductsTab";
-import { ActionsTab } from "@/components/sales/opportunity/ActionsTab";
+import { ClientTab } from "./opportunity/ClientTab";
+import { OpportunityTab } from "./opportunity/OpportunityTab";
+import { ProductsTab } from "./opportunity/ProductsTab";
+import { ActionsTab } from "./opportunity/ActionsTab";
 import { toast } from "@/hooks/use-toast";
 import { useCreateOpportunity } from "@/hooks/useOpportunities";
 import { createOpportunityItem } from "@/services/opportunities";
@@ -32,50 +31,43 @@ interface OpportunityItem {
 }
 
 interface OpportunityFormData {
-  // Cliente
   customerId: string;
-  clientName: string;
-  clientEmail: string;
-  clientPhone: string;
-  clientAddress: string;
-  clientCnpj: string;
-  
-  // Oportunidade
+  customerName: string;
   opportunityTitle: string;
   stage: string;
   probability: number;
   expectedCloseDate: string;
-  
-  // Comercial
   estimatedValue: number;
   leadSource: string;
   assignedTo: string;
-  
-  // Orçamento
-  generateQuote: boolean;
   items: OpportunityItem[];
-  subtotal: number;
-  freight: number;
-  discount: number;
-  total: number;
-  
-  // Observações
   notes: string;
   nextAction: string;
   nextActionDate: string;
 }
 
-export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState('client');
-  const [showCustomerForm, setShowCustomerForm] = useState(false);
+interface UnifiedOpportunityFormProps {
+  onClose: () => void;
+  mode?: 'create' | 'edit';
+  initialData?: any;
+}
+
+export const UnifiedOpportunityForm = ({ 
+  onClose, 
+  mode = 'create',
+  initialData
+}: UnifiedOpportunityFormProps) => {
   const [showCustomerSelector, setShowCustomerSelector] = useState(false);
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    initialData?.customer || null
+  );
   
   const queryClient = useQueryClient();
   const createOpportunityMutation = useCreateOpportunity();
-  
+
   const createCustomerMutation = useMutation({
     mutationFn: createCustomer,
     onSuccess: (newCustomer) => {
@@ -84,12 +76,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
         setFormData(prev => ({
           ...prev,
           customerId: newCustomer.id,
-          clientName: newCustomer.name,
-          clientEmail: newCustomer.email || '',
-          clientPhone: newCustomer.phone || '',
-          clientAddress: newCustomer.address || '',
-          clientCnpj: newCustomer.cnpj || '',
-          leadSource: newCustomer.lead_source || ''
+          customerName: newCustomer.name
         }));
         queryClient.invalidateQueries({ queryKey: ["customers"] });
         setShowCustomerForm(false);
@@ -100,34 +87,36 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
       }
     },
   });
-  
+
   const [formData, setFormData] = useState<OpportunityFormData>({
-    customerId: '',
-    clientName: '',
-    clientEmail: '',
-    clientPhone: '',
-    clientAddress: '',
-    clientCnpj: '',
-    opportunityTitle: 'Venda de Produto',
-    stage: 'prospecto',
-    probability: 20,
-    expectedCloseDate: '',
-    estimatedValue: 0,
-    leadSource: '',
-    assignedTo: '',
-    generateQuote: false,
-    items: [],
-    subtotal: 0,
-    freight: 0,
-    discount: 0,
-    total: 0,
-    notes: '',
-    nextAction: '',
-    nextActionDate: ''
+    customerId: initialData?.customer?.id || '',
+    customerName: initialData?.customer?.name || '',
+    opportunityTitle: initialData?.title || 'Venda de Produto',
+    stage: initialData?.stage || 'prospecto',
+    probability: initialData?.probability || 20,
+    expectedCloseDate: initialData?.expectedCloseDate || '',
+    estimatedValue: initialData?.estimatedValue || 0,
+    leadSource: initialData?.leadSource || '',
+    assignedTo: initialData?.assignedTo || '',
+    items: initialData?.items || [],
+    notes: initialData?.notes || '',
+    nextAction: initialData?.nextAction || '',
+    nextActionDate: initialData?.nextActionDate || ''
   });
 
-  const updateFormData = (updates: Partial<OpportunityFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+  const handleCustomerSelect = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setFormData(prev => ({
+      ...prev,
+      customerId: customer.id,
+      customerName: customer.name
+    }));
+    setShowCustomerSelector(false);
+  };
+
+  const handleNewCustomer = () => {
+    setShowCustomerSelector(false);
+    setShowCustomerForm(true);
   };
 
   const handleCustomerSubmit = (customerData: CustomerFormData) => {
@@ -148,26 +137,6 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     };
     
     createCustomerMutation.mutate(customerToCreate);
-  };
-
-  const handleCustomerSelect = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setFormData(prev => ({
-      ...prev,
-      customerId: customer.id,
-      clientName: customer.name,
-      clientEmail: customer.email || '',
-      clientPhone: customer.phone || '',
-      clientAddress: customer.address || '',
-      clientCnpj: customer.cnpj || '',
-      leadSource: customer.lead_source || ''
-    }));
-    setShowCustomerSelector(false);
-  };
-
-  const handleNewCustomer = () => {
-    setShowCustomerSelector(false);
-    setShowCustomerForm(true);
   };
 
   const handleProductSelect = (product: Product, margin: number) => {
@@ -193,52 +162,65 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
     setShowProductSelector(false);
   };
 
-  const handleUpdateQuantity = (itemId: string, quantity: number) => {
-    const updatedItems = formData.items.map(item => {
-      if (item.id === itemId) {
-        const total = quantity * item.unitPrice;
-        return { ...item, quantity, total };
-      }
-      return item;
-    });
-
-    const newEstimatedValue = updatedItems.reduce((sum, item) => sum + item.total, 0);
+  const updateItemQuantity = (itemId: string, quantity: number) => {
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.id === itemId) {
+          const newTotal = quantity * item.unitPrice;
+          return { ...item, quantity, total: newTotal };
+        }
+        return item;
+      })
+    }));
     
-    updateFormData({
-      items: updatedItems,
-      estimatedValue: newEstimatedValue
-    });
+    // Recalcular valor total
+    setTimeout(() => {
+      setFormData(prev => ({
+        ...prev,
+        estimatedValue: prev.items.reduce((sum, item) => sum + item.total, 0)
+      }));
+    }, 0);
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    const updatedItems = formData.items.filter(item => item.id !== itemId);
-    const newEstimatedValue = updatedItems.reduce((sum, item) => sum + item.total, 0);
-    
-    updateFormData({
-      items: updatedItems,
-      estimatedValue: newEstimatedValue
+  const removeItem = (itemId: string) => {
+    setFormData(prev => {
+      const newItems = prev.items.filter(item => item.id !== itemId);
+      return {
+        ...prev,
+        items: newItems,
+        estimatedValue: newItems.reduce((sum, item) => sum + item.total, 0)
+      };
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.customerId || !formData.clientName) {
+    if (!selectedCustomer) {
       toast({
         title: "Cliente obrigatório",
-        description: "Selecione ou cadastre um cliente para continuar.",
-        variant: "destructive",
+        description: "Selecione ou cadastre um cliente antes de continuar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.opportunityTitle.trim()) {
+      toast({
+        title: "Título obrigatório",
+        description: "Preencha o título da oportunidade.",
+        variant: "destructive"
       });
       return;
     }
 
     try {
-      // Criar a oportunidade
       const opportunityData = {
         customer_id: formData.customerId,
         title: formData.opportunityTitle,
         description: formData.notes,
-        value: formData.total,
+        value: formData.estimatedValue,
         stage: formData.stage,
         probability: formData.probability,
         expected_close_date: formData.expectedCloseDate || null,
@@ -250,8 +232,8 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
 
       const opportunity = await createOpportunityMutation.mutateAsync(opportunityData);
       
+      // Criar itens da oportunidade se existirem
       if (opportunity && formData.items.length > 0) {
-        // Criar itens da oportunidade
         for (const item of formData.items) {
           await createOpportunityItem({
             opportunity_id: opportunity.id,
@@ -263,11 +245,6 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
           });
         }
       }
-
-      if (formData.generateQuote && formData.items.length > 0) {
-        setShowQuoteForm(true);
-        return;
-      }
       
       toast({
         title: "Oportunidade Criada",
@@ -277,30 +254,47 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
       onClose();
     } catch (error) {
       console.error('Erro ao criar oportunidade:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao criar oportunidade. Tente novamente.",
+        variant: "destructive"
+      });
     }
   };
 
   const generateQuote = () => {
-    updateFormData({ generateQuote: true });
+    if (formData.items.length === 0) {
+      toast({
+        title: "Sem produtos",
+        description: "Adicione produtos antes de gerar um orçamento.",
+        variant: "destructive"
+      });
+      return;
+    }
     setShowQuoteForm(true);
   };
 
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-          <CardHeader className="bg-gradient-to-r from-green-600 to-green-800 text-white">
+        <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+          <CardHeader className="bg-blue-600 text-white">
             <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Nova Oportunidade de Venda
+              <div className="flex items-center gap-3">
+                <DollarSign className="h-6 w-6" />
+                <h2 className="text-xl font-bold">
+                  {mode === 'edit' ? 'Editar Oportunidade' : 'Nova Oportunidade'} - Winnet Metais
+                </h2>
               </div>
-              <Button variant="ghost" onClick={onClose} className="text-white hover:bg-white/10">✕</Button>
+              <Button variant="ghost" onClick={onClose} className="text-white hover:bg-white/10">
+                <X className="h-4 w-4" />
+              </Button>
             </CardTitle>
           </CardHeader>
+          
           <CardContent className="p-6">
             <form onSubmit={handleSubmit}>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs defaultValue="client" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="client">Cliente</TabsTrigger>
                   <TabsTrigger value="opportunity">Oportunidade</TabsTrigger>
@@ -308,7 +302,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
                   <TabsTrigger value="actions">Ações</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="client" className="space-y-6 mt-6">
+                <TabsContent value="client">
                   <ClientTab
                     selectedCustomer={selectedCustomer}
                     onSelectCustomer={() => setShowCustomerSelector(true)}
@@ -316,52 +310,45 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
                   />
                 </TabsContent>
 
-                <TabsContent value="opportunity" className="space-y-6 mt-6">
+                <TabsContent value="opportunity">
                   <OpportunityTab
-                    formData={{
-                      opportunityTitle: formData.opportunityTitle,
-                      estimatedValue: formData.estimatedValue,
-                      stage: formData.stage,
-                      probability: formData.probability,
-                      expectedCloseDate: formData.expectedCloseDate,
-                      leadSource: formData.leadSource,
-                      assignedTo: formData.assignedTo
-                    }}
-                    onUpdateData={updateFormData}
+                    formData={formData}
+                    onUpdateData={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
                   />
                 </TabsContent>
 
-                <TabsContent value="products" className="space-y-6 mt-6">
+                <TabsContent value="products">
                   <ProductsTab
                     items={formData.items}
                     estimatedValue={formData.estimatedValue}
                     onAddProduct={() => setShowProductSelector(true)}
-                    onUpdateQuantity={handleUpdateQuantity}
-                    onRemoveItem={handleRemoveItem}
+                    onUpdateQuantity={updateItemQuantity}
+                    onRemoveItem={removeItem}
                   />
                 </TabsContent>
 
-                <TabsContent value="actions" className="space-y-6 mt-6">
+                <TabsContent value="actions">
                   <ActionsTab
                     formData={formData}
-                    onUpdateData={updateFormData}
+                    onUpdateData={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
                   />
                 </TabsContent>
               </Tabs>
 
-              <div className="flex gap-3 pt-6 mt-6 border-t">
-                <Button 
-                  type="submit" 
-                  className="flex-1"
-                  disabled={createOpportunityMutation.isPending}
-                >
-                  {createOpportunityMutation.isPending ? 'Criando...' : 'Criar Oportunidade'}
-                </Button>
-                {formData.items.length > 0 && (
-                  <Button type="button" variant="outline" onClick={generateQuote}>
-                    Gerar Orçamento
+              <div className="flex justify-between items-center space-x-4 mt-6 pt-6 border-t">
+                <div className="flex gap-3">
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={createOpportunityMutation.isPending}>
+                    {createOpportunityMutation.isPending 
+                      ? 'Salvando...' 
+                      : mode === 'edit' ? 'Atualizar Oportunidade' : 'Criar Oportunidade'
+                    }
                   </Button>
-                )}
+                  {formData.items.length > 0 && (
+                    <Button type="button" variant="outline" onClick={generateQuote}>
+                      Gerar Orçamento
+                    </Button>
+                  )}
+                </div>
                 <Button type="button" variant="outline" onClick={onClose}>
                   Cancelar
                 </Button>
@@ -396,16 +383,15 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
         />
       )}
 
-      {/* Modal de Orçamento */}
-      {showQuoteForm && (
+      {showQuoteForm && selectedCustomer && (
         <QuoteForm
           onClose={() => setShowQuoteForm(false)}
           initialData={{
-            customerName: formData.clientName,
-            customerEmail: formData.clientEmail,
-            customerPhone: formData.clientPhone,
-            customerAddress: formData.clientAddress,
-            customerCnpj: formData.clientCnpj,
+            customerName: selectedCustomer.name,
+            customerEmail: selectedCustomer.email || '',
+            customerPhone: selectedCustomer.phone || '',
+            customerAddress: selectedCustomer.address || '',
+            customerCnpj: selectedCustomer.cnpj || '',
             items: formData.items.map(item => ({
               id: item.id,
               code: item.sku,
@@ -415,15 +401,13 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
               unitPrice: item.unitPrice,
               total: item.total
             })),
-            subtotal: formData.subtotal,
-            discount: formData.discount,
-            total: formData.total,
-            notes: `Frete: R$ ${formData.freight.toFixed(2)}\n${formData.notes}`.trim()
+            subtotal: formData.estimatedValue,
+            discount: 0,
+            total: formData.estimatedValue,
+            notes: formData.notes
           }}
         />
       )}
     </>
   );
 };
-
-export default NewOpportunityForm;
