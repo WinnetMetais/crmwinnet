@@ -155,6 +155,42 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_rules: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          max_sales: number
+          min_sales: number
+          name: string
+          rate: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_sales: number
+          min_sales: number
+          name: string
+          rate: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_sales?: number
+          min_sales?: number
+          name?: string
+          rate?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           base_amount: number

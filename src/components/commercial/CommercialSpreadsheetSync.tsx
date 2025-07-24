@@ -41,6 +41,8 @@ export const CommercialSpreadsheetSync = () => {
     errors: number;
     total: number;
     duplicates: number;
+    validationErrors: string[];
+    processedRows: number;
   } | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,9 +50,17 @@ export const CommercialSpreadsheetSync = () => {
     if (selectedFile) {
       const fileExtension = selectedFile.name.toLowerCase();
       if (fileExtension.endsWith('.csv') || fileExtension.endsWith('.xlsx') || fileExtension.endsWith('.xls')) {
+        if (selectedFile.size > 10 * 1024 * 1024) {
+          toast({
+            title: "Arquivo muito grande",
+            description: "O arquivo deve ter no máximo 10MB.",
+            variant: "destructive",
+          });
+          return;
+        }
         setFile(selectedFile);
         setSyncResults(null);
-        console.log('Arquivo comercial selecionado:', selectedFile.name, 'Tipo:', selectedFile.type);
+        console.log('Arquivo comercial selecionado:', selectedFile.name, 'Tipo:', selectedFile.type, 'Tamanho:', selectedFile.size);
       } else {
         toast({
           title: "Formato inválido",
@@ -246,13 +256,20 @@ export const CommercialSpreadsheetSync = () => {
 
   const checkDuplicate = async (customerData: any): Promise<boolean> => {
     try {
-      const { data } = await supabase
-        .from('customers')
-        .select('id')
-        .or(`name.eq.${customerData.name},email.eq.${customerData.email},cnpj.eq.${customerData.cnpj}`)
-        .limit(1);
-
-      return data && data.length > 0;
+      let query = supabase.from('customers').select('id').limit(1);
+      
+      const conditions = [];
+      if (customerData.name) conditions.push(`name.eq.${customerData.name}`);
+      if (customerData.email) conditions.push(`email.eq.${customerData.email}`);
+      if (customerData.cnpj) conditions.push(`cnpj.eq.${customerData.cnpj}`);
+      
+      if (conditions.length > 0) {
+        query = query.or(conditions.join(','));
+        const { data } = await query;
+        return data && data.length > 0;
+      }
+      
+      return false;
     } catch (error) {
       console.error('Erro ao verificar duplicata comercial:', error);
       return false;
@@ -264,11 +281,12 @@ export const CommercialSpreadsheetSync = () => {
     let successCount = 0;
     let errorCount = 0;
     let duplicateCount = 0;
+    let processedRows = 0;
     const total = data.length;
     const errorsDetails: string[] = [];
+    const validationErrors: string[] = [];
 
     const { data: { user } } = await supabase.auth.getUser();
-    
     if (!user) {
       throw new Error("Usuário não autenticado");
     }
@@ -277,10 +295,8 @@ export const CommercialSpreadsheetSync = () => {
 
     for (let i = 0; i < data.length; i += batchSize) {
       const batch = data.slice(i, i + batchSize);
-      const results = await Promise.all(batch.map(async (row, index) => {
-        const globalIndex = i + index + 1;
-        setProgress((globalIndex / total) * 100);
-
+      
+      const results = await Promise.allSettled(batch.map(async (row, index) => {
         try {
           const customerData = {
             name: row.cliente,
@@ -297,13 +313,12 @@ export const CommercialSpreadsheetSync = () => {
             status: row.status || 'ativo',
             lifecycle_stage: row.estagio || 'lead',
             notes: row.observacoes || 'Cliente importado da planilha comercial',
-            created_by: 'Sistema de Importação'
+            created_by: user.id,
           };
 
           const isDuplicate = await checkDuplicate(customerData);
-          
           if (isDuplicate) {
-            return { success: false, type: 'duplicate', row, index: globalIndex };
+            return { success: false, type: 'duplicate', row, index: i + index + 1 };
           }
 
           const { data: customer, error: customerError } = await supabase
@@ -314,7 +329,6 @@ export const CommercialSpreadsheetSync = () => {
 
           if (customerError) throw customerError;
 
-          // Se há valor estimado, criar oportunidade
           if (row.valor_estimado > 0 && customer) {
             const opportunityData = {
               customer_id: customer.id,
@@ -324,70 +338,82 @@ export const CommercialSpreadsheetSync = () => {
               stage: row.estagio || 'prospecto',
               description: `Importado da planilha comercial: ${row.observacoes || ''}`,
               expected_close_date: row.proximo_contato ? parseDate(row.proximo_contato) : null,
-              created_by: 'Sistema de Importação'
+              created_by: user.id,
             };
 
-            await supabase
-              .from('opportunities')
-              .insert(opportunityData);
+            await supabase.from('opportunities').insert(opportunityData);
           }
 
-          return { success: true, row, index: globalIndex };
+          return { success: true, row, index: i + index + 1 };
         } catch (error: any) {
-          return { success: false, type: 'error', error, row, index: globalIndex };
+          return { success: false, type: 'error', error, row, index: i + index + 1 };
         }
       }));
 
-      // Process results
-      results.forEach(result => {
-        if (result.success) {
-          successCount++;
-        } else if (result.type === 'duplicate') {
-          duplicateCount++;
+      results.forEach((result) => {
+        processedRows++;
+        if (result.status === 'fulfilled') {
+          if (result.value.success) {
+            successCount++;
+          } else if (result.value.type === 'duplicate') {
+            duplicateCount++;
+          } else {
+            errorCount++;
+            errorsDetails.push(`Linha ${result.value.index}: ${result.value.row?.cliente} - ${result.value.error?.message || 'Erro desconhecido'}`);
+          }
         } else {
           errorCount++;
-          errorsDetails.push(`Linha ${result.index}: ${result.row.cliente} - ${result.error?.message || 'Erro desconhecido'}`);
+          errorsDetails.push(`Erro de processamento: ${result.reason}`);
         }
       });
+
+      setProgress(Math.min(((i + batchSize) / total) * 100, 100));
     }
 
-    if (errorCount > 0) {
-      toast({
-        title: "Erros na sincronização",
-        description: errorsDetails.slice(0, 5).join('\n') + (errorsDetails.length > 5 ? '\n...' : ''),
-        variant: "destructive",
-      });
-    }
-
-    setProgress(100);
     console.log(`Sincronização comercial concluída: ${successCount} sucessos, ${errorCount} erros, ${duplicateCount} duplicatas`);
-    return { success: successCount, errors: errorCount, total, duplicates: duplicateCount };
+    
+    if (errorCount > 0) {
+      console.error('Detalhes dos erros:', errorsDetails);
+      validationErrors.push(...errorsDetails.slice(0, 10)); // Mostrar apenas os primeiros 10 erros
+    }
+
+    return { 
+      success: successCount, 
+      errors: errorCount, 
+      total, 
+      duplicates: duplicateCount,
+      validationErrors,
+      processedRows
+    };
   };
 
   const parseDate = (dateStr: string): string | null => {
     if (!dateStr) return null;
 
+    const cleanDateStr = dateStr.trim();
+    
     const formats = [
       { pattern: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
       { pattern: /^(\d{4})-(\d{1,2})-(\d{1,2})$/, transform: (y: string, m: string, d: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
       { pattern: /^(\d{1,2})-(\d{1,2})-(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
       { pattern: /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
+      { pattern: /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/, transform: (d: string, m: string, y: string) => `20${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
     ];
 
     for (const { pattern, transform } of formats) {
-      const match = dateStr.match(pattern);
+      const match = cleanDateStr.match(pattern);
       if (match) {
         return transform(match[1], match[2], match[3]);
       }
     }
 
     try {
-      const date = new Date(dateStr);
+      const date = new Date(cleanDateStr);
       if (!isNaN(date.getTime())) {
         return date.toISOString().split('T')[0];
       }
     } catch (error) {
-      console.error('Erro ao parsear data comercial:', dateStr, error);
+      console.error('Erro ao parsear data comercial:', cleanDateStr, error);
     }
 
     return null;
@@ -479,11 +505,12 @@ export const CommercialSpreadsheetSync = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
+          <Alert role="alert">
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
             <AlertDescription>
               Importe dados da sua planilha comercial para sincronizar clientes e oportunidades com o CRM. 
               Aceita arquivos CSV e Excel (.xlsx/.xls). Detecta automaticamente colunas como: cliente, empresa, contato, valor estimado, estágio, etc.
+              Arquivo máximo: 10MB.
             </AlertDescription>
           </Alert>
 
