@@ -269,11 +269,13 @@ export const AIAssistant = ({ module, context, className }: AIAssistantProps) =>
     }
   }, [userInput, module, toast]);
 
+  const IconComponent = getModuleInfo.icon;
+
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center text-lg">
-          <getModuleInfo.icon className={`h-5 w-5 mr-2 ${getModuleInfo.color}`} />
+          <IconComponent className={`h-5 w-5 mr-2 ${getModuleInfo.color}`} />
           {getModuleInfo.title}
           <Badge variant="outline" className="ml-2">IA</Badge>
         </CardTitle>
