@@ -11,35 +11,24 @@ export interface CustomerFormData {
   address: string;
   city: string;
   state: string;
-  zipCode: string;
-  
-  // Classificação comercial
-  customerType: 'pessoa_fisica' | 'pessoa_juridica';
-  segment: 'metalurgia' | 'construcao' | 'industria' | 'varejo' | 'outros';
-  priority: 'alta' | 'media' | 'baixa';
+  zip_code: string;
   
   // Informações comerciais
-  leadSource: string;
+  lead_source: string;
   website: string;
-  socialReason: string;
+  social_reason: string;
   
   // Status e acompanhamento
-  status: 'prospecto' | 'qualificado' | 'negociacao' | 'cliente' | 'inativo';
+  status: 'active' | 'inactive' | 'prospect' | 'qualified' | 'customer';
   notes: string;
   
   // Dados de contato adicional
-  contactPerson: string;
-  contactRole: string;
-  whatsapp: string;
-  
-  // Dados comerciais
-  creditLimit: number;
-  paymentTerms: string;
+  contact_person: string;
   
   // Timestamps
-  createdAt?: string;
-  updatedAt?: string;
-  lastContactDate?: string;
+  created_at?: string;
+  updated_at?: string;
+  last_contact_date?: string;
 }
 
 export interface CustomerInteraction {

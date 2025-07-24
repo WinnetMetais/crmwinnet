@@ -108,7 +108,7 @@ export const NewOpportunityForm = ({ onClose }: { onClose: () => void }) => {
       phone: customerData.phone,
       address: customerData.address,
       cnpj: customerData.cnpj,
-      lead_source: customerData.leadSource,
+      lead_source: customerData.lead_source,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };

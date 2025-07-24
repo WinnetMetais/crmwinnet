@@ -22,6 +22,11 @@ export interface Customer {
   segment_id?: string;
   cnpj?: string;
   contact_person?: string;
+  social_reason?: string;
+  lifecycle_stage?: string;
+  tags?: string[];
+  owner?: string;
+  created_by?: string;
 }
 
 export async function getCustomers() {

@@ -111,10 +111,10 @@ export const ImprovedOpportunityForm = ({ onClose }: { onClose: () => void }) =>
       address: customerData.address,
       city: customerData.city,
       state: customerData.state,
-      zip_code: customerData.zipCode,
+      zip_code: customerData.zip_code,
       notes: customerData.notes,
       status: customerData.status,
-      lead_source: customerData.leadSource,
+      lead_source: customerData.lead_source,
       website: customerData.website
     };
     

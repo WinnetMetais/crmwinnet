@@ -108,7 +108,12 @@ export const CustomerSelector = ({ onSelectCustomer, onNewCustomer, onClose, sel
                         <TableCell>{customer.phone || '-'}</TableCell>
                         <TableCell>
                           <Badge variant={customer.status === "active" ? "default" : "secondary"}>
-                            {customer.status === "active" ? "Ativo" : customer.status || "Ativo"}
+                            {customer.status === "active" ? "Ativo" : 
+                             customer.status === "prospect" ? "Prospecto" :
+                             customer.status === "qualified" ? "Qualificado" :
+                             customer.status === "customer" ? "Cliente" :
+                             customer.status === "inactive" ? "Inativo" : 
+                             customer.status || "Ativo"}
                           </Badge>
                         </TableCell>
                         <TableCell>

@@ -30,20 +30,13 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
     address: '',
     city: '',
     state: '',
-    zipCode: '',
-    customerType: 'pessoa_juridica',
-    segment: 'metalurgia',
-    priority: 'media',
-    leadSource: '',
+    zip_code: '',
+    lead_source: '',
     website: '',
-    socialReason: '',
-    status: 'prospecto',
+    social_reason: '',
+    status: 'prospect',
     notes: '',
-    contactPerson: '',
-    contactRole: '',
-    whatsapp: '',
-    creditLimit: 0,
-    paymentTerms: '',
+    contact_person: '',
     ...initialData
   });
 
@@ -83,24 +76,6 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
               </TabsList>
 
               <TabsContent value="basic" className="space-y-6 mt-6">
-                {/* Tipo de Cliente */}
-                <div className="space-y-3">
-                  <Label>Tipo de Cliente *</Label>
-                  <RadioGroup
-                    value={formData.customerType}
-                    onValueChange={(value: 'pessoa_fisica' | 'pessoa_juridica') => handleChange('customerType', value)}
-                    className="flex gap-6"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="pessoa_fisica" id="pf" />
-                      <Label htmlFor="pf">Pessoa Física</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="pessoa_juridica" id="pj" />
-                      <Label htmlFor="pj">Pessoa Jurídica</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
 
                 {/* Informações Principais */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -127,28 +102,22 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="cnpj">{formData.customerType === 'pessoa_fisica' ? 'CPF' : 'CNPJ'}</Label>
+                    <Label htmlFor="cnpj">CNPJ/CPF</Label>
                     <Input
                       id="cnpj"
                       value={formData.cnpj}
                       onChange={(e) => handleChange('cnpj', e.target.value)}
-                      placeholder={formData.customerType === 'pessoa_fisica' ? 'XXX.XXX.XXX-XX' : 'XX.XXX.XXX/XXXX-XX'}
+                      placeholder="XX.XXX.XXX/XXXX-XX"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="segment">Segmento *</Label>
-                    <Select value={formData.segment} onValueChange={(value: 'metalurgia' | 'construcao' | 'industria' | 'varejo' | 'outros') => handleChange('segment', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o segmento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="metalurgia">Metalurgia</SelectItem>
-                        <SelectItem value="construcao">Construção</SelectItem>
-                        <SelectItem value="industria">Indústria</SelectItem>
-                        <SelectItem value="varejo">Varejo</SelectItem>
-                        <SelectItem value="outros">Outros</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="social_reason">Razão Social</Label>
+                    <Input
+                      id="social_reason"
+                      value={formData.social_reason}
+                      onChange={(e) => handleChange('social_reason', e.target.value)}
+                      placeholder="Razão social da empresa"
+                    />
                   </div>
                 </div>
 
@@ -190,11 +159,11 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="zipCode">CEP</Label>
+                      <Label htmlFor="zip_code">CEP</Label>
                       <Input
-                        id="zipCode"
-                        value={formData.zipCode}
-                        onChange={(e) => handleChange('zipCode', e.target.value)}
+                        id="zip_code"
+                        value={formData.zip_code}
+                        onChange={(e) => handleChange('zip_code', e.target.value)}
                         placeholder="XXXXX-XXX"
                       />
                     </div>
@@ -241,35 +210,24 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="whatsapp">WhatsApp</Label>
+                    <Label htmlFor="lead_source">Origem do Lead</Label>
                     <Input
-                      id="whatsapp"
-                      value={formData.whatsapp}
-                      onChange={(e) => handleChange('whatsapp', e.target.value)}
-                      placeholder="(11) 99999-9999"
+                      id="lead_source"
+                      value={formData.lead_source}
+                      onChange={(e) => handleChange('lead_source', e.target.value)}
+                      placeholder="Como nos conheceu?"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="contactPerson">Pessoa de Contato</Label>
-                    <Input
-                      id="contactPerson"
-                      value={formData.contactPerson}
-                      onChange={(e) => handleChange('contactPerson', e.target.value)}
-                      placeholder="Nome do responsável"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contactRole">Cargo</Label>
-                    <Input
-                      id="contactRole"
-                      value={formData.contactRole}
-                      onChange={(e) => handleChange('contactRole', e.target.value)}
-                      placeholder="Cargo do responsável"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact_person">Pessoa de Contato</Label>
+                  <Input
+                    id="contact_person"
+                    value={formData.contact_person}
+                    onChange={(e) => handleChange('contact_person', e.target.value)}
+                    placeholder="Nome do responsável"
+                  />
                 </div>
               </TabsContent>
 
@@ -279,84 +237,20 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                   Informações Comerciais
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status *</Label>
-                    <Select value={formData.status} onValueChange={(value: 'prospecto' | 'qualificado' | 'negociacao' | 'cliente' | 'inativo') => handleChange('status', value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="prospecto">Prospecto</SelectItem>
-                        <SelectItem value="qualificado">Qualificado</SelectItem>
-                        <SelectItem value="negociacao">Em Negociação</SelectItem>
-                        <SelectItem value="cliente">Cliente</SelectItem>
-                        <SelectItem value="inativo">Inativo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">Prioridade</Label>
-                    <Select value={formData.priority} onValueChange={(value: 'alta' | 'media' | 'baixa') => handleChange('priority', value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="alta">Alta</SelectItem>
-                        <SelectItem value="media">Média</SelectItem>
-                        <SelectItem value="baixa">Baixa</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="leadSource">Origem do Lead</Label>
-                    <Select value={formData.leadSource} onValueChange={(value) => handleChange('leadSource', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Como nos conheceu?" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="site">Site</SelectItem>
-                        <SelectItem value="google">Google Ads</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="indicacao">Indicação</SelectItem>
-                        <SelectItem value="mercado-livre">Mercado Livre</SelectItem>
-                        <SelectItem value="feiras">Feiras e Eventos</SelectItem>
-                        <SelectItem value="visita-externa">Visita Externa</SelectItem>
-                        <SelectItem value="outros">Outros</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="creditLimit">Limite de Crédito</Label>
-                    <Input
-                      id="creditLimit"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.creditLimit}
-                      onChange={(e) => handleChange('creditLimit', parseFloat(e.target.value) || 0)}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="paymentTerms">Condições de Pagamento</Label>
-                    <Select value={formData.paymentTerms} onValueChange={(value) => handleChange('paymentTerms', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Condições de pagamento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="a-vista">À Vista</SelectItem>
-                        <SelectItem value="30-dias">30 dias</SelectItem>
-                        <SelectItem value="60-dias">60 dias</SelectItem>
-                        <SelectItem value="30-60-dias">30/60 dias</SelectItem>
-                        <SelectItem value="30-60-90-dias">30/60/90 dias</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'prospect' | 'qualified' | 'customer') => handleChange('status', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="prospect">Prospecto</SelectItem>
+                      <SelectItem value="qualified">Qualificado</SelectItem>
+                      <SelectItem value="customer">Cliente</SelectItem>
+                      <SelectItem value="active">Ativo</SelectItem>
+                      <SelectItem value="inactive">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </TabsContent>
 
