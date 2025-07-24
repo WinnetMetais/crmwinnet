@@ -110,6 +110,84 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          changed_fields: string[] | null
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          changed_fields?: string[] | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          changed_fields?: string[] | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      backup_jobs: {
+        Row: {
+          backup_config: Json | null
+          created_at: string | null
+          id: string
+          job_name: string
+          last_run: string | null
+          next_run: string | null
+          schedule_cron: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          backup_config?: Json | null
+          created_at?: string | null
+          id?: string
+          job_name: string
+          last_run?: string | null
+          next_run?: string | null
+          schedule_cron?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          backup_config?: Json | null
+          created_at?: string | null
+          id?: string
+          job_name?: string
+          last_run?: string | null
+          next_run?: string | null
+          schedule_cron?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
           budget: number | null
@@ -673,6 +751,20 @@ export type Database = {
             referencedRelation: "customer_segments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_customers_lead_source"
+            columns: ["lead_source_id"]
+            isOneToOne: false
+            referencedRelation: "lead_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_customers_segment"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "customer_segments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       data_validation_logs: {
@@ -839,6 +931,20 @@ export type Database = {
             columns: ["qualification_status_id"]
             isOneToOne: false
             referencedRelation: "qualification_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_deals_customer"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_deals_pipeline_stage"
+            columns: ["pipeline_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
             referencedColumns: ["id"]
           },
         ]
@@ -1485,6 +1591,51 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          department: string | null
+          display_name: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          position: string | null
+          preferences: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          display_name?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          position?: string | null
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          display_name?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          position?: string | null
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       qualification_status: {
         Row: {
           active: boolean | null
@@ -1732,6 +1883,36 @@ export type Database = {
         }
         Relationships: []
       }
+      system_config: {
+        Row: {
+          config_key: string
+          config_value: Json
+          created_at: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           created_at: string | null
@@ -1910,6 +2091,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permissions: {
+        Row: {
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          permission_name: string
+          resource_id: string | null
+          resource_type: string | null
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          permission_name: string
+          resource_id?: string | null
+          resource_type?: string | null
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          permission_name?: string
+          resource_id?: string | null
+          resource_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
@@ -1981,6 +2195,10 @@ export type Database = {
       calculate_customer_data_quality: {
         Args: { customer_id: string }
         Returns: number
+      }
+      get_advanced_statistics: {
+        Args: { start_date?: string; end_date?: string }
+        Returns: Json
       }
       validate_deal_data: {
         Args: { deal_id: string }
