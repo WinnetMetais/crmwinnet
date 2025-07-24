@@ -1,4 +1,5 @@
-import { lazy } from 'react';
+import * as React from 'react';
+const { lazy } = React;
 
 // Lazy loading para melhor performance
 const Index = lazy(() => import('@/pages/Index'));
