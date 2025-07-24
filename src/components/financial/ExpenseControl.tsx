@@ -37,10 +37,10 @@ export const ExpenseControl = () => {
     { month: 'Mai', fixas: 0, variaveis: 1600, operacionais: 1000, marketing: 500 }
   ];
 
-  // Despesas detalhadas (simuladas com base nos padrões da planilha)
+  // Despesas detalhadas (baseadas em dados reais + simulados)
   const detailedExpenses = [
     {
-      id: 1,
+      id: 'mock-1',
       date: '02/jan',
       description: 'Anuidade Sistema',
       category: 'Fixa',
@@ -50,7 +50,8 @@ export const ExpenseControl = () => {
       recurring: true
     },
     {
-      id: 2,
+      id: 'mock-2',
+      date: '09/mai',
       description: 'Imposto de Renda',
       category: 'Fixa',
       value: 184.00,
@@ -59,7 +60,8 @@ export const ExpenseControl = () => {
       recurring: false
     },
     {
-      id: 3,
+      id: 'mock-3',
+      date: '20/mai',
       description: 'Frete/Transporte',
       category: 'Variável',
       value: 145.00,
@@ -68,7 +70,8 @@ export const ExpenseControl = () => {
       recurring: false
     },
     {
-      id: 4,
+      id: 'mock-4',
+      date: '01/mai',
       description: 'Taxa Bancária',
       category: 'Operacional',
       value: 85.50,
@@ -77,7 +80,8 @@ export const ExpenseControl = () => {
       recurring: true
     },
     {
-      id: 5,
+      id: 'mock-5',
+      date: '25/mai',
       description: 'Publicidade Online',
       category: 'Marketing',
       value: 450.00,
@@ -119,6 +123,15 @@ export const ExpenseControl = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (id.startsWith('mock-')) {
+      toast({
+        title: "Aviso",
+        description: "Não é possível excluir dados de exemplo",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
       try {
         await deleteTransaction.mutateAsync(id);
@@ -344,7 +357,12 @@ export const ExpenseControl = () => {
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(expense)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(expense.id.toString())}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDelete(expense.id)}
+                        disabled={expense.id.startsWith('mock-')}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
