@@ -27,7 +27,7 @@ export const FinancialBulkOperations = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Array<Record<string, any>>>([]);
 
   useEffect(() => {
     loadTransactions();
@@ -78,7 +78,7 @@ export const FinancialBulkOperations = () => {
 
   const handleBulkValidate = async () => {
     const valid: Transaction[] = [];
-    const invalid: any[] = [];
+    const invalid: Array<Record<string, any>> = [];
 
     for (const transaction of transactions) {
       const errors = validateTransaction(transaction);

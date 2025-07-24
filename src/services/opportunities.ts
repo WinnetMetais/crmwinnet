@@ -19,7 +19,12 @@ export interface Opportunity {
   updated_at?: string;
   created_by?: string;
   // Relacionamentos
-  customers?: any;
+  customers?: {
+    id: string;
+    name: string;
+    email?: string;
+    company?: string;
+  };
   opportunity_items?: OpportunityItem[];
 }
 
@@ -34,7 +39,12 @@ export interface OpportunityItem {
   total: number;
   created_at?: string;
   // Relacionamentos
-  products?: any;
+  products?: {
+    id: string;
+    name: string;
+    sku?: string;
+    unit?: string;
+  };
 }
 
 export interface CustomerInteraction {
@@ -51,7 +61,11 @@ export interface CustomerInteraction {
   created_by?: string;
   created_at?: string;
   // Relacionamentos
-  customers?: any;
+  customers?: {
+    id: string;
+    name: string;
+    company?: string;
+  };
 }
 
 // Serviços para Opportunities

@@ -15,7 +15,7 @@ import { toast } from "@/hooks/use-toast";
 export const ExpenseControl = () => {
   const [period, setPeriod] = useState('month');
   const [showNewExpenseForm, setShowNewExpenseForm] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<any>(null);
+  const [editingExpense, setEditingExpense] = useState<Record<string, any> | null>(null);
 
   const { data: expenses = [], isLoading } = useTransactionsByType('despesa');
   const deleteTransaction = useDeleteTransaction();

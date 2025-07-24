@@ -15,10 +15,10 @@ interface SalesDetailedDashboardProps {
 
 export const SalesDetailedDashboard = ({ dateRange, onDateRangeChange }: SalesDetailedDashboardProps) => {
   const [selectedSeller, setSelectedSeller] = useState('all');
-  const [salesData, setSalesData] = useState<any[]>([]);
-  const [sellerPerformance, setSellerPerformance] = useState<any[]>([]);
-  const [productPerformance, setProductPerformance] = useState<any[]>([]);
-  const [kpis, setKpis] = useState<any>({});
+  const [salesData, setSalesData] = useState<Array<Record<string, any>>>([]);
+  const [sellerPerformance, setSellerPerformance] = useState<Array<Record<string, any>>>([]);
+  const [productPerformance, setProductPerformance] = useState<Array<Record<string, any>>>([]);
+  const [kpis, setKpis] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

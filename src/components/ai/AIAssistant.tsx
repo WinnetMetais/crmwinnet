@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AIAssistantProps {
   module: 'sales' | 'marketing' | 'financial' | 'crm';
-  context?: any;
+  context?: Record<string, any>;
   className?: string;
 }
 
@@ -136,7 +136,7 @@ export const AIAssistant = ({ module, context, className }: AIAssistantProps) =>
       switch (module) {
         case 'sales':
           if (type === 'Analisar lead' && context) {
-            const analysis = await salesAI.scoreLeadIntelligence(context);
+            const analysis = await salesAI.scoreLeadIntelligence(context as any);
             result = `Pontuação: ${analysis.score}/100\nFatores: ${analysis.factors.join(', ')}\nRecomendação: ${analysis.recommendation}`;
           } else if (type === 'Gerar proposta' && context) {
             result = await salesAI.generateProposal(context.customer, context.products || [], context.requirements || '');

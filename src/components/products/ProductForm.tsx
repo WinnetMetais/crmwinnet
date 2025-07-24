@@ -14,7 +14,7 @@ interface ProductFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: any) => void;
-  initialData?: any;
+  initialData?: Record<string, any>;
 }
 
 export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFormProps) => {
@@ -53,9 +53,13 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
           <div key={field.id}>
             <Label htmlFor={fieldName}>{field.field_label}</Label>
             <Input
-              id={fieldName}
-              {...form.register(fieldName as any)}
               placeholder={field.field_label}
+              onChange={(e) => {
+                const customData = form.getValues('custom_data') || {};
+                customData[field.field_name] = e.target.value;
+                form.setValue('custom_data', customData);
+              }}
+              defaultValue={initialData?.custom_data?.[field.field_name] || ''}
             />
           </div>
         );
@@ -65,10 +69,14 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
           <div key={field.id}>
             <Label htmlFor={fieldName}>{field.field_label}</Label>
             <Input
-              id={fieldName}
               type="number"
-              {...form.register(fieldName as any, { valueAsNumber: true })}
               placeholder={field.field_label}
+              onChange={(e) => {
+                const customData = form.getValues('custom_data') || {};
+                customData[field.field_name] = parseFloat(e.target.value) || 0;
+                form.setValue('custom_data', customData);
+              }}
+              defaultValue={initialData?.custom_data?.[field.field_name] || 0}
             />
           </div>
         );
@@ -78,9 +86,13 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
           <div key={field.id}>
             <Label htmlFor={fieldName}>{field.field_label}</Label>
             <Input
-              id={fieldName}
               type="date"
-              {...form.register(fieldName as any)}
+              onChange={(e) => {
+                const customData = form.getValues('custom_data') || {};
+                customData[field.field_name] = e.target.value;
+                form.setValue('custom_data', customData);
+              }}
+              defaultValue={initialData?.custom_data?.[field.field_name] || ''}
             />
           </div>
         );
@@ -89,7 +101,11 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
         return (
           <div key={field.id}>
             <Label htmlFor={fieldName}>{field.field_label}</Label>
-            <Select onValueChange={(value) => form.setValue(fieldName as any, value)}>
+            <Select onValueChange={(value) => {
+              const customData = form.getValues('custom_data') || {};
+              customData[field.field_name] = value;
+              form.setValue('custom_data', customData);
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder={`Selecione ${field.field_label}`} />
               </SelectTrigger>
@@ -108,11 +124,14 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
         return (
           <div key={field.id} className="flex items-center space-x-2">
             <Switch
-              id={fieldName}
-              checked={form.watch(fieldName as any)}
-              onCheckedChange={(checked) => form.setValue(fieldName as any, checked)}
+              checked={initialData?.custom_data?.[field.field_name] || false}
+              onCheckedChange={(checked) => {
+                const customData = form.getValues('custom_data') || {};
+                customData[field.field_name] = checked;
+                form.setValue('custom_data', customData);
+              }}
             />
-            <Label htmlFor={fieldName}>{field.field_label}</Label>
+            <Label>{field.field_label}</Label>
           </div>
         );
       
@@ -121,10 +140,14 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
           <div key={field.id}>
             <Label htmlFor={fieldName}>{field.field_label}</Label>
             <Textarea
-              id={fieldName}
-              {...form.register(fieldName as any)}
               placeholder={field.field_label}
               rows={3}
+              onChange={(e) => {
+                const customData = form.getValues('custom_data') || {};
+                customData[field.field_name] = e.target.value;
+                form.setValue('custom_data', customData);
+              }}
+              defaultValue={initialData?.custom_data?.[field.field_name] || ''}
             />
           </div>
         );

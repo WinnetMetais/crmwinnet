@@ -24,7 +24,7 @@ import { CustomFieldForm } from './CustomFieldForm';
 export const FieldCustomization = () => {
   const [activeTab, setActiveTab] = useState('customers');
   const [showForm, setShowForm] = useState(false);
-  const [editingField, setEditingField] = useState<any>(null);
+  const [editingField, setEditingField] = useState<Record<string, any> | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const { data: customerFields = [], isLoading: loadingCustomers } = useCustomFieldsByModule('customers');

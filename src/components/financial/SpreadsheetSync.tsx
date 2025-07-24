@@ -34,7 +34,7 @@ export const SpreadsheetSync = () => {
     total: number;
     duplicates: number;
     validationErrors: string[];
-    processedRows: any[];
+    processedRows: Array<Record<string, any>>;
   } | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +68,7 @@ export const SpreadsheetSync = () => {
       console.log('Total de linhas no CSV:', lines.length - 1);
       
       const validRows: SpreadsheetRow[] = [];
-      const invalidRows: any[] = [];
+      const invalidRows: Array<Record<string, any>> = [];
       
       for (let i = 1; i < lines.length; i++) {
         try {
@@ -151,7 +151,7 @@ export const SpreadsheetSync = () => {
           console.log('Total de linhas no Excel:', jsonData.length - 1);
           
           const validRows: SpreadsheetRow[] = [];
-          const invalidRows: any[] = [];
+          const invalidRows: Array<Record<string, any>> = [];
           
           for (let i = 1; i < jsonData.length; i++) {
             try {
@@ -351,7 +351,7 @@ export const SpreadsheetSync = () => {
     let duplicateCount = 0;
     const total = data.length;
     const validationErrors: string[] = [];
-    const processedRows: any[] = [];
+    const processedRows: Array<Record<string, any>> = [];
 
     const { data: { user } } = await supabase.auth.getUser();
     

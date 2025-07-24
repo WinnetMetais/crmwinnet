@@ -17,7 +17,7 @@ const fieldSchema = z.object({
   field_name: z.string().min(1, 'Nome do campo é obrigatório'),
   field_label: z.string().min(1, 'Rótulo é obrigatório'),
   field_type: z.enum(['text', 'number', 'date', 'select', 'boolean', 'textarea']),
-  module: z.enum(['customers', 'products', 'quotes']),
+  module: z.enum(['customers', 'products', 'opportunities']),
   required: z.boolean(),
   visible: z.boolean(),
   field_order: z.number(),
@@ -29,7 +29,7 @@ interface CustomFieldFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: FieldFormData & { options: string[] }) => void;
-  initialData?: any;
+  initialData?: Record<string, any>;
   module: string;
 }
 
@@ -43,7 +43,7 @@ export const CustomFieldForm = ({ open, onClose, onSubmit, initialData, module }
       field_name: initialData?.field_name || '',
       field_label: initialData?.field_label || '',
       field_type: initialData?.field_type || 'text',
-      module: module as any,
+      module: module as 'customers' | 'products' | 'opportunities',
       required: initialData?.required || false,
       visible: initialData?.visible || true,
       field_order: initialData?.field_order || 0,
@@ -106,7 +106,7 @@ export const CustomFieldForm = ({ open, onClose, onSubmit, initialData, module }
 
           <div>
             <Label htmlFor="field_type">Tipo do Campo</Label>
-            <Select onValueChange={(value) => form.setValue('field_type', value as any)}>
+            <Select onValueChange={(value) => form.setValue('field_type', value as 'text' | 'number' | 'date' | 'select' | 'boolean' | 'textarea')}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>

@@ -12,11 +12,11 @@ import { toast } from '@/hooks/use-toast';
 export const SeasonalityAnalysis = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedMetric, setSelectedMetric] = useState('vendas');
-  const [monthlyData, setMonthlyData] = useState<any[]>([]);
-  const [seasonalAnalysis, setSeasonalAnalysis] = useState<any[]>([]);
-  const [productSeasonality, setProductSeasonality] = useState<any[]>([]);
-  const [yearOverYearComparison, setYearOverYearComparison] = useState<any[]>([]);
-  const [kpis, setKpis] = useState<any>({});
+  const [monthlyData, setMonthlyData] = useState<Array<Record<string, any>>>([]);
+  const [seasonalAnalysis, setSeasonalAnalysis] = useState<Array<Record<string, any>>>([]);
+  const [productSeasonality, setProductSeasonality] = useState<Array<Record<string, any>>>([]);
+  const [yearOverYearComparison, setYearOverYearComparison] = useState<Array<Record<string, any>>>([]);
+  const [kpis, setKpis] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface NewTransactionFormProps {
   onClose: () => void;
-  editingTransaction?: any;
+  editingTransaction?: Record<string, any>;
 }
 
 export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransactionFormProps) => {

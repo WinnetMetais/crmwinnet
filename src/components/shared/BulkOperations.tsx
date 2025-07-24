@@ -42,8 +42,8 @@ export const BulkOperations = ({
   const [progress, setProgress] = useState(0);
   const [updateValues, setUpdateValues] = useState<Record<string, any>>({});
   const [validationResults, setValidationResults] = useState<{
-    valid: any[];
-    invalid: any[];
+    valid: Array<Record<string, any>>;
+    invalid: Array<Record<string, any>>;
   } | null>(null);
 
   const handleSelectAll = () => {

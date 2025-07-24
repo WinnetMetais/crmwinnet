@@ -14,7 +14,7 @@ export interface AIRequest {
   provider: string;
   model: string;
   prompt: string;
-  context?: any;
+  context?: Record<string, any>;
   maxTokens?: number;
   temperature?: number;
 }

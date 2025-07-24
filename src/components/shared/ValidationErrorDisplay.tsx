@@ -27,7 +27,7 @@ interface ValidationResult {
 }
 
 interface ValidationErrorDisplayProps {
-  errors?: any[];
+  errors?: Array<Record<string, any>>;
   onFixError?: (errorId: string) => Promise<void>;
   moduleType?: string;
 }
@@ -248,8 +248,8 @@ export const ValidationErrorDisplay: React.FC<ValidationErrorDisplayProps> = ({
         table_name: 'all',
         validation_type: 'quality_check',
         validation_status: 'completed',
-        errors: results.flatMap(r => r.issues).slice(0, 20) as any,
-        suggestions: ['Revisar registros com dados incompletos', 'Atualizar informações de contato'] as any,
+        errors: results.flatMap(r => r.issues.map(issue => ({ message: issue, type: 'validation' }))).slice(0, 20),
+        suggestions: ['Revisar registros com dados incompletos', 'Atualizar informações de contato'],
         validated_by: user.email || 'sistema'
       });
 

@@ -49,7 +49,7 @@ interface OpportunityFormData {
 interface UnifiedOpportunityFormProps {
   onClose: () => void;
   mode?: 'create' | 'edit';
-  initialData?: any;
+  initialData?: Record<string, any>;
 }
 
 export const UnifiedOpportunityForm = ({ 
