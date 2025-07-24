@@ -21,20 +21,32 @@ import {
 interface Customer {
   id: string;
   name: string;
-  company: string;
-  email: string;
-  phone: string;
+  company?: string;
+  email?: string;
+  phone?: string;
   status: string;
   lifecycle_stage: string;
-  lead_source: string;
+  lead_source?: string;
   created_at: string;
+  city?: string;
+  state?: string;
+  address?: string;
+  notes?: string;
+}
+
+interface ValidationError {
+  id: string;
+  field: string;
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+  details: string;
 }
 
 export const CommercialBulkOperations = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomers, setSelectedCustomers] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 20;
@@ -68,7 +80,7 @@ export const CommercialBulkOperations = () => {
     }
   };
 
-  const handleBulkUpdate = async (updates: any) => {
+  const handleBulkUpdate = async (updates: { ids: string[]; updates: Partial<Customer> }) => {
     try {
       const { error } = await supabase
         .from('customers')
@@ -92,7 +104,7 @@ export const CommercialBulkOperations = () => {
   const handleBulkValidate = async () => {
     const batchSize = 100;
     const valid: Customer[] = [];
-    const invalid: any[] = [];
+    const invalid: { customer: Customer; errors: Array<{ field: string; message: string; severity: string }> }[] = [];
 
     for (let i = 0; i < customers.length; i += batchSize) {
       const batch = customers.slice(i, i + batchSize);
@@ -111,8 +123,8 @@ export const CommercialBulkOperations = () => {
     }
 
     // Preparar erros para exibição
-    const formattedErrors = invalid.flatMap(item => 
-      item.errors.map((error: any) => ({
+    const formattedErrors: ValidationError[] = invalid.flatMap(item => 
+      item.errors.map((error) => ({
         id: item.customer.id,
         field: error.field,
         message: error.message,

@@ -63,7 +63,14 @@ export const QuoteEmailSender = () => {
     }
   ]);
 
-  const [emailForm, setEmailForm] = useState({
+  interface EmailFormData {
+    to: string;
+    subject: string;
+    content: string;
+    selectedTemplate: string;
+  }
+
+  const [emailForm, setEmailForm] = useState<EmailFormData>({
     to: '',
     subject: '',
     content: '',
@@ -79,11 +86,25 @@ export const QuoteEmailSender = () => {
     });
   };
 
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSendEmail = () => {
     if (!emailForm.to || !emailForm.subject || !emailForm.content) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos antes de enviar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!isValidEmail(emailForm.to)) {
+      toast({
+        title: "Email inválido",
+        description: "Por favor, insira um endereço de email válido.",
         variant: "destructive"
       });
       return;

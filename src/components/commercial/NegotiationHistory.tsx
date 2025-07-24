@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Clock, DollarSign, TrendingUp, Search, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Negotiation {
   id: string;
@@ -183,17 +184,18 @@ export const NegotiationHistory = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <select 
-              className="border rounded-md px-3 py-2"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            >
-              <option value="all">Todos os Status</option>
-              <option value="em-andamento">Em Andamento</option>
-              <option value="fechada-ganha">Fechada - Ganha</option>
-              <option value="fechada-perdida">Fechada - Perdida</option>
-              <option value="pausada">Pausada</option>
-            </select>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filtrar por status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="em-andamento">Em Andamento</SelectItem>
+                <SelectItem value="fechada-ganha">Fechada - Ganha</SelectItem>
+                <SelectItem value="fechada-perdida">Fechada - Perdida</SelectItem>
+                <SelectItem value="pausada">Pausada</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
