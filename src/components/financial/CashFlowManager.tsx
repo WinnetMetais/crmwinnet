@@ -11,11 +11,11 @@ import { useTransactions, useDeleteTransaction } from "@/hooks/useTransactions";
 import { toast } from "@/hooks/use-toast";
 
 interface CashFlowItem {
-  id: number;
+  id: string;
   date: string;
   description: string;
   category: string;
-  type: 'ENTRADA' | 'SAIDA';
+  type: 'receita' | 'despesa';
   value: number;
   status: string;
   method: string;
@@ -32,51 +32,51 @@ export const CashFlowManager = () => {
   // Dados do fluxo de caixa baseados na planilha
   const cashFlowData: CashFlowItem[] = [
     {
-      id: 1,
+      id: '1',
       date: '02/jan',
       description: 'Anuidade',
       category: 'Despesa Fixa',
-      type: 'SAIDA',
+      type: 'despesa',
       value: -22.00,
       status: 'Pago',
       method: 'Débito Automático'
     },
     {
-      id: 2,
+      id: '2',
       date: '05/mai',
       description: 'Venda - Melhor Envio',
       category: 'Receita',
-      type: 'ENTRADA',
+      type: 'receita',
       value: 30.83,
       status: 'Recebido',
       method: 'PIX'
     },
     {
-      id: 3,
+      id: '3',
       date: '07/mai',
       description: 'Venda - Produto',
       category: 'Receita',
-      type: 'ENTRADA',
+      type: 'receita',
       value: 4.85,
       status: 'Recebido',
       method: 'Débito Automático'
     },
     {
-      id: 4,
+      id: '4',
       date: '09/mai',
       description: 'Imposto de Renda',
       category: 'Despesa Fixa',
-      type: 'SAIDA',
+      type: 'despesa',
       value: -184.00,
       status: 'Pendente',
       method: 'PIX'
     },
     {
-      id: 5,
+      id: '5',
       date: '12/mai',
       description: 'Transferência',
       category: 'Movimentação',
-      type: 'ENTRADA',
+      type: 'receita',
       value: 1218.43,
       status: 'Recebido',
       method: 'Transferência'
@@ -101,7 +101,7 @@ export const CashFlowManager = () => {
   };
 
   const getTypeColor = (type: string) => {
-    return type === 'ENTRADA' || type === 'receita'
+    return type === 'receita'
       ? 'text-green-600 font-semibold' 
       : 'text-red-600 font-semibold';
   };

@@ -138,12 +138,6 @@ export const DataValidationTool = () => {
       isValid = false;
     }
 
-    // Validar tipo de transação
-    if (!transaction.type || !['receita', 'despesa'].includes(transaction.type)) {
-      issues.push('Tipo de transação inválido');
-      isValid = false;
-    }
-
     return { isValid, issues };
   };
 
@@ -158,34 +152,18 @@ export const DataValidationTool = () => {
   };
 
   const selectAllInvalid = () => {
-    const invalidIds = transactions
-      .filter(t => !t.isValid)
-      .map(t => t.id);
+    const invalidIds = transactions.filter(t => !t.isValid).map(t => t.id);
     setSelectedForDeletion(new Set(invalidIds));
-    toast({
-      title: "Seleção atualizada",
-      description: `${invalidIds.length} transações inválidas selecionadas`,
-    });
   };
 
   const clearSelection = () => {
     setSelectedForDeletion(new Set());
-    toast({
-      title: "Seleção limpa",
-      description: "Todas as seleções foram removidas",
-    });
   };
 
   const deleteSelectedTransactions = async () => {
-    if (selectedForDeletion.size === 0) {
-      toast({
-        title: "Aviso",
-        description: "Nenhuma transação selecionada para exclusão",
-      });
-      return;
-    }
-
-    if (!confirm(`Tem certeza que deseja excluir ${selectedForDeletion.size} transação(ões)? Esta ação não pode ser desfeita.`)) {
+    if (selectedForDeletion.size === 0) return;
+    
+    if (!confirm(`Tem certeza que deseja excluir ${selectedForDeletion.size} transações?`)) {
       return;
     }
 
@@ -200,7 +178,7 @@ export const DataValidationTool = () => {
 
       toast({
         title: "Sucesso",
-        description: `${selectedForDeletion.size} transação(ões) excluída(s) com sucesso`,
+        description: `${selectedForDeletion.size} transações excluídas`,
       });
 
       setSelectedForDeletion(new Set());
@@ -209,7 +187,7 @@ export const DataValidationTool = () => {
       console.error('Erro ao excluir transações:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível excluir as transações",
+        description: "Erro ao excluir transações",
         variant: "destructive",
       });
     } finally {
@@ -225,8 +203,8 @@ export const DataValidationTool = () => {
     const matchesSearch = searchTerm === '' ||
       transaction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
-
+      (transaction.client_name && transaction.client_name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
     return matchesFilter && matchesSearch;
   });
 
@@ -242,171 +220,162 @@ export const DataValidationTool = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            Validação e Limpeza de Dados Financeiros
+            <CheckCircle className="h-5 w-5" />
+            Ferramenta de Validação de Dados
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Esta ferramenta permite validar e eliminar dados incorretos ou de teste do sistema financeiro.
-              Revise cuidadosamente antes de excluir dados.
+              Esta ferramenta identifica e permite limpar dados inconsistentes, duplicados ou de teste.
+              Use com cuidado - transações excluídas não podem ser recuperadas.
             </AlertDescription>
           </Alert>
 
-          {/* Estatísticas */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="text-center p-3 border rounded-lg">
-              <div className="text-2xl font-bold">{stats.total}</div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-lg font-bold text-blue-600">{stats.total}</div>
               <div className="text-sm text-muted-foreground">Total</div>
             </div>
-            <div className="text-center p-3 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{stats.valid}</div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-lg font-bold text-green-600">{stats.valid}</div>
               <div className="text-sm text-muted-foreground">Válidas</div>
             </div>
-            <div className="text-center p-3 border rounded-lg">
-              <div className="text-2xl font-bold text-red-600">{stats.invalid}</div>
+            <div className="text-center p-3 bg-red-50 rounded-lg">
+              <div className="text-lg font-bold text-red-600">{stats.invalid}</div>
               <div className="text-sm text-muted-foreground">Inválidas</div>
             </div>
-            <div className="text-center p-3 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{stats.selected}</div>
+            <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="text-lg font-bold text-purple-600">{stats.selected}</div>
               <div className="text-sm text-muted-foreground">Selecionadas</div>
             </div>
           </div>
 
-          {/* Controles */}
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex items-center space-x-2">
-              <Search className="h-4 w-4" />
-              <Input
-                placeholder="Buscar transações..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
-              />
+          <div className="flex flex-wrap gap-4 mt-4">
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="search">Buscar</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Buscar por título, categoria..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label>Filtro</Label>
+              <div className="flex gap-2 mt-1">
+                <Button
+                  variant={filterType === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterType('all')}
+                >
+                  Todas
+                </Button>
+                <Button
+                  variant={filterType === 'valid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterType('valid')}
+                >
+                  Válidas
+                </Button>
+                <Button
+                  variant={filterType === 'invalid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterType('invalid')}
+                >
+                  Inválidas
+                </Button>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4" />
-              <select
-                value={filterType}
-                onChange={(e) =>
-                  setFilterType(e.target.value as 'all' | 'valid' | 'invalid')
-                }
-                className="border rounded px-3 py-2"
-              >
-                <option value="all">Todas</option>
-                <option value="valid">Válidas</option>
-                <option value="invalid">Inválidas</option>
-              </select>
+            <div>
+              <Label>Ações</Label>
+              <div className="flex gap-2 mt-1">
+                <Button variant="outline" size="sm" onClick={loadTransactions} disabled={loading}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={selectAllInvalid}>
+                  Selecionar Inválidas
+                </Button>
+                <Button variant="outline" size="sm" onClick={clearSelection}>
+                  Limpar Seleção
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={deleteSelectedTransactions}
+                  disabled={selectedForDeletion.size === 0 || loading}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Excluir ({selectedForDeletion.size})
+                </Button>
+              </div>
             </div>
-
-            <Button
-              onClick={loadTransactions}
-              variant="outline"
-              size="sm"
-              disabled={loading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
-
-            <Button
-              onClick={selectAllInvalid}
-              variant="outline"
-              size="sm"
-            >
-              Selecionar Inválidas
-            </Button>
-
-            <Button
-              onClick={clearSelection}
-              variant="outline"
-              size="sm"
-              disabled={selectedForDeletion.size === 0}
-            >
-              Limpar Seleção
-            </Button>
-
-            <Button
-              onClick={deleteSelectedTransactions}
-              variant="destructive"
-              size="sm"
-              disabled={selectedForDeletion.size === 0 || loading}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir Selecionadas ({selectedForDeletion.size})
-            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Lista de Transações */}
       <Card>
         <CardHeader>
-          <CardTitle>Transações para Validação ({filteredTransactions.length})</CardTitle>
+          <CardTitle>Transações ({filteredTransactions.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">Carregando transações...</div>
+            <div className="text-center py-8">Carregando...</div>
+          ) : filteredTransactions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhuma transação encontrada
+            </div>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {filteredTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
                   className={`p-4 border rounded-lg ${
-                    !transaction.isValid ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'
+                    !transaction.isValid ? 'border-red-200 bg-red-50' : 'border-gray-200'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        checked={selectedForDeletion.has(transaction.id)}
-                        onCheckedChange={() => toggleSelection(transaction.id)}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{transaction.title}</span>
-                          {transaction.isValid ? (
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <AlertTriangle className="h-4 w-4 text-red-600" />
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <div>
-                            <strong>Valor:</strong> R$ {transaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} |
-                            <strong> Data:</strong> {new Date(transaction.date).toLocaleDateString('pt-BR')} |
-                            <strong> Tipo:</strong> {transaction.type}
-                          </div>
-                          <div>
-                            <strong>Categoria:</strong> {transaction.category} |
-                            <strong> Canal:</strong> {transaction.channel}
-                            {transaction.client_name && (
-                              <span> | <strong>Cliente:</strong> {transaction.client_name}</span>
-                            )}
-                          </div>
-                        </div>
-                        {transaction.validationIssues.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {transaction.validationIssues.map((issue, index) => (
-                              <Badge key={index} variant="destructive" className="text-xs">
-                                {issue}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      checked={selectedForDeletion.has(transaction.id)}
+                      onCheckedChange={() => toggleSelection(transaction.id)}
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium">{transaction.title}</span>
+                        <Badge variant={transaction.isValid ? "default" : "destructive"}>
+                          {transaction.isValid ? "Válida" : "Inválida"}
+                        </Badge>
+                        <Badge variant="outline">{transaction.type}</Badge>
                       </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground mb-2">
+                        <div>Valor: R$ {transaction.amount.toLocaleString('pt-BR')}</div>
+                        <div>Data: {new Date(transaction.date).toLocaleDateString('pt-BR')}</div>
+                        <div>Categoria: {transaction.category}</div>
+                        <div>Canal: {transaction.channel}</div>
+                      </div>
+
+                      {transaction.validationIssues.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="text-sm font-medium text-red-600">Problemas identificados:</span>
+                          <ul className="text-sm text-red-600 ml-4">
+                            {transaction.validationIssues.map((issue, index) => (
+                              <li key={index}>• {issue}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
-              {filteredTransactions.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  Nenhuma transação encontrada com os filtros aplicados
-                </div>
-              )}
             </div>
           )}
         </CardContent>
