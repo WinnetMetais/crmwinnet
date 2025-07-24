@@ -221,7 +221,13 @@ export const SalesPipeline = () => {
           <CardContent className="p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {Math.round(filteredDeals.filter((deal: Deal) => deal.pipeline_stages?.name === 'Fechado').length / filteredDeals.length * 100) || 0}%
+                {filteredDeals.length > 0 
+                  ? Math.round((filteredDeals.filter((deal: Deal) => 
+                      deal.pipeline_stages?.name?.toLowerCase().includes('fechado') || 
+                      deal.pipeline_stages?.name?.toLowerCase().includes('ganho') ||
+                      deal.status === 'won'
+                    ).length / filteredDeals.length) * 100)
+                  : 0}%
               </div>
               <div className="text-sm text-gray-600">Taxa Conversão</div>
             </div>
@@ -247,7 +253,11 @@ export const SalesPipeline = () => {
                   {filteredDeals
                     .filter((deal: Deal) => deal.pipeline_stage_id === stage.id)
                     .map((deal: Deal) => (
-                      <Card key={deal.id} className="shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                       <Card 
+                         key={deal.id} 
+                         className="shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                         onClick={() => setSelectedDeal(deal)}
+                       >
                         <CardContent className="p-3">
                           <div className="flex justify-between items-start mb-2">
                             <h3 className="font-medium text-sm">{deal.customers?.name || 'Cliente não informado'}</h3>
@@ -292,24 +302,30 @@ export const SalesPipeline = () => {
                             )}
                           </div>
                           
-                          <div className="flex justify-between items-center">
-                            <div className="flex gap-1">
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-7 w-7 p-0"
-                                onClick={() => handleEditDeal(deal)}
-                              >
-                                <Edit className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
-                                onClick={() => handleDeleteDeal(deal.id)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                           <div className="flex justify-between items-center">
+                             <div className="flex gap-1">
+                               <Button 
+                                 size="sm" 
+                                 variant="ghost" 
+                                 className="h-7 w-7 p-0"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   handleEditDeal(deal);
+                                 }}
+                               >
+                                 <Edit className="h-3.5 w-3.5" />
+                               </Button>
+                               <Button 
+                                 size="sm" 
+                                 variant="ghost" 
+                                 className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   handleDeleteDeal(deal.id);
+                                 }}
+                               >
+                                 <Trash2 className="h-3.5 w-3.5" />
+                               </Button>
                               {deal.customers?.phone && (
                                 <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
                                   <Phone className="h-3.5 w-3.5" />
@@ -321,17 +337,20 @@ export const SalesPipeline = () => {
                                 </Button>
                               )}
                             </div>
-                            {index < stages.length - 1 && (
-                              <Button 
-                                size="sm" 
-                                variant="ghost"
-                                className="h-7 w-7 p-0"
-                                onClick={() => moveOpportunity(deal.id, stages[index + 1].id)}
-                                disabled={updateStageMutation.isPending}
-                              >
-                                <ArrowRight className="h-3.5 w-3.5" />
-                              </Button>
-                            )}
+                             {index < stages.length - 1 && (
+                               <Button 
+                                 size="sm" 
+                                 variant="ghost"
+                                 className="h-7 w-7 p-0"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   moveOpportunity(deal.id, stages[index + 1].id);
+                                 }}
+                                 disabled={updateStageMutation.isPending}
+                               >
+                                 <ArrowRight className="h-3.5 w-3.5" />
+                               </Button>
+                             )}
                           </div>
                           
                           {deal.assigned_to && (
@@ -383,26 +402,18 @@ export const SalesPipeline = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Botão flutuante para adicionar atividade */}
+      {selectedDeal && (
+        <Button 
+          className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg"
+          onClick={() => setActivityDialog(true)}
+        >
+          <Calendar className="h-6 w-6" />
+        </Button>
+      )}
+
       {/* Dialog para adicionar atividade */}
       <Dialog open={activityDialog} onOpenChange={setActivityDialog}>
-        <DialogTrigger asChild>
-          <Button 
-            className="fixed bottom-6 right-6 rounded-full w-14 h-14"
-            onClick={() => {
-              if (selectedDeal) {
-                setActivityDialog(true);
-              } else {
-                toast({
-                  title: "Selecione um negócio",
-                  description: "Primeiro clique em um negócio para adicionar uma atividade.",
-                  variant: "destructive",
-                });
-              }
-            }}
-          >
-            <Calendar className="h-6 w-6" />
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Nova Atividade - {selectedDeal?.customers?.name}</DialogTitle>
