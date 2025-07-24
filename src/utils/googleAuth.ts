@@ -254,7 +254,17 @@ export const clearPlatformToken = (platform: 'google' | 'facebook' | 'linkedin')
  * @param redirectUri URI de redirecionamento
  * @returns Objeto com resultado da validação
  */
-export const validateGoogleAuthConfig = (clientId: string, redirectUri: string) => {
+export interface GoogleAuthConfigValidation {
+  isValid: boolean;
+  issues: string[];
+  redirectUri: string;
+  clientIdValid: boolean;
+}
+
+export const validateGoogleAuthConfig = (
+  clientId: string,
+  redirectUri: string
+): GoogleAuthConfigValidation => {
   const issues = [];
   
   if (!clientId) {

@@ -4,7 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Loader, ExternalLink, Info, AlertTriangle, Check, Copy, RefreshCw, Trash2, Bug } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { initiateGoogleAuth, clearPlatformToken, validateGoogleAuthConfig } from "@/utils/googleAuth";
+import {
+  initiateGoogleAuth,
+  clearPlatformToken,
+  validateGoogleAuthConfig,
+  GoogleAuthConfigValidation,
+} from "@/utils/googleAuth";
 import { 
   Accordion,
   AccordionContent,
@@ -53,7 +58,7 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
   const [showSecret, setShowSecret] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [accordionOpen, setAccordionOpen] = useState<string | undefined>(googleAuthStatus === "error" ? "troubleshooting" : undefined);
-  const [configValidation, setConfigValidation] = useState<any>(null);
+  const [configValidation, setConfigValidation] = useState<GoogleAuthConfigValidation | null>(null);
 
   // If there's an error, open the troubleshooting accordion
   useEffect(() => {

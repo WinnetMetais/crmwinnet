@@ -13,10 +13,27 @@ interface NewContentFormProps {
   onClose: () => void;
 }
 
+type ContentType =
+  | 'blog'
+  | 'ebook'
+  | 'infografico'
+  | 'webinar'
+  | 'video'
+  | 'podcast'
+  | 'post-social';
+
+type ContentObjective =
+  | 'conscientizacao'
+  | 'educacao'
+  | 'conversao'
+  | 'lead'
+  | 'autoridade'
+  | 'engajamento';
+
 export const NewContentForm = ({ onClose }: NewContentFormProps) => {
   const [title, setTitle] = useState('');
-  const [type, setType] = useState('');
-  const [objective, setObjective] = useState('');
+  const [type, setType] = useState<ContentType | ''>('');
+  const [objective, setObjective] = useState<ContentObjective | ''>('');
   const [persona, setPersona] = useState('');
   const [deadline, setDeadline] = useState('');
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -36,16 +53,15 @@ export const NewContentForm = ({ onClose }: NewContentFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aqui você implementaria a lógica para salvar o conteúdo
-    console.log({
-      title,
-      type,
-      objective,
-      persona,
-      deadline,
-      keywords,
-      notes
-    });
+    // TODO: enviar dados para API ou serviço de persistência
+    setTitle('');
+    setType('');
+    setObjective('');
+    setPersona('');
+    setDeadline('');
+    setKeywords([]);
+    setKeywordInput('');
+    setNotes('');
     onClose();
   };
 
@@ -73,7 +89,7 @@ export const NewContentForm = ({ onClose }: NewContentFormProps) => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="type">Tipo de Conteúdo</Label>
-              <Select value={type} onValueChange={setType}>
+              <Select value={type} onValueChange={(value) => setType(value as ContentType)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
@@ -93,7 +109,7 @@ export const NewContentForm = ({ onClose }: NewContentFormProps) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="objective">Objetivo</Label>
-              <Select value={objective} onValueChange={setObjective}>
+              <Select value={objective} onValueChange={(value) => setObjective(value as ContentObjective)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o objetivo" />
                 </SelectTrigger>

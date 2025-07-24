@@ -10,16 +10,27 @@ import { NewTransactionForm } from "./NewTransactionForm";
 import { useTransactions, useDeleteTransaction } from "@/hooks/useTransactions";
 import { toast } from "@/hooks/use-toast";
 
+interface CashFlowItem {
+  id: number;
+  date: string;
+  description: string;
+  category: string;
+  type: 'ENTRADA' | 'SAIDA';
+  value: number;
+  status: string;
+  method: string;
+}
+
 export const CashFlowManager = () => {
   const [viewPeriod, setViewPeriod] = useState('month');
   const [showNewTransactionForm, setShowNewTransactionForm] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const [editingTransaction, setEditingTransaction] = useState<CashFlowItem | null>(null);
   
   const { data: transactions = [], isLoading } = useTransactions();
   const deleteTransaction = useDeleteTransaction();
 
   // Dados do fluxo de caixa baseados na planilha
-  const cashFlowData = [
+  const cashFlowData: CashFlowItem[] = [
     {
       id: 1,
       date: '02/jan',
@@ -95,7 +106,7 @@ export const CashFlowManager = () => {
       : 'text-red-600 font-semibold';
   };
 
-  const handleEdit = (transaction: any) => {
+  const handleEdit = (transaction: CashFlowItem | any) => {
     setEditingTransaction(transaction);
     setShowNewTransactionForm(true);
   };
