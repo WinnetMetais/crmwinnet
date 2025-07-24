@@ -14,6 +14,19 @@ import {
   CheckCircle
 } from "lucide-react";
 
+interface ModuleStatus {
+  name: string;
+  completion: number;
+  features: string[];
+}
+
+interface Improvement {
+  priority: 'Alta' | 'Média' | 'Baixa';
+  module: string;
+  suggestion: string;
+  impact: string;
+}
+
 export const CRMAnalysis = () => {
   const crmMetrics = {
     totalLeads: 145,
@@ -26,7 +39,7 @@ export const CRMAnalysis = () => {
     completionRate: 76
   };
 
-  const moduleStatus = [
+  const moduleStatus: ModuleStatus[] = [
     { name: 'Gestão Comercial', completion: 95, features: ['Pipeline', 'Oportunidades', 'Orçamentos', 'Funil'] },
     { name: 'Módulo Financeiro', completion: 90, features: ['Receitas', 'Despesas', 'Fluxo de Caixa', 'Relatórios'] },
     { name: 'Planejamento de Conteúdo', completion: 85, features: ['Calendário', 'Estratégias', 'Templates', 'Analytics'] },
@@ -34,7 +47,7 @@ export const CRMAnalysis = () => {
     { name: 'Relatórios e Analytics', completion: 80, features: ['Dashboards', 'KPIs', 'Exportação'] }
   ];
 
-  const recommendedImprovements = [
+  const recommendedImprovements: Improvement[] = [
     {
       priority: 'Alta',
       module: 'CRM',

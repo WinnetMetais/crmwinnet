@@ -42,7 +42,7 @@ const campanhasRecentes = [
 ];
 
 const Dashboard = () => {
-  const [dateRange, setDateRange] = useState('30d');
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | '12m'>('30d');
   const [isLoading, setIsLoading] = useState(false);
 
   return (

@@ -56,7 +56,10 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
     });
   };
 
-  const handleChange = (field: keyof CustomerFormData, value: any) => {
+  const handleChange = <K extends keyof CustomerFormData>(
+    field: K,
+    value: CustomerFormData[K]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -134,7 +137,7 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="segment">Segmento *</Label>
-                    <Select value={formData.segment} onValueChange={(value) => handleChange('segment', value)}>
+                    <Select value={formData.segment} onValueChange={(value: 'metalurgia' | 'construcao' | 'industria' | 'varejo' | 'outros') => handleChange('segment', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o segmento" />
                       </SelectTrigger>
@@ -279,7 +282,7 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="status">Status *</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+                    <Select value={formData.status} onValueChange={(value: 'prospecto' | 'qualificado' | 'negociacao' | 'cliente' | 'inativo') => handleChange('status', value)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -294,7 +297,7 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="priority">Prioridade</Label>
-                    <Select value={formData.priority} onValueChange={(value) => handleChange('priority', value)}>
+                    <Select value={formData.priority} onValueChange={(value: 'alta' | 'media' | 'baixa') => handleChange('priority', value)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>

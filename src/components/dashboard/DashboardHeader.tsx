@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Filter, Download, BarChart3 } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
+type RangeOption = '7d' | '30d' | '90d' | '12m';
+
 interface DashboardHeaderProps {
-  dateRange: string;
-  setDateRange: (value: string) => void;
+  dateRange: RangeOption;
+  setDateRange: (value: RangeOption) => void;
 }
 
 export const DashboardHeader = ({ dateRange, setDateRange }: DashboardHeaderProps) => {
