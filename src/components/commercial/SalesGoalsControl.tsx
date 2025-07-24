@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Target, TrendingUp, Calendar, Award, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SalesGoal {
   id: string;
@@ -21,54 +22,61 @@ interface SalesGoal {
 }
 
 export const SalesGoalsControl = () => {
-  const [goals] = useState<SalesGoal[]>([
-    {
-      id: '1',
-      salesperson: 'João Silva',
-      period: 'Janeiro 2024',
-      goal: 150000,
-      achieved: 125000,
-      percentage: 83.3,
-      status: 'on-track',
-      daysRemaining: 8
-    },
-    {
-      id: '2',
-      salesperson: 'Maria Santos',
-      period: 'Janeiro 2024',
-      goal: 120000,
-      achieved: 98000,
-      percentage: 81.7,
-      status: 'behind',
-      daysRemaining: 8
-    },
-    {
-      id: '3',
-      salesperson: 'Pedro Costa',
-      period: 'Janeiro 2024',
-      goal: 100000,
-      achieved: 108000,
-      percentage: 108.0,
-      status: 'exceeded',
-      daysRemaining: 8
-    },
-    {
-      id: '4',
-      salesperson: 'Ana Lima',
-      period: 'Janeiro 2024',
-      goal: 130000,
-      achieved: 67000,
-      percentage: 51.5,
-      status: 'at-risk',
-      daysRemaining: 8
-    }
-  ]);
+  const [goals, setGoals] = useState<SalesGoal[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [newGoal, setNewGoal] = useState({
     salesperson: '',
     period: '',
     goal: 0
   });
+
+  useEffect(() => {
+    fetchGoals();
+  }, []);
+
+  const fetchGoals = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('sales_goals')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedGoals = data?.map(goal => {
+        const percentage = goal.goal_amount > 0 ? (goal.current_amount / goal.goal_amount) * 100 : 0;
+        const status: SalesGoal['status'] = 
+          percentage >= 100 ? 'exceeded' :
+          percentage >= 80 ? 'on-track' :
+          percentage >= 60 ? 'behind' : 'at-risk';
+
+        return {
+          id: goal.id,
+          salesperson: goal.salesperson,
+          period: `${goal.period_type} ${new Date(goal.period_start).getFullYear()}`,
+          goal: goal.goal_amount,
+          achieved: goal.current_amount,
+          percentage,
+          status,
+          daysRemaining: Math.max(0, Math.ceil(
+            (new Date(goal.period_end).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+          ))
+        };
+      }) || [];
+
+      setGoals(formattedGoals);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar metas de vendas.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalGoals = goals.reduce((sum, goal) => sum + goal.goal, 0);
   const totalAchieved = goals.reduce((sum, goal) => sum + goal.achieved, 0);
@@ -77,22 +85,22 @@ export const SalesGoalsControl = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'exceeded': return 'bg-green-100 text-green-800';
-      case 'on-track': return 'bg-blue-100 text-blue-800';
-      case 'behind': return 'bg-yellow-100 text-yellow-800';
-      case 'at-risk': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'exceeded': return 'bg-success/10 text-success';
+      case 'on-track': return 'bg-primary/10 text-primary';
+      case 'behind': return 'bg-warning/10 text-warning';
+      case 'at-risk': return 'bg-destructive/10 text-destructive';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
   const getProgressColor = (percentage: number) => {
-    if (percentage >= 100) return 'bg-green-600';
-    if (percentage >= 80) return 'bg-blue-600';
-    if (percentage >= 60) return 'bg-yellow-600';
-    return 'bg-red-600';
+    if (percentage >= 100) return 'bg-success';
+    if (percentage >= 80) return 'bg-primary';
+    if (percentage >= 60) return 'bg-warning';
+    return 'bg-destructive';
   };
 
-  const handleCreateGoal = () => {
+  const handleCreateGoal = async () => {
     if (!newGoal.salesperson || !newGoal.period || newGoal.goal <= 0) {
       toast({
         title: "Campos obrigatórios",
@@ -102,16 +110,65 @@ export const SalesGoalsControl = () => {
       return;
     }
 
-    toast({
-      title: "Meta criada",
-      description: "Nova meta de vendas foi definida com sucesso!",
-    });
+    if (!/^\w+\s\d{4}$/.test(newGoal.period)) {
+      toast({
+        title: "Formato inválido",
+        description: "Período deve ser no formato 'Mês Ano' (ex: Janeiro 2024).",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setNewGoal({
-      salesperson: '',
-      period: '',
-      goal: 0
-    });
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const [month, year] = newGoal.period.split(' ');
+      const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      const monthIndex = monthNames.indexOf(month);
+      
+      const periodStart = new Date(parseInt(year), monthIndex, 1);
+      const periodEnd = new Date(parseInt(year), monthIndex + 1, 0);
+
+      const { error } = await supabase
+        .from('sales_goals')
+        .insert({
+          user_id: user.id,
+          salesperson: newGoal.salesperson,
+          period_type: month,
+          period_start: periodStart.toISOString().split('T')[0],
+          period_end: periodEnd.toISOString().split('T')[0],
+          goal_amount: newGoal.goal,
+          current_amount: 0
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Meta criada",
+        description: "Nova meta de vendas foi definida com sucesso!",
+      });
+      
+      setNewGoal({
+        salesperson: '',
+        period: '',
+        goal: 0
+      });
+      
+      await fetchGoals();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao criar meta.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -202,6 +259,11 @@ export const SalesGoalsControl = () => {
                         <div 
                           className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(goal.percentage)}`}
                           style={{ width: `${Math.min(goal.percentage, 100)}%` }}
+                          role="progressbar"
+                          aria-valuenow={goal.percentage}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={`Progress: ${goal.percentage.toFixed(1)}%`}
                         />
                       </div>
                     </div>
@@ -263,9 +325,9 @@ export const SalesGoalsControl = () => {
               />
             </div>
 
-            <Button onClick={handleCreateGoal} className="w-full">
+            <Button onClick={handleCreateGoal} className="w-full" disabled={loading}>
               <Plus className="h-4 w-4 mr-2" />
-              Definir Meta
+              {loading ? 'Criando...' : 'Definir Meta'}
             </Button>
 
             <div className="mt-6 space-y-4">

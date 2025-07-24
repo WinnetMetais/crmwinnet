@@ -249,8 +249,7 @@ export const CommercialSpreadsheetSync = () => {
       const { data } = await supabase
         .from('customers')
         .select('id')
-        .eq('name', customerData.name)
-        .eq('email', customerData.email)
+        .or(`name.eq.${customerData.name},email.eq.${customerData.email},cnpj.eq.${customerData.cnpj}`)
         .limit(1);
 
       return data && data.length > 0;
@@ -261,10 +260,12 @@ export const CommercialSpreadsheetSync = () => {
   };
 
   const syncToDatabase = async (data: CommercialSpreadsheetRow[]) => {
+    const batchSize = 50;
     let successCount = 0;
     let errorCount = 0;
     let duplicateCount = 0;
     const total = data.length;
+    const errorsDetails: string[] = [];
 
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -274,35 +275,37 @@ export const CommercialSpreadsheetSync = () => {
 
     console.log(`Iniciando sincronização comercial de ${total} registros`);
 
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      setProgress(((i + 1) / total) * 100);
+    for (let i = 0; i < data.length; i += batchSize) {
+      const batch = data.slice(i, i + batchSize);
+      const results = await Promise.all(batch.map(async (row, index) => {
+        const globalIndex = i + index + 1;
+        setProgress((globalIndex / total) * 100);
 
-      try {
-        const customerData = {
-          name: row.cliente,
-          contact_person: row.contato || '',
-          email: row.email || '',
-          phone: row.telefone || '',
-          company: row.empresa || row.cliente,
-          cnpj: row.cnpj || '',
-          address: row.endereco || '',
-          city: row.cidade || '',
-          state: row.estado || '',
-          zip_code: row.cep || '',
-          lead_source: row.fonte || 'Planilha Importada',
-          status: row.status || 'ativo',
-          lifecycle_stage: row.estagio || 'lead',
-          notes: row.observacoes || 'Cliente importado da planilha comercial',
-          created_by: 'Sistema de Importação'
-        };
+        try {
+          const customerData = {
+            name: row.cliente,
+            contact_person: row.contato || '',
+            email: row.email || '',
+            phone: row.telefone || '',
+            company: row.empresa || row.cliente,
+            cnpj: row.cnpj || '',
+            address: row.endereco || '',
+            city: row.cidade || '',
+            state: row.estado || '',
+            zip_code: row.cep || '',
+            lead_source: row.fonte || 'Planilha Importada',
+            status: row.status || 'ativo',
+            lifecycle_stage: row.estagio || 'lead',
+            notes: row.observacoes || 'Cliente importado da planilha comercial',
+            created_by: 'Sistema de Importação'
+          };
 
-        const isDuplicate = await checkDuplicate(customerData);
-        
-        if (isDuplicate) {
-          duplicateCount++;
-          console.log(`Cliente duplicado ignorado: ${row.cliente}`);
-        } else {
+          const isDuplicate = await checkDuplicate(customerData);
+          
+          if (isDuplicate) {
+            return { success: false, type: 'duplicate', row, index: globalIndex };
+          }
+
           const { data: customer, error: customerError } = await supabase
             .from('customers')
             .insert(customerData)
@@ -329,13 +332,31 @@ export const CommercialSpreadsheetSync = () => {
               .insert(opportunityData);
           }
 
-          successCount++;
-          console.log(`Cliente criado: ${row.cliente}`);
+          return { success: true, row, index: globalIndex };
+        } catch (error: any) {
+          return { success: false, type: 'error', error, row, index: globalIndex };
         }
-      } catch (error) {
-        console.error('Erro ao sincronizar linha comercial:', error);
-        errorCount++;
-      }
+      }));
+
+      // Process results
+      results.forEach(result => {
+        if (result.success) {
+          successCount++;
+        } else if (result.type === 'duplicate') {
+          duplicateCount++;
+        } else {
+          errorCount++;
+          errorsDetails.push(`Linha ${result.index}: ${result.row.cliente} - ${result.error?.message || 'Erro desconhecido'}`);
+        }
+      });
+    }
+
+    if (errorCount > 0) {
+      toast({
+        title: "Erros na sincronização",
+        description: errorsDetails.slice(0, 5).join('\n') + (errorsDetails.length > 5 ? '\n...' : ''),
+        variant: "destructive",
+      });
     }
 
     setProgress(100);
@@ -345,28 +366,22 @@ export const CommercialSpreadsheetSync = () => {
 
   const parseDate = (dateStr: string): string | null => {
     if (!dateStr) return null;
-    
-    try {
-      if (dateStr.includes('/')) {
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-          const day = parts[0].padStart(2, '0');
-          const month = parts[1].padStart(2, '0');
-          const year = parts[2];
-          return `${year}-${month}-${day}`;
-        }
-      } else if (dateStr.includes('-')) {
-        const parts = dateStr.split('-');
-        if (parts[0].length === 4) {
-          return dateStr;
-        } else if (parts.length === 3) {
-          const day = parts[0].padStart(2, '0');
-          const month = parts[1].padStart(2, '0');
-          const year = parts[2];
-          return `${year}-${month}-${day}`;
-        }
+
+    const formats = [
+      { pattern: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
+      { pattern: /^(\d{4})-(\d{1,2})-(\d{1,2})$/, transform: (y: string, m: string, d: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
+      { pattern: /^(\d{1,2})-(\d{1,2})-(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
+      { pattern: /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
+    ];
+
+    for (const { pattern, transform } of formats) {
+      const match = dateStr.match(pattern);
+      if (match) {
+        return transform(match[1], match[2], match[3]);
       }
-      
+    }
+
+    try {
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
         return date.toISOString().split('T')[0];
@@ -374,7 +389,7 @@ export const CommercialSpreadsheetSync = () => {
     } catch (error) {
       console.error('Erro ao parsear data comercial:', dateStr, error);
     }
-    
+
     return null;
   };
 
