@@ -21,14 +21,14 @@ export const whatsappService = {
   async getMessages(): Promise<WhatsAppMessage[]> {
     try {
       const { data, error } = await supabase
-        .from('whatsapp_messages')
+        .from('whatsapp_messages' as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
-      return data?.map(msg => ({
+      return data?.map((msg: any) => ({
         id: msg.id,
         contact: msg.contact_name || 'Contato não identificado',
         message: msg.message,
@@ -57,7 +57,7 @@ export const whatsappService = {
       if (!user) throw new Error('User not authenticated');
 
       const { error } = await supabase
-        .from('whatsapp_messages')
+        .from('whatsapp_messages' as any)
         .insert({
           contact_name: data.contact,
           message: data.message,
