@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, TrendingUp, Users, ShoppingBag, BarChart3, Calendar, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronRight, TrendingUp, Users, ShoppingBag, BarChart3, Calendar, ArrowUp, ArrowDown, Settings, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -64,6 +64,34 @@ const Index = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Production Setup Banner */}
+            <Card className="mb-6 border-blue-200 bg-blue-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Settings className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-blue-800">Configuração para Produção</h3>
+                      <p className="text-sm text-blue-600">
+                        Configure integrações e importe seus dados reais para usar o CRM em produção
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <span className="text-sm text-green-600 font-medium">Dados de teste removidos</span>
+                    <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                      <Link to="/production-setup">
+                        Configurar Sistema
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
               <Card className="animate-fade-in" style={{animationDelay: '0.1s'}}>

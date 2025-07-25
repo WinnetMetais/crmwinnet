@@ -29,6 +29,7 @@ const AIDashboard = lazy(() => import('@/pages/AIDashboard'));
 const Backup = lazy(() => import('@/pages/Backup'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const DataQuality = lazy(() => import('@/pages/DataQuality'));
+const ProductionSetup = lazy(() => import('@/pages/ProductionSetup'));
 
 // Content sub-pages
 const ContentPlan = lazy(() => import('@/pages/content/ContentPlan'));
@@ -71,6 +72,7 @@ export const routes: RouteConfig[] = [
   { path: '/ai-dashboard', element: AIDashboard },
   { path: '/backup', element: Backup },
   { path: '/data-quality', element: DataQuality },
+  { path: '/production-setup', element: ProductionSetup },
 ];
 
 export const contentRoutes: RouteConfig[] = [

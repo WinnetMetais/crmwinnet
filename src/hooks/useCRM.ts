@@ -98,7 +98,17 @@ export const useDeals = () => {
         throw error;
       }
       
-      return data as CRMDeal[];
+      // Transform the data to match CRMDeal interface
+      return (data || []).map(deal => ({
+        ...deal,
+        customers: deal.customers && !('error' in deal.customers) ? deal.customers : {
+          id: deal.customer_id || '',
+          name: 'Cliente não encontrado',
+          company: '',
+          email: '',
+          phone: ''
+        }
+      })) as CRMDeal[];
     }
   });
 };
