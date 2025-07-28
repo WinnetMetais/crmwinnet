@@ -1,99 +1,78 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
 
-interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
-}
-
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
+  error?: Error;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-    errorInfo: null,
-  };
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error?: Error; retry: () => void }>;
+}
 
-  public static getDerivedStateFromError(error: Error): State {
-    return {
-      hasError: true,
-      error,
-      errorInfo: null,
-    };
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    this.setState({
-      hasError: true,
-      error,
-      errorInfo,
-    });
   }
 
-  private handleReset = () => {
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null,
-    });
-    // Forçar refresh da página se necessário
-    window.location.reload();
+  retry = () => {
+    this.setState({ hasError: false, error: undefined });
   };
 
-  public render() {
+  render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
+      const CustomFallback = this.props.fallback;
+      
+      if (CustomFallback) {
+        return <CustomFallback error={this.state.error} retry={this.retry} />;
       }
 
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-md w-full space-y-4">
-            <div className="text-center space-y-4">
-              <AlertTriangle className="h-16 w-16 text-destructive mx-auto" />
-              <h1 className="text-2xl font-bold text-foreground">
-                Ops! Algo deu errado
-              </h1>
-              <p className="text-muted-foreground">
-                Encontramos um erro inesperado. Tente recarregar a página.
-              </p>
-            </div>
-
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="font-mono text-sm">
-                {this.state.error?.message || 'Erro desconhecido'}
+              <AlertDescription>
+                Ops! Algo deu errado ao carregar esta página.
+                {this.state.error?.message && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-sm">Detalhes do erro</summary>
+                    <p className="mt-1 text-xs font-mono">
+                      {this.state.error.message}
+                    </p>
+                  </details>
+                )}
               </AlertDescription>
             </Alert>
-
+            
             <Button 
-              onClick={this.handleReset}
+              onClick={this.retry} 
               className="w-full"
-              size="lg"
+              variant="outline"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              Recarregar Página
+              Tentar novamente
             </Button>
-
-            {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-              <details className="mt-4 p-4 bg-muted rounded-md text-sm">
-                <summary className="cursor-pointer font-semibold">
-                  Detalhes do erro (desenvolvimento)
-                </summary>
-                <pre className="mt-2 whitespace-pre-wrap text-xs overflow-auto">
-                  {this.state.error?.stack}
-                  {this.state.errorInfo.componentStack}
-                </pre>
-              </details>
-            )}
+            
+            <Button 
+              onClick={() => window.location.href = '/'}
+              className="w-full"
+              variant="default"
+            >
+              Voltar ao início
+            </Button>
           </div>
         </div>
       );
@@ -102,3 +81,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export default ErrorBoundary;
