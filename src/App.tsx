@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { NotificationProvider } from "@/components/notifications/NotificationProvider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LoadingFallback } from "@/components/layout/LoadingFallback";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { GlobalKeyboardShortcuts } from "@/components/shared/GlobalKeyboardShortcuts";
 import { routes, contentRoutes, campaignRoutes, NotFound } from "@/config/routes";
 
@@ -16,27 +17,34 @@ import { routes, contentRoutes, campaignRoutes, NotFound } from "@/config/routes
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos
+      retry: 3,
+      staleTime: 30 * 1000, // 30 segundos para dados mais atualizados
+      gcTime: 2 * 60 * 1000, // 2 minutos
       refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      networkMode: 'always',
+    },
+    mutations: {
+      retry: 2,
+      networkMode: 'always',
     },
   },
 });
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <NotificationProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AuthProvider>
-                <GlobalKeyboardShortcuts />
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light">
+          <TooltipProvider>
+            <NotificationProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AuthProvider>
+                  <GlobalKeyboardShortcuts />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
                     {/* Main routes */}
                     {routes.map((route) => {
                       const Component = route.element;
@@ -82,6 +90,7 @@ function App() {
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

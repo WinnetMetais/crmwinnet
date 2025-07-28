@@ -79,37 +79,57 @@ export const useDeals = () => {
   return useQuery({
     queryKey: ['crm-deals'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fazer consultas separadas para evitar problemas de relacionamento
+      const { data: dealsData, error: dealsError } = await supabase
         .from('deals')
-        .select(`
-          *,
-          customers (
-            id,
-            name,
-            company,
-            email,
-            phone
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) {
-        toast.error('Erro ao carregar negócios: ' + error.message);
-        throw error;
+      if (dealsError) {
+        toast.error('Erro ao carregar negócios: ' + dealsError.message);
+        throw dealsError;
       }
-      
-      // Transform the data to match CRMDeal interface
-      return (data || []).map(deal => ({
-        ...deal,
-        customers: deal.customers && !('error' in deal.customers) ? deal.customers : {
-          id: deal.customer_id || '',
-          name: 'Cliente não encontrado',
-          company: '',
-          email: '',
-          phone: ''
+
+      // Se não há deals, retornar array vazio
+      if (!dealsData || dealsData.length === 0) {
+        return [];
+      }
+
+      // Buscar clientes associados separadamente
+      const customerIds = dealsData
+        .map(deal => deal.customer_id)
+        .filter(id => id !== null && id !== undefined);
+
+      let customersData: any[] = [];
+      if (customerIds.length > 0) {
+        const { data: customersResult, error: customersError } = await supabase
+          .from('customers')
+          .select('id, name, company, email, phone')
+          .in('id', customerIds);
+        
+        if (!customersError) {
+          customersData = customersResult || [];
         }
-      })) as CRMDeal[];
-    }
+      }
+
+      // Combinar dados
+      return dealsData.map(deal => {
+        const customer = customersData.find(c => c.id === deal.customer_id);
+        return {
+          ...deal,
+          customers: customer || {
+            id: deal.customer_id || '',
+            name: 'Cliente não encontrado',
+            company: '',
+            email: '',
+            phone: ''
+          }
+        };
+      }) as CRMDeal[];
+    },
+    retry: 3,
+    staleTime: 30000, // 30 segundos
+    gcTime: 60000, // 1 minuto
   });
 };
 
