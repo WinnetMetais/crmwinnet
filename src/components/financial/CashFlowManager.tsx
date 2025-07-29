@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Filter, Download, Edit, Trash2 } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Filter, Download, Plus, Edit, Trash2, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
 import { NewTransactionForm } from "./NewTransactionForm";
-import { useTransactions, useDeleteTransaction } from "@/hooks/useTransactions";
+import { useTransactions, useDeleteTransaction, useFinancialSummary } from "@/hooks/useTransactions";
 import { toast } from "@/hooks/use-toast";
 
 interface CashFlowItem {

@@ -60,6 +60,7 @@ export const routes: RouteConfig[] = [
   { path: '/content', element: Content },
   { path: '/campaigns', element: Campaigns },
   { path: '/crm-overview', element: CRMOverview },
+  { path: '/crm', element: CRMOverview },
   { path: '/module-analysis', element: ModuleAnalysis },
   { path: '/filters', element: Filters },
   { path: '/templates', element: Templates },

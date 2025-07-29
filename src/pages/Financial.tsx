@@ -15,7 +15,6 @@ import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOpe
 
 const Financial = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [showNewTransactionForm, setShowNewTransactionForm] = useState(false);
 
   // Dados mock para o dashboard
   const dashboardData = {
@@ -68,11 +67,7 @@ const Financial = () => {
               </TabsContent>
 
               <TabsContent value="new">
-                {showNewTransactionForm ? (
-                  <NewTransactionForm onClose={() => setShowNewTransactionForm(false)} />
-                ) : (
-                  <NewTransactionForm onClose={() => setShowNewTransactionForm(false)} />
-                )}
+                <NewTransactionForm onClose={() => setActiveTab('dashboard')} />
               </TabsContent>
 
               <TabsContent value="cashflow">

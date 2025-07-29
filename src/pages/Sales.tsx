@@ -10,6 +10,8 @@ import { SalesPipeline } from "@/components/sales/SalesPipeline";
 import { SalesKanban } from "@/components/sales/SalesKanban";
 import { SalesStats } from "@/components/sales/SalesStats";
 import { NewOpportunityForm } from "@/components/sales/NewOpportunityForm";
+import { OpportunityFormModal } from "@/components/sales/OpportunityFormModal";
+import { CustomerFormModal } from "@/components/customers/CustomerFormModal";
 import { DealEditModal } from "@/components/sales/DealEditModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createDeal } from "@/services/pipeline";
@@ -18,6 +20,8 @@ const Sales = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showNewOpportunityForm, setShowNewOpportunityForm] = useState(false);
   const [showSimpleModal, setShowSimpleModal] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showOpportunityModal, setShowOpportunityModal] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -53,11 +57,15 @@ const Sales = () => {
                   <p className="text-muted-foreground">Gerencie o processo comercial da Winnet Metais</p>
                 </div>
                 <div className="flex gap-2">
+                  <Button onClick={() => setShowCustomerModal(true)} variant="outline">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Novo Cliente
+                  </Button>
                   <Button onClick={handleQuickCreate} variant="outline">
                     <Plus className="mr-2 h-4 w-4" />
-                    Criar Rápido
+                    Deal Rápido
                   </Button>
-                  <Button onClick={() => setShowNewOpportunityForm(true)}>
+                  <Button onClick={() => setShowOpportunityModal(true)}>
                     Nova Oportunidade <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -158,6 +166,26 @@ const Sales = () => {
               onSave={handleSaveDeal}
               mode="create"
             />
+
+            {/* Modais */}
+            {showCustomerModal && (
+              <CustomerFormModal
+                onSubmit={(data) => {
+                  console.log('Customer data:', data);
+                  setShowCustomerModal(false);
+                }}
+                onCancel={() => setShowCustomerModal(false)}
+                mode="create"
+              />
+            )}
+
+            {showOpportunityModal && (
+              <OpportunityFormModal
+                open={showOpportunityModal}
+                onClose={() => setShowOpportunityModal(false)}
+                mode="create"
+              />
+            )}
 
             {/* Formulário Completo de Nova Oportunidade */}
             {showNewOpportunityForm && (
