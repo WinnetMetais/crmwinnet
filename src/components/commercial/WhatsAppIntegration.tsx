@@ -1,81 +1,170 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageCircle, Phone, Send, Users, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle, Send, Users, FileText, Settings } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { whatsappService, WhatsAppMessage, WhatsAppContact } from "@/services/whatsapp";
+
+interface WhatsAppMessage {
+  id: string;
+  contact_name: string;
+  message: string;
+  type: string;
+  status: string;
+  created_at: string;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+}
+
+interface MessageTemplate {
+  id: string;
+  name: string;
+  content: string;
+  type: string;
+}
 
 export const WhatsAppIntegration = () => {
   const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
-  const [contacts, setContacts] = useState<WhatsAppContact[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [selectedContact, setSelectedContact] = useState('');
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [templates, setTemplates] = useState<MessageTemplate[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [customMessage, setCustomMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [messagesData, contactsData] = await Promise.all([
-          whatsappService.getMessages(),
-          whatsappService.getContacts()
-        ]);
-        setMessages(messagesData);
-        setContacts(contactsData);
-      } catch (error) {
-        toast({
-          title: "Erro",
-          description: "Falha ao carregar dados do WhatsApp.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Templates padrão
+  const defaultTemplates: MessageTemplate[] = [
+    {
+      id: 'quote_follow_up',
+      name: 'Follow-up de Cotação',
+      content: 'Olá {name}! Espero que esteja bem. Gostaria de saber se teve a oportunidade de analisar nossa cotação enviada. Estou à disposição para esclarecer qualquer dúvida. Att, Winnet Metais',
+      type: 'follow_up'
+    },
+    {
+      id: 'new_quote',
+      name: 'Nova Cotação',
+      content: 'Olá {name}! Conforme solicitado, segue em anexo nossa cotação para os produtos de sua necessidade. Estamos à disposição para negociar as melhores condições. Att, Winnet Metais',
+      type: 'quote'
+    },
+    {
+      id: 'thank_you',
+      name: 'Agradecimento',
+      content: 'Olá {name}! Muito obrigado pela confiança em nossos serviços. Sua satisfação é nossa prioridade. Conte sempre conosco! Att, Winnet Metais',
+      type: 'custom'
+    }
+  ];
 
-    fetchData();
+  useEffect(() => {
+    loadData();
   }, []);
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedContact) {
+  const loadData = async () => {
+    await Promise.all([
+      loadMessages(),
+      loadCustomers()
+    ]);
+    setTemplates(defaultTemplates);
+  };
+
+  const loadMessages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('whatsapp_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setMessages(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar mensagens:', error);
+    }
+  };
+
+  const loadCustomers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, name, phone, email')
+        .not('phone', 'is', null)
+        .order('name');
+
+      if (error) throw error;
+      setCustomers(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!selectedCustomer || (!selectedTemplate && !customMessage.trim())) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Selecione um contato e digite uma mensagem.",
-        variant: "destructive"
+        title: "Erro",
+        description: "Selecione um cliente e uma mensagem para enviar.",
+        variant: "destructive",
       });
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      const selectedContactData = contacts.find(c => c.id === selectedContact);
-      
-      await whatsappService.sendMessage({
-        contact: selectedContactData?.name || selectedContact,
-        message: newMessage,
-        customer_id: selectedContact
-      });
+      const customer = customers.find(c => c.id === selectedCustomer);
+      if (!customer) throw new Error('Cliente não encontrado');
+
+      let messageContent = customMessage;
+      if (selectedTemplate && !customMessage.trim()) {
+        const template = templates.find(t => t.id === selectedTemplate);
+        messageContent = template?.content.replace('{name}', customer.name) || '';
+      }
+
+      // Salvar mensagem no banco
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: dbError } = await supabase
+        .from('whatsapp_messages')
+        .insert({
+          user_id: user?.id || '',
+          customer_id: selectedCustomer,
+          contact_name: customer.name,
+          message: messageContent,
+          type: selectedTemplate ? templates.find(t => t.id === selectedTemplate)?.type || 'custom' : 'custom',
+          status: 'pending'
+        });
+
+      if (dbError) throw dbError;
+
+      // Aqui você integraria com a API do WhatsApp Business
+      // Por enquanto, vamos simular o envio
+      await simulateWhatsAppSend(customer.phone, messageContent);
 
       toast({
-        title: "Mensagem enviada",
-        description: "Sua mensagem foi enviada via WhatsApp!",
+        title: "Mensagem Enviada",
+        description: `Mensagem enviada para ${customer.name} com sucesso!`,
       });
+
+      // Limpar formulário
+      setSelectedCustomer('');
+      setSelectedTemplate('');
+      setCustomMessage('');
       
-      setNewMessage('');
-      
-      // Refresh messages
-      const updatedMessages = await whatsappService.getMessages();
-      setMessages(updatedMessages);
+      // Recarregar mensagens
+      await loadMessages();
+
     } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
       toast({
         title: "Erro",
-        description: "Falha ao enviar mensagem.",
+        description: "Erro ao enviar mensagem. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -83,149 +172,197 @@ export const WhatsAppIntegration = () => {
     }
   };
 
-  const templates = [
-    {
-      name: "Saudação inicial",
-      content: "Olá! Obrigado por entrar em contato com a Winnet Metais. Como posso ajudá-lo?"
-    },
-    {
-      name: "Envio de orçamento",
-      content: "Conforme conversamos, segue em anexo o orçamento solicitado. Qualquer dúvida estou à disposição!"
-    },
-    {
-      name: "Follow-up",
-      content: "Olá! Verificou nossa proposta? Fico no aguardo do seu retorno."
-    }
-  ];
+  const simulateWhatsAppSend = async (phone: string, message: string) => {
+    // Simulação de envio - em produção você usaria a API do WhatsApp Business
+    return new Promise(resolve => setTimeout(resolve, 1000));
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      pending: "outline",
+      sent: "secondary", 
+      delivered: "default",
+      read: "default",
+      failed: "destructive"
+    };
+
+    const labels: Record<string, string> = {
+      pending: "Pendente",
+      sent: "Enviada",
+      delivered: "Entregue", 
+      read: "Lida",
+      failed: "Falhou"
+    };
+
+    return (
+      <Badge variant={variants[status] || "outline"}>
+        {labels[status] || status}
+      </Badge>
+    );
+  };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Mensagens Hoje</p>
-                <p className="text-3xl font-bold">47</p>
-              </div>
-              <MessageCircle className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Contatos Ativos</p>
-                <p className="text-3xl font-bold">23</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Tempo Resposta</p>
-                <p className="text-3xl font-bold">2.5min</p>
-              </div>
-              <Clock className="h-8 w-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex items-center gap-2">
+        <MessageCircle className="h-6 w-6 text-green-600" />
+        <div>
+          <h2 className="text-2xl font-bold">Integração WhatsApp</h2>
+          <p className="text-muted-foreground">Envie cotações e mensagens para seus clientes via WhatsApp</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Conversas Recentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto">
-              {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'}`}>
-                  <div 
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      message.type === 'sent' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted'
-                    }`}
-                    role="article"
-                    aria-label={`Message from ${message.contact}`}
-                  >
-                    <p className="text-sm font-medium mb-1">{message.contact}</p>
-                    <p className="text-sm">{message.message}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs opacity-70">{message.timestamp}</span>
-                      <Badge variant={message.status === 'read' ? 'default' : 'secondary'}>
-                        {message.status === 'delivered' ? 'Entregue' : 
-                         message.status === 'read' ? 'Lida' : 'Pendente'}
-                      </Badge>
-                    </div>
-                  </div>
+      <Tabs defaultValue="send" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="send">Enviar Mensagem</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="send">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5" />
+                Nova Mensagem
+              </CardTitle>
+              <CardDescription>
+                Envie mensagens personalizadas ou use templates pré-definidos
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customer">Cliente</Label>
+                  <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((customer) => (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          <div className="flex flex-col">
+                            <span>{customer.name}</span>
+                            <span className="text-sm text-muted-foreground">{customer.phone}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Enviar Mensagem</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="contact">Contato</Label>
-              <Select value={selectedContact} onValueChange={setSelectedContact}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um contato" />
-                </SelectTrigger>
-                <SelectContent>
-                  {contacts.map(contact => (
-                    <SelectItem key={contact.id} value={contact.id}>
-                      {contact.name} - {contact.phone}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="template">Template (Opcional)</Label>
+                  <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-            <div>
-              <Label htmlFor="message">Mensagem</Label>
-              <Textarea
-                id="message"
-                placeholder="Digite sua mensagem..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                rows={4}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="message">Mensagem Personalizada</Label>
+                <Textarea
+                  id="message"
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  placeholder="Digite sua mensagem personalizada ou use um template acima"
+                  rows={4}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Use {"{name}"} para inserir automaticamente o nome do cliente
+                </p>
+              </div>
 
-            <Button onClick={handleSendMessage} className="w-full" disabled={loading}>
-              <Send className="h-4 w-4 mr-2" />
-              {loading ? 'Enviando...' : 'Enviar via WhatsApp'}
-            </Button>
+              <Button 
+                onClick={sendMessage} 
+                disabled={loading}
+                className="w-full"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {loading ? 'Enviando...' : 'Enviar Mensagem'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <div className="space-y-2">
-              <Label>Templates Rápidos</Label>
-              {templates.map((template, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-left justify-start"
-                  onClick={() => setNewMessage(template.content)}
-                >
-                  {template.name}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="history">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Histórico de Mensagens
+              </CardTitle>
+              <CardDescription>
+                Últimas {messages.length} mensagens enviadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {messages.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nenhuma mensagem enviada ainda
+                  </p>
+                ) : (
+                  messages.map((message) => (
+                    <div key={message.id} className="flex items-start justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium">{message.contact_name}</span>
+                          {getStatusBadge(message.status)}
+                          <Badge variant="outline">{message.type}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {message.message}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(message.created_at).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="templates">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Templates de Mensagem
+              </CardTitle>
+              <CardDescription>
+                Templates pré-definidos para agilizar o envio de mensagens
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {templates.map((template) => (
+                  <div key={template.id} className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium">{template.name}</h4>
+                      <Badge variant="outline">{template.type}</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {template.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
