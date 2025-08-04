@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Target, TrendingUp, Calendar, Award, Plus } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface SalesGoal {
   id: string;
@@ -24,19 +24,102 @@ interface SalesGoal {
 export const SalesGoalsControl = () => {
   const [goals, setGoals] = useState<SalesGoal[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [newGoal, setNewGoal] = useState({
     salesperson: '',
     period: '',
     goal: 0
   });
 
+  // Carregar metas do Supabase
   useEffect(() => {
-    fetchGoals();
+    loadGoals();
   }, []);
 
+  const loadGoals = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('sales_goals')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Converter para formato esperado pelo componente
+      const formattedGoals = data?.map(goal => ({
+        id: goal.id,
+        salesperson: goal.salesperson,
+        period: `${goal.period_start} - ${goal.period_end}`,
+        goal: Number(goal.goal_amount),
+        achieved: Number(goal.current_amount || 0),
+        percentage: Math.round((Number(goal.current_amount || 0) / Number(goal.goal_amount)) * 100),
+        status: getGoalStatus(Number(goal.current_amount || 0), Number(goal.goal_amount)),
+        daysRemaining: Math.max(0, Math.ceil((new Date(goal.period_end).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+      })) || [];
+      
+      setGoals(formattedGoals);
+    } catch (error) {
+      console.error('Erro ao carregar metas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getGoalStatus = (achieved: number, goal: number): 'on-track' | 'behind' | 'exceeded' | 'at-risk' => {
+    const percentage = (achieved / goal) * 100;
+    if (percentage >= 100) return 'exceeded';
+    if (percentage >= 75) return 'on-track';
+    if (percentage >= 50) return 'behind';
+    return 'at-risk';
+  };
+
+  const createGoal = async () => {
+    if (!newGoal.salesperson || !newGoal.period || newGoal.goal <= 0) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos corretamente",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const [startDate, endDate] = newGoal.period.split(' - ');
+      
+      const { error } = await supabase
+        .from('sales_goals')
+        .insert({
+          salesperson: newGoal.salesperson,
+          period_start: startDate,
+          period_end: endDate,
+          period_type: 'monthly',
+          goal_amount: newGoal.goal,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        });
+
+      if (error) throw error;
+
+      setNewGoal({ salesperson: '', period: '', goal: 0 });
+      loadGoals();
+      
+      toast({
+        title: "Sucesso",
+        description: "Meta criada com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao criar meta:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao criar meta",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchGoals = async () => {
-    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('sales_goals')
@@ -73,8 +156,6 @@ export const SalesGoalsControl = () => {
         description: "Falha ao carregar metas de vendas.",
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
     }
   };
 

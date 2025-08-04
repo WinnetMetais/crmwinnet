@@ -1,87 +1,86 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { quoteService } from '@/services/quotes';
+import { dealService } from '@/services/deals';
 import { useToast } from '@/hooks/use-toast';
 
-export const useQuotes = () => {
+export const useDeals = () => {
   return useQuery({
-    queryKey: ['quotes'],
-    queryFn: quoteService.getQuotes,
+    queryKey: ['deals'],
+    queryFn: dealService.getDeals,
   });
 };
 
-export const useQuote = (id: string) => {
+export const useDeal = (id: string) => {
   return useQuery({
-    queryKey: ['quotes', id],
-    queryFn: () => quoteService.getQuoteById(id),
+    queryKey: ['deals', id],
+    queryFn: () => dealService.getDealById(id),
     enabled: !!id,
   });
 };
 
-export const useCreateQuote = () => {
+export const useCreateDeal = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: quoteService.createQuote,
+    mutationFn: dealService.createDeal,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast({
         title: 'Sucesso',
-        description: 'Orçamento criado com sucesso!',
+        description: 'Deal criado com sucesso!',
       });
     },
     onError: (error: any) => {
       toast({
         title: 'Erro',
-        description: error.message || 'Erro ao criar orçamento',
+        description: error.message || 'Erro ao criar deal',
         variant: 'destructive',
       });
     },
   });
 };
 
-export const useUpdateQuote = () => {
+export const useUpdateDeal = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: any }) =>
-      quoteService.updateQuote(id, updates),
+      dealService.updateDeal(id, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast({
         title: 'Sucesso',
-        description: 'Orçamento atualizado com sucesso!',
+        description: 'Deal atualizado com sucesso!',
       });
     },
     onError: (error: any) => {
       toast({
         title: 'Erro',
-        description: error.message || 'Erro ao atualizar orçamento',
+        description: error.message || 'Erro ao atualizar deal',
         variant: 'destructive',
       });
     },
   });
 };
 
-export const useDeleteQuote = () => {
+export const useDeleteDeal = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: quoteService.deleteQuote,
+    mutationFn: dealService.deleteDeal,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast({
         title: 'Sucesso',
-        description: 'Orçamento deletado com sucesso!',
+        description: 'Deal deletado com sucesso!',
       });
     },
     onError: (error: any) => {
       toast({
         title: 'Erro',
-        description: error.message || 'Erro ao deletar orçamento',
+        description: error.message || 'Erro ao deletar deal',
         variant: 'destructive',
       });
     },

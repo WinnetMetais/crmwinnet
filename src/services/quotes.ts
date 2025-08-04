@@ -1,5 +1,4 @@
-
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export type Quote = Tables<'quotes'>;
@@ -9,7 +8,7 @@ export type QuoteItem = Tables<'quote_items'>;
 export type QuoteItemInsert = TablesInsert<'quote_items'>;
 
 export const quoteService = {
-  // Buscar todos os orçamentos
+  // Buscar todos os orçamentos com itens
   async getQuotes() {
     const { data, error } = await supabase
       .from('quotes')
@@ -23,7 +22,7 @@ export const quoteService = {
     return data;
   },
 
-  // Buscar orçamento por ID
+  // Buscar orçamento por ID com itens
   async getQuoteById(id: string) {
     const { data, error } = await supabase
       .from('quotes')
@@ -42,7 +41,10 @@ export const quoteService = {
   async createQuote(quote: QuoteInsert) {
     const { data, error } = await supabase
       .from('quotes')
-      .insert(quote)
+      .insert({
+        ...quote,
+        user_id: (await supabase.auth.getUser()).data.user?.id
+      })
       .select()
       .single();
     
@@ -108,7 +110,7 @@ export const quoteService = {
     if (error) throw error;
   },
 
-  // Gerar número de orçamento
+  // Gerar número de orçamento sequencial
   async generateQuoteNumber() {
     const { data, error } = await supabase
       .from('quotes')
@@ -118,8 +120,10 @@ export const quoteService = {
     
     if (error) throw error;
     
-    const lastNumber = data[0]?.quote_number || 'ORC-0000';
-    const number = parseInt(lastNumber.split('-')[1]) + 1;
-    return `ORC-${number.toString().padStart(4, '0')}`;
+    const lastQuote = data?.[0];
+    const lastNumber = lastQuote?.quote_number ? 
+      parseInt(lastQuote.quote_number.replace(/\D/g, '')) : 0;
+    
+    return `WM${String(lastNumber + 1).padStart(6, '0')}`;
   }
 };

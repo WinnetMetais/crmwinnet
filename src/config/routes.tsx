@@ -30,6 +30,7 @@ const Backup = lazy(() => import('@/pages/Backup'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const DataQuality = lazy(() => import('@/pages/DataQuality'));
 const ProductionSetup = lazy(() => import('@/pages/ProductionSetup'));
+const Quotes = lazy(() => import('@/pages/Quotes'));
 
 // Content sub-pages
 const ContentPlan = lazy(() => import('@/pages/content/ContentPlan'));
@@ -74,6 +75,7 @@ export const routes: RouteConfig[] = [
   { path: '/backup', element: Backup },
   { path: '/data-quality', element: DataQuality },
   { path: '/production-setup', element: ProductionSetup },
+  { path: '/quotes', element: Quotes },
 ];
 
 export const contentRoutes: RouteConfig[] = [

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DollarSign, TrendingUp, Users, Calculator, Plus } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Commission {
   id: string;
@@ -38,45 +38,84 @@ export const CommissionSystem = () => {
     rate: 0,
   });
   const [calcSales, setCalcSales] = useState(0);
-  const [calcRate, setCalcRate] = useState(0);
-  const [calcResult, setCalcResult] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // Carregar dados do Supabase
   useEffect(() => {
-    fetchCommissions();
-    fetchRules();
+    loadCommissions();
+    loadRules();
   }, []);
 
-  const fetchCommissions = async () => {
-    setLoading(true);
+  const loadCommissions = async () => {
     try {
-      const { data, error } = await supabase.from('commissions').select('*');
+      const { data, error } = await supabase
+        .from('commissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
       if (error) throw error;
       setCommissions(data || []);
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Erro ao carregar comissões:', error);
+    }
+  };
+
+  const loadRules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('commission_rules')
+        .select('*')
+        .eq('active', true)
+        .order('min_sales', { ascending: true });
+      
+      if (error) throw error;
+      setRules(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar regras:', error);
+    }
+  };
+
+  const createRule = async () => {
+    if (!newRule.name || newRule.min_sales >= newRule.max_sales || newRule.rate <= 0) {
       toast({
         title: "Erro",
-        description: error.message || "Falha ao carregar comissões",
+        description: "Preencha todos os campos corretamente",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('commission_rules')
+        .insert({
+          ...newRule,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        });
+
+      if (error) throw error;
+
+      setNewRule({ name: '', min_sales: 0, max_sales: 0, rate: 0 });
+      loadRules();
+      
+      toast({
+        title: "Sucesso",
+        description: "Regra de comissão criada com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao criar regra:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao criar regra de comissão",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
-
-  const fetchRules = async () => {
-    try {
-      const { data, error } = await supabase.from('commission_rules').select('*');
-      if (error) throw error;
-      setRules(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: error.message || "Falha ao carregar regras",
-        variant: "destructive",
-      });
-    }
-  };
+  const [calcRate, setCalcRate] = useState(0);
+  const [calcResult, setCalcResult] = useState(0);
 
   const totalCommissions = commissions.reduce((sum, comm) => sum + comm.commission_amount, 0);
   const pendingCommissions = commissions.filter(c => c.status === 'pending').length;
@@ -131,7 +170,7 @@ export const CommissionSystem = () => {
         description: "Nova regra de comissão foi criada com sucesso!",
       });
       setNewRule({ name: '', min_sales: 0, max_sales: 0, rate: 0 });
-      fetchRules();
+      loadRules();
     } catch (error: any) {
       toast({
         title: "Erro",

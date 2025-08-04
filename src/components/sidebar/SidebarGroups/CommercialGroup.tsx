@@ -88,6 +88,20 @@ export const CommercialGroup = ({ isActive, isActiveGroup }: CommercialGroupProp
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton 
+              isActive={isActive('/quotes')}
+              asChild
+            >
+              <Link 
+                to="/quotes"
+                className="w-full flex items-center"
+              >
+                <Calculator className="mr-2 h-4 w-4" />
+                <span>Orçamentos</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
               isActive={isActive('/crm')}
               asChild
             >
