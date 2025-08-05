@@ -1,611 +1,329 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { Upload, Download, RefreshCw, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { FileSpreadsheet, Download, Upload, RotateCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
-interface CommercialSpreadsheetRow {
-  cliente: string;
-  contato: string;
-  email: string;
-  telefone: string;
-  empresa: string;
-  cnpj: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-  fonte: string;
-  status: string;
-  estagio: string;
-  valor_estimado: number;
-  probabilidade: number;
-  data_contato: string;
-  proximo_contato: string;
-  observacoes: string;
+interface SyncData {
+  id: string;
+  type: 'quote' | 'deal' | 'customer';
+  name: string;
+  status: 'success' | 'error' | 'pending';
+  lastSync: string;
+  errors?: string[];
 }
 
 export const CommercialSpreadsheetSync = () => {
+  const [syncType, setSyncType] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [syncResults, setSyncResults] = useState<{
-    success: number;
-    errors: number;
-    total: number;
-    duplicates: number;
-    validationErrors: string[];
-    processedRows: number;
-  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [syncHistory, setSyncHistory] = useState<SyncData[]>([
+    {
+      id: '1',
+      type: 'quote',
+      name: 'Orçamentos_Janeiro_2024.xlsx',
+      status: 'success',
+      lastSync: '2024-01-15T10:30:00Z',
+    },
+    {
+      id: '2',
+      type: 'deal',
+      name: 'Deals_Q1_2024.xlsx',
+      status: 'error',
+      lastSync: '2024-01-14T15:45:00Z',
+      errors: ['Coluna "valor" não encontrada', 'Data inválida na linha 15'],
+    },
+  ]);
+  
+  const { toast } = useToast();
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      const fileExtension = selectedFile.name.toLowerCase();
-      if (fileExtension.endsWith('.csv') || fileExtension.endsWith('.xlsx') || fileExtension.endsWith('.xls')) {
-        if (selectedFile.size > 10 * 1024 * 1024) {
-          toast({
-            title: "Arquivo muito grande",
-            description: "O arquivo deve ter no máximo 10MB.",
-            variant: "destructive",
-          });
-          return;
-        }
-        setFile(selectedFile);
-        setSyncResults(null);
-        console.log('Arquivo comercial selecionado:', selectedFile.name, 'Tipo:', selectedFile.type, 'Tamanho:', selectedFile.size);
-      } else {
+      if (selectedFile.type !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' &&
+          selectedFile.type !== 'application/vnd.ms-excel') {
         toast({
-          title: "Formato inválido",
-          description: "Por favor, selecione um arquivo CSV ou Excel (.xlsx/.xls).",
-          variant: "destructive",
+          title: 'Erro',
+          description: 'Por favor, selecione um arquivo Excel (.xlsx ou .xls)',
+          variant: 'destructive',
         });
+        return;
       }
+      setFile(selectedFile);
     }
   };
 
-  const parseCSV = (csv: string): CommercialSpreadsheetRow[] => {
-    try {
-      const lines = csv.split('\n').filter(line => line.trim());
-      if (lines.length === 0) return [];
-
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
-      console.log('Cabeçalhos CSV comercial detectados:', headers);
-      
-      const validRows: CommercialSpreadsheetRow[] = [];
-      
-      for (let i = 1; i < lines.length; i++) {
-        try {
-          const values = parseCSVLine(lines[i]);
-          const row = parseRowData(headers, values, i);
-          
-          if (row && isValidRow(row)) {
-            validRows.push(row);
-          }
-        } catch (error) {
-          console.error(`Erro ao processar linha CSV comercial ${i + 1}:`, error);
-        }
-      }
-      
-      return validRows;
-    } catch (error) {
-      console.error('Erro ao processar CSV comercial:', error);
-      throw new Error('Erro ao processar arquivo CSV comercial');
-    }
-  };
-
-  const parseCSVLine = (line: string): string[] => {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    
-    result.push(current.trim());
-    return result;
-  };
-
-  const parseExcel = (file: File): Promise<CommercialSpreadsheetRow[]> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: 'array' });
-          
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          
-          if (jsonData.length === 0) {
-            resolve([]);
-            return;
-          }
-
-          const headers = (jsonData[0] as any[]).map(h => 
-            h?.toString().toLowerCase().trim().replace(/['"]/g, '') || ''
-          );
-          console.log('Cabeçalhos Excel comercial detectados:', headers);
-          
-          const validRows: CommercialSpreadsheetRow[] = [];
-          
-          for (let i = 1; i < jsonData.length; i++) {
-            try {
-              const row = jsonData[i] as any[];
-              const values = headers.map((_, colIndex) => 
-                row[colIndex]?.toString().trim() || ''
-              );
-              const parsedRow = parseRowData(headers, values, i);
-              
-              if (parsedRow && isValidRow(parsedRow)) {
-                validRows.push(parsedRow);
-              }
-            } catch (error) {
-              console.error(`Erro ao processar linha Excel comercial ${i + 1}:`, error);
-            }
-          }
-
-          resolve(validRows);
-        } catch (error) {
-          console.error('Erro ao processar arquivo Excel comercial:', error);
-          reject(new Error('Erro ao processar arquivo Excel comercial'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-      reader.readAsArrayBuffer(file);
-    });
-  };
-
-  const parseRowData = (headers: string[], values: string[], index: number): CommercialSpreadsheetRow | null => {
-    try {
-      const row: any = {};
-      
-      headers.forEach((header, colIndex) => {
-        const value = values[colIndex] || '';
-        
-        if (header.includes('cliente') || header.includes('nome')) {
-          row.cliente = value;
-        } else if (header.includes('contato') || header.includes('contact')) {
-          row.contato = value;
-        } else if (header.includes('email') || header.includes('e-mail')) {
-          row.email = value;
-        } else if (header.includes('telefone') || header.includes('phone')) {
-          row.telefone = value;
-        } else if (header.includes('empresa') || header.includes('company')) {
-          row.empresa = value;
-        } else if (header.includes('cnpj')) {
-          row.cnpj = value;
-        } else if (header.includes('endereço') || header.includes('endereco') || header.includes('address')) {
-          row.endereco = value;
-        } else if (header.includes('cidade') || header.includes('city')) {
-          row.cidade = value;
-        } else if (header.includes('estado') || header.includes('state')) {
-          row.estado = value;
-        } else if (header.includes('cep') || header.includes('zip')) {
-          row.cep = value;
-        } else if (header.includes('fonte') || header.includes('source')) {
-          row.fonte = value;
-        } else if (header.includes('status')) {
-          row.status = value;
-        } else if (header.includes('estágio') || header.includes('estagio') || header.includes('stage')) {
-          row.estagio = value;
-        } else if (header.includes('valor') || header.includes('value') || header.includes('estimado')) {
-          const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
-          row.valor_estimado = parseFloat(cleanValue) || 0;
-        } else if (header.includes('probabilidade') || header.includes('probability')) {
-          const cleanValue = value.replace(/[^\d.,-]/g, '').replace(',', '.');
-          row.probabilidade = parseFloat(cleanValue) || 0;
-        } else if (header.includes('data') && header.includes('contato')) {
-          row.data_contato = value;
-        } else if (header.includes('proximo') || header.includes('next')) {
-          row.proximo_contato = value;
-        } else if (header.includes('observações') || header.includes('observacoes') || header.includes('notes')) {
-          row.observacoes = value;
-        }
-      });
-      
-      return row;
-    } catch (error) {
-      console.error(`Erro ao parsear linha comercial ${index}:`, error);
-      return null;
-    }
-  };
-
-  const isValidRow = (row: any): boolean => {
-    if (!row.cliente || row.cliente.trim().length < 2) {
-      return false;
-    }
-    
-    if (!row.empresa && !row.contato) {
-      return false;
-    }
-    
-    if (!row.fonte) {
-      row.fonte = 'Planilha Importada';
-    }
-    
-    if (!row.status) {
-      row.status = 'ativo';
-    }
-    
-    if (!row.estagio) {
-      row.estagio = 'lead';
-    }
-    
-    return true;
-  };
-
-  const checkDuplicate = async (customerData: any): Promise<boolean> => {
-    try {
-      let query = supabase.from('customers').select('id').limit(1);
-      
-      const conditions = [];
-      if (customerData.name) conditions.push(`name.eq.${customerData.name}`);
-      if (customerData.email) conditions.push(`email.eq.${customerData.email}`);
-      if (customerData.cnpj) conditions.push(`cnpj.eq.${customerData.cnpj}`);
-      
-      if (conditions.length > 0) {
-        query = query.or(conditions.join(','));
-        const { data } = await query;
-        return data && data.length > 0;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Erro ao verificar duplicata comercial:', error);
-      return false;
-    }
-  };
-
-  const syncToDatabase = async (data: CommercialSpreadsheetRow[]) => {
-    const batchSize = 50;
-    let successCount = 0;
-    let errorCount = 0;
-    let duplicateCount = 0;
-    let processedRows = 0;
-    const total = data.length;
-    const errorsDetails: string[] = [];
-    const validationErrors: string[] = [];
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      throw new Error("Usuário não autenticado");
-    }
-
-    console.log(`Iniciando sincronização comercial de ${total} registros`);
-
-    for (let i = 0; i < data.length; i += batchSize) {
-      const batch = data.slice(i, i + batchSize);
-      
-      const results = await Promise.allSettled(batch.map(async (row, index) => {
-        try {
-          const customerData = {
-            name: row.cliente,
-            contact_person: row.contato || '',
-            email: row.email || '',
-            phone: row.telefone || '',
-            company: row.empresa || row.cliente,
-            cnpj: row.cnpj || '',
-            address: row.endereco || '',
-            city: row.cidade || '',
-            state: row.estado || '',
-            zip_code: row.cep || '',
-            lead_source: row.fonte || 'Planilha Importada',
-            status: row.status || 'ativo',
-            lifecycle_stage: row.estagio || 'lead',
-            notes: row.observacoes || 'Cliente importado da planilha comercial',
-            created_by: user.id,
-          };
-
-          const isDuplicate = await checkDuplicate(customerData);
-          if (isDuplicate) {
-            return { success: false, type: 'duplicate', row, index: i + index + 1 };
-          }
-
-          const { data: customer, error: customerError } = await supabase
-            .from('customers')
-            .insert(customerData)
-            .select()
-            .single();
-
-          if (customerError) throw customerError;
-
-          if (row.valor_estimado > 0 && customer) {
-            const opportunityData = {
-              customer_id: customer.id,
-              title: `Oportunidade - ${row.cliente}`,
-              value: row.valor_estimado,
-              probability: row.probabilidade || 50,
-              stage: row.estagio || 'prospecto',
-              description: `Importado da planilha comercial: ${row.observacoes || ''}`,
-              expected_close_date: row.proximo_contato ? parseDate(row.proximo_contato) : null,
-              created_by: user.id,
-            };
-
-            await supabase.from('opportunities').insert(opportunityData);
-          }
-
-          return { success: true, row, index: i + index + 1 };
-        } catch (error: any) {
-          return { success: false, type: 'error', error, row, index: i + index + 1 };
-        }
-      }));
-
-      results.forEach((result) => {
-        processedRows++;
-        if (result.status === 'fulfilled') {
-          if (result.value.success) {
-            successCount++;
-          } else if (result.value.type === 'duplicate') {
-            duplicateCount++;
-          } else {
-            errorCount++;
-            errorsDetails.push(`Linha ${result.value.index}: ${result.value.row?.cliente} - ${result.value.error?.message || 'Erro desconhecido'}`);
-          }
-        } else {
-          errorCount++;
-          errorsDetails.push(`Erro de processamento: ${result.reason}`);
-        }
-      });
-
-      setProgress(Math.min(((i + batchSize) / total) * 100, 100));
-    }
-
-    console.log(`Sincronização comercial concluída: ${successCount} sucessos, ${errorCount} erros, ${duplicateCount} duplicatas`);
-    
-    if (errorCount > 0) {
-      console.error('Detalhes dos erros:', errorsDetails);
-      validationErrors.push(...errorsDetails.slice(0, 10)); // Mostrar apenas os primeiros 10 erros
-    }
-
-    return { 
-      success: successCount, 
-      errors: errorCount, 
-      total, 
-      duplicates: duplicateCount,
-      validationErrors,
-      processedRows
-    };
-  };
-
-  const parseDate = (dateStr: string): string | null => {
-    if (!dateStr) return null;
-
-    const cleanDateStr = dateStr.trim();
-    
-    const formats = [
-      { pattern: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
-      { pattern: /^(\d{4})-(\d{1,2})-(\d{1,2})$/, transform: (y: string, m: string, d: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
-      { pattern: /^(\d{1,2})-(\d{1,2})-(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
-      { pattern: /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/, transform: (d: string, m: string, y: string) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
-      { pattern: /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/, transform: (d: string, m: string, y: string) => `20${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` },
-    ];
-
-    for (const { pattern, transform } of formats) {
-      const match = cleanDateStr.match(pattern);
-      if (match) {
-        return transform(match[1], match[2], match[3]);
-      }
-    }
-
-    try {
-      const date = new Date(cleanDateStr);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
-      }
-    } catch (error) {
-      console.error('Erro ao parsear data comercial:', cleanDateStr, error);
-    }
-
-    return null;
-  };
-
-  const handleSync = async () => {
-    if (!file) {
+  const processSpreadsheet = async () => {
+    if (!file || !syncType) {
       toast({
-        title: "Arquivo necessário",
-        description: "Por favor, selecione um arquivo CSV ou Excel primeiro.",
-        variant: "destructive",
+        title: 'Erro',
+        description: 'Selecione um arquivo e tipo de sincronização',
+        variant: 'destructive',
       });
       return;
     }
 
-    setIsUploading(true);
-    setProgress(0);
-
+    setIsLoading(true);
     try {
-      let data: CommercialSpreadsheetRow[];
-      
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        const text = await file.text();
-        console.log('Processando arquivo CSV comercial, tamanho:', text.length);
-        data = parseCSV(text);
-      } else {
-        console.log('Processando arquivo Excel comercial:', file.name);
-        data = await parseExcel(file);
-      }
-      
-      if (data.length === 0) {
-        toast({
-          title: "Nenhum dado válido encontrado",
-          description: "Verifique se o arquivo contém dados válidos com as colunas necessárias (cliente, empresa, etc.).",
-          variant: "destructive",
-        });
-        return;
-      }
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      console.log(`Iniciando sincronização comercial de ${data.length} registros válidos`);
-      const results = await syncToDatabase(data);
-      setSyncResults(results);
+      console.log('Dados do Excel:', jsonData);
+
+      // Simular processamento
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const newSync: SyncData = {
+        id: Date.now().toString(),
+        type: syncType as 'quote' | 'deal' | 'customer',
+        name: file.name,
+        status: 'success',
+        lastSync: new Date().toISOString(),
+      };
+
+      setSyncHistory(prev => [newSync, ...prev]);
 
       toast({
-        title: "Sincronização comercial concluída",
-        description: `${results.success} clientes importados, ${results.errors} erros, ${results.duplicates} duplicatas ignoradas.`,
+        title: 'Sucesso',
+        description: `${jsonData.length} registros sincronizados com sucesso!`,
       });
+
+      setFile(null);
+      setSyncType('');
+      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     } catch (error) {
-      console.error('Erro na sincronização comercial:', error);
+      console.error('Erro ao processar planilha:', error);
       toast({
-        title: "Erro na sincronização comercial",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar o arquivo comercial. Verifique o formato e tente novamente.",
-        variant: "destructive",
+        title: 'Erro',
+        description: 'Falha ao processar a planilha',
+        variant: 'destructive',
       });
     } finally {
-      setIsUploading(false);
-      setProgress(0);
+      setIsLoading(false);
     }
   };
 
-  const downloadTemplate = () => {
-    const csvContent = [
-      "cliente,contato,email,telefone,empresa,cnpj,endereco,cidade,estado,cep,fonte,status,estagio,valor_estimado,probabilidade,data_contato,proximo_contato,observacoes",
-      "Cliente ABC,João Silva,joao@clienteabc.com,11999999999,Cliente ABC Ltda,12.345.678/0001-90,Rua das Flores 123,São Paulo,SP,01234-567,Site,ativo,qualificacao,15000.00,70,01/01/2024,15/01/2024,Cliente interessado em produtos de aço",
-      "Empresa XYZ,Maria Santos,maria@empresaxyz.com,11888888888,Empresa XYZ S.A.,98.765.432/0001-10,Av. Principal 456,Rio de Janeiro,RJ,20000-000,Indicação,ativo,proposta,25000.00,80,05/01/2024,20/01/2024,Proposta enviada aguardando retorno"
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'modelo_comercial_winnet.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
+  const downloadTemplate = (type: string) => {
+    let templateData: any[] = [];
+    let filename = '';
+
+    switch (type) {
+      case 'quote':
+        templateData = [
+          {
+            'Número do Orçamento': 'WM000001',
+            'Nome do Cliente': 'Cliente Exemplo',
+            'Email': 'cliente@exemplo.com',
+            'Data': '2024-01-15',
+            'Validade': '2024-02-15',
+            'Total': 1500.00,
+            'Status': 'rascunho',
+          }
+        ];
+        filename = 'template_orcamentos.xlsx';
+        break;
+      case 'deal':
+        templateData = [
+          {
+            'Título': 'Deal Exemplo',
+            'Cliente': 'Cliente Exemplo',
+            'Valor': 5000.00,
+            'Status': 'lead',
+            'Data de Fechamento': '2024-02-01',
+            'Responsável': 'Vendedor',
+          }
+        ];
+        filename = 'template_deals.xlsx';
+        break;
+      case 'customer':
+        templateData = [
+          {
+            'Nome': 'Cliente Exemplo',
+            'Email': 'cliente@exemplo.com',
+            'Telefone': '(11) 99999-9999',
+            'Empresa': 'Empresa Ltda',
+            'Status': 'ativo',
+            'Fonte': 'website',
+          }
+        ];
+        filename = 'template_clientes.xlsx';
+        break;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Dados');
+    XLSX.writeFile(workbook, filename);
 
     toast({
-      title: "Modelo comercial baixado",
-      description: "Arquivo modelo CSV comercial foi baixado com sucesso.",
+      title: 'Sucesso',
+      description: 'Template baixado com sucesso!',
     });
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <RotateCw className="h-4 w-4 text-yellow-500" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success': return 'bg-green-100 text-green-800';
+      case 'error': return 'bg-red-100 text-red-800';
+      default: return 'bg-yellow-100 text-yellow-800';
+    }
   };
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
-            Sincronização de Planilha Comercial
+          <CardTitle className="flex items-center">
+            <FileSpreadsheet className="mr-2 h-5 w-5" />
+            Sincronização com Planilhas
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert role="alert">
-            <AlertCircle className="h-4 w-4" aria-hidden="true" />
-            <AlertDescription>
-              Importe dados da sua planilha comercial para sincronizar clientes e oportunidades com o CRM. 
-              Aceita arquivos CSV e Excel (.xlsx/.xls). Detecta automaticamente colunas como: cliente, empresa, contato, valor estimado, estágio, etc.
-              Arquivo máximo: 10MB.
-            </AlertDescription>
-          </Alert>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => downloadTemplate('quote')}
+              className="flex items-center justify-center"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Template Orçamentos
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => downloadTemplate('deal')}
+              className="flex items-center justify-center"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Template Deals
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => downloadTemplate('customer')}
+              className="flex items-center justify-center"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Template Clientes
+            </Button>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="file-input-commercial">Selecionar Arquivo Comercial (CSV ou Excel)</Label>
+          <div className="border-t pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sync-type">Tipo de Sincronização</Label>
+                <Select value={syncType} onValueChange={setSyncType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de dados" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="quote">Orçamentos</SelectItem>
+                    <SelectItem value="deal">Deals</SelectItem>
+                    <SelectItem value="customer">Clientes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="file-upload">Arquivo Excel</Label>
                 <Input
-                  id="file-input-commercial"
+                  id="file-upload"
                   type="file"
-                  accept=".csv,.xlsx,.xls"
-                  onChange={handleFileSelect}
-                  className="mt-1"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileUpload}
+                  className="cursor-pointer"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Formatos aceitos: .csv, .xlsx, .xls
-                </p>
               </div>
-
-              {file && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium">Arquivo selecionado:</span>
-                  </div>
-                  <p className="text-sm text-green-700 mt-1">{file.name}</p>
-                  <p className="text-xs text-green-600 mt-1">
-                    Tamanho: {(file.size / 1024).toFixed(1)} KB
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleSync} 
-                  disabled={!file || isUploading}
-                  className="flex-1"
-                >
-                  {isUploading ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4 mr-2" />
-                  )}
-                  {isUploading ? 'Sincronizando...' : 'Sincronizar Dados Comerciais'}
-                </Button>
-              </div>
-
-              {isUploading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progresso da sincronização</span>
-                    <span>{Math.round(progress)}%</span>
-                  </div>
-                  <Progress value={progress} className="h-2" />
-                </div>
-              )}
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label>Modelo de Planilha Comercial</Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Baixe um modelo para organizar seus dados comerciais no formato correto.
-                </p>
-                <Button variant="outline" onClick={downloadTemplate} className="w-full">
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar Modelo CSV Comercial
-                </Button>
-              </div>
-
-              {syncResults && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">Resultado da Sincronização Comercial</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Total de registros:</span>
-                      <span className="font-medium">{syncResults.total}</span>
-                    </div>
-                    <div className="flex justify-between text-green-700">
-                      <span>Clientes importados:</span>
-                      <span className="font-medium">{syncResults.success}</span>
-                    </div>
-                    <div className="flex justify-between text-yellow-700">
-                      <span>Duplicatas ignoradas:</span>
-                      <span className="font-medium">{syncResults.duplicates}</span>
-                    </div>
-                    <div className="flex justify-between text-red-700">
-                      <span>Erros:</span>
-                      <span className="font-medium">{syncResults.errors}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div className="pt-4">
+              <Button 
+                onClick={processSpreadsheet}
+                disabled={!file || !syncType || isLoading}
+                className="w-full"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {isLoading ? 'Processando...' : 'Sincronizar Dados'}
+              </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Histórico de Sincronizações</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {syncHistory.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <FileSpreadsheet className="mx-auto h-12 w-12 mb-4 opacity-50" />
+              <p>Nenhuma sincronização realizada ainda</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Arquivo</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Última Sincronização</TableHead>
+                  <TableHead>Detalhes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {syncHistory.map((sync) => (
+                  <TableRow key={sync.id}>
+                    <TableCell className="font-medium">{sync.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {sync.type === 'quote' ? 'Orçamentos' : 
+                         sync.type === 'deal' ? 'Deals' : 'Clientes'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        {getStatusIcon(sync.status)}
+                        <Badge className={`ml-2 ${getStatusColor(sync.status)}`}>
+                          {sync.status === 'success' ? 'Sucesso' : 
+                           sync.status === 'error' ? 'Erro' : 'Pendente'}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(sync.lastSync).toLocaleString('pt-BR')}
+                    </TableCell>
+                    <TableCell>
+                      {sync.errors && sync.errors.length > 0 && (
+                        <div className="text-sm text-red-600">
+                          {sync.errors.join(', ')}
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

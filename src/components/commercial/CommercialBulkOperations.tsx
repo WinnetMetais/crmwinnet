@@ -1,402 +1,285 @@
-
-import React, { useState, useEffect } from 'react';
-import { BulkOperations } from "@/components/shared/BulkOperations";
-import { ValidationErrorDisplay } from "@/components/shared/ValidationErrorDisplay";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Users, Building, Mail, Phone, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-
-interface Customer {
-  id: string;
-  name: string;
-  company?: string;
-  email?: string;
-  phone?: string;
-  status: string;
-  lifecycle_stage: string;
-  lead_source?: string;
-  created_at: string;
-  city?: string;
-  state?: string;
-  address?: string;
-  notes?: string;
-}
-
-interface ValidationError {
-  id: string;
-  field: string;
-  message: string;
-  severity: 'error' | 'warning' | 'info';
-  details: string;
-}
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Layers, CheckCircle } from 'lucide-react';
+import { useQuotes } from '@/hooks/useQuotes';
+import { useDeals } from '@/hooks/useDeals';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const CommercialBulkOperations = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedCustomers, setSelectedCustomers] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 20;
+  const [operationType, setOperationType] = useState('');
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { data: quotes = [] } = useQuotes();
+  const { data: deals = [] } = useDeals();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    loadCustomers();
-  }, [page]);
+  const currentData = operationType === 'quotes' ? quotes : deals;
 
-  const loadCustomers = async () => {
-    setLoading(true);
-    try {
-      const { data, error, count } = await supabase
-        .from('customers')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((page - 1) * pageSize, page * pageSize - 1);
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(currentData.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
 
-      if (error) throw error;
-      setCustomers(data || []);
-      setTotalPages(Math.ceil((count || 0) / pageSize));
-      console.log(`Carregados ${data?.length || 0} clientes para operações em massa`);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
+  const handleSelectItem = (itemId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, itemId]);
+    } else {
+      setSelectedItems(prev => prev.filter(id => id !== itemId));
+    }
+  };
+
+  const executeBulkAction = async () => {
+    if (selectedItems.length === 0 || !bulkAction || !operationType) {
       toast({
-        title: "Erro",
-        description: "Não foi possível carregar os clientes",
-        variant: "destructive",
+        title: 'Erro',
+        description: 'Selecione itens e uma ação para executar',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const tableName = operationType === 'quotes' ? 'quotes' : 'deals';
+      let updateData: any = {};
+
+      switch (bulkAction) {
+        case 'delete':
+          const { error: deleteError } = await supabase
+            .from(tableName)
+            .delete()
+            .in('id', selectedItems);
+          
+          if (deleteError) throw deleteError;
+          break;
+
+        case 'status_active':
+          updateData = { status: operationType === 'quotes' ? 'enviado' : 'ativo' };
+          break;
+
+        case 'status_inactive':
+          updateData = { status: operationType === 'quotes' ? 'expirado' : 'inativo' };
+          break;
+
+        case 'approve':
+          updateData = { 
+            status: operationType === 'quotes' ? 'aprovado' : 'won',
+            approved_at: new Date().toISOString()
+          };
+          break;
+      }
+
+      if (bulkAction !== 'delete') {
+        const { error: updateError } = await supabase
+          .from(tableName)
+          .update(updateData)
+          .in('id', selectedItems);
+        
+        if (updateError) throw updateError;
+      }
+
+      toast({
+        title: 'Sucesso',
+        description: `${selectedItems.length} itens processados com sucesso!`,
+      });
+
+      setSelectedItems([]);
+      setBulkAction('');
+    } catch (error) {
+      console.error('Erro na operação em lote:', error);
+      toast({
+        title: 'Erro',
+        description: 'Falha ao executar operação em lote',
+        variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleBulkUpdate = async (updates: { ids: string[]; updates: Partial<Customer> }) => {
-    try {
-      const { error } = await supabase
-        .from('customers')
-        .update(updates.updates)
-        .in('id', updates.ids);
-      if (error) throw error;
-      await loadCustomers();
-      toast({
-        title: "Sucesso",
-        description: "Atualização em massa concluída",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: error.message || "Falha ao atualizar clientes",
-        variant: "destructive",
-      });
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'aprovado':
+      case 'won':
+      case 'ativo':
+        return 'bg-green-100 text-green-800';
+      case 'enviado':
+      case 'pending':
+        return 'bg-blue-100 text-blue-800';
+      case 'rejeitado':
+      case 'lost':
+      case 'expirado':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
     }
-  };
-
-  const handleBulkValidate = async () => {
-    const batchSize = 100;
-    const valid: Customer[] = [];
-    const invalid: { customer: Customer; errors: Array<{ field: string; message: string; severity: string }> }[] = [];
-
-    for (let i = 0; i < customers.length; i += batchSize) {
-      const batch = customers.slice(i, i + batchSize);
-      const batchResults = await Promise.all(batch.map(async customer => ({
-        customer,
-        errors: await validateCustomer(customer),
-      })));
-      
-      batchResults.forEach(({ customer, errors }) => {
-        if (errors.length === 0) {
-          valid.push(customer);
-        } else {
-          invalid.push({ customer, errors });
-        }
-      });
-    }
-
-    // Preparar erros para exibição
-    const formattedErrors: ValidationError[] = invalid.flatMap(item => 
-      item.errors.map((error) => ({
-        id: item.customer.id,
-        field: error.field,
-        message: error.message,
-        severity: error.severity as 'error' | 'warning' | 'info',
-        details: `Cliente: ${item.customer.name}`,
-      }))
-    );
-
-    setValidationErrors(formattedErrors);
-    toast({
-      title: "Validação Concluída",
-      description: `${valid.length} válidos, ${invalid.length} com problemas`,
-    });
-    return { valid, invalid: invalid.map(i => i.customer) };
-  };
-
-  const validateCustomer = async (customer: Customer) => {
-    const errors = [];
-
-    // Validar nome
-    if (!customer.name || customer.name.trim().length < 2) {
-      errors.push({
-        field: 'nome_vazio',
-        message: 'Nome do cliente está vazio ou muito curto',
-        severity: 'error'
-      });
-    }
-
-    // Validar email
-    if (customer.email && !isValidEmail(customer.email)) {
-      errors.push({
-        field: 'email_invalido',
-        message: 'Formato de email inválido',
-        severity: 'warning'
-      });
-    }
-
-    // Validar telefone
-    if (customer.phone && !isValidPhone(customer.phone)) {
-      errors.push({
-        field: 'telefone_invalido',
-        message: 'Formato de telefone inválido',
-        severity: 'warning'
-      });
-    }
-
-    // Validar dados de teste
-    const testKeywords = ['teste', 'test', 'exemplo', 'example', 'demo'];
-    if (testKeywords.some(keyword => 
-      customer.name?.toLowerCase().includes(keyword) ||
-      customer.company?.toLowerCase().includes(keyword)
-    )) {
-      errors.push({
-        field: 'dados_teste',
-        message: 'Possível dado de teste detectado',
-        severity: 'info'
-      });
-    }
-
-    // Validar dados incompletos
-    if (!customer.email && !customer.phone) {
-      errors.push({
-        field: 'dados_incompletos',
-        message: 'Cliente sem email nem telefone de contato',
-        severity: 'warning'
-      });
-    }
-
-    return errors;
-  };
-
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const isValidPhone = (phone: string): boolean => {
-    const phoneRegex = /^[\d\s\(\)\-\+]{10,}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ''));
-  };
-
-  const handleBulkDelete = async (ids: string[]) => {
-    const { error } = await supabase
-      .from('customers')
-      .delete()
-      .in('id', ids);
-
-    if (error) throw error;
-    
-    // Recarregar dados
-    await loadCustomers();
-  };
-
-  const handleFixError = async (errorId: string) => {
-    // Implementar correção automática baseada no tipo de erro
-    console.log('Corrigindo erro para item:', errorId);
-    toast({
-      title: "Correção iniciada",
-      description: "Implementando correção automática...",
-    });
-  };
-
-  const updateFields = [
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select' as const,
-      options: [
-        { value: 'ativo', label: 'Ativo' },
-        { value: 'inativo', label: 'Inativo' },
-        { value: 'prospect', label: 'Prospect' }
-      ]
-    },
-    {
-      key: 'lifecycle_stage',
-      label: 'Estágio do Ciclo',
-      type: 'select' as const,
-      options: [
-        { value: 'lead', label: 'Lead' },
-        { value: 'prospect', label: 'Prospect' },
-        { value: 'qualificado', label: 'Qualificado' },
-        { value: 'cliente', label: 'Cliente' }
-      ]
-    },
-    {
-      key: 'lead_source',
-      label: 'Fonte do Lead',
-      type: 'text' as const
-    },
-    {
-      key: 'notes',
-      label: 'Observações',
-      type: 'text' as const
-    }
-  ];
-
-  const toggleCustomerSelection = (customerId: string) => {
-    const newSelection = new Set(selectedCustomers);
-    if (newSelection.has(customerId)) {
-      newSelection.delete(customerId);
-    } else {
-      newSelection.add(customerId);
-    }
-    setSelectedCustomers(newSelection);
   };
 
   return (
     <div className="space-y-6">
-      {/* Lista de Clientes */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Clientes Comerciais ({customers.length})
+          <CardTitle className="flex items-center">
+            <Layers className="mr-2 h-5 w-5" />
+            Operações em Lote
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">Carregando clientes...</div>
-          ) : (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {customers.map((customer) => (
-                <div
-                  key={customer.id}
-                  className="p-4 border rounded-lg hover:bg-gray-50"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        checked={selectedCustomers.has(customer.id)}
-                        onCheckedChange={() => toggleCustomerSelection(customer.id)}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{customer.name}</span>
-                          <Badge variant="outline">{customer.status}</Badge>
-                          <Badge variant="secondary">{customer.lifecycle_stage}</Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          {customer.company && (
-                            <div className="flex items-center gap-1">
-                              <Building className="h-3 w-3" />
-                              {customer.company}
-                            </div>
-                          )}
-                          {customer.email && (
-                            <div className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              {customer.email}
-                            </div>
-                          )}
-                          {customer.phone && (
-                            <div className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              {customer.phone}
-                            </div>
-                          )}
-                          <div className="text-xs">
-                            Fonte: {customer.lead_source || 'Não informado'} | 
-                            Criado: {new Date(customer.created_at).toLocaleDateString('pt-BR')}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {customers.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  Nenhum cliente encontrado
-                </div>
-              )}
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="operation-type">Tipo de Dados</Label>
+              <Select value={operationType} onValueChange={setOperationType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="quotes">Orçamentos</SelectItem>
+                  <SelectItem value="deals">Deals</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-          
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <div className="mt-4 flex justify-center">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => setPage(Math.max(1, page - 1))}
-                      className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => setPage(pageNum)}
-                          isActive={page === pageNum}
-                          className="cursor-pointer"
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-                  <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => setPage(Math.min(totalPages, page + 1))}
-                      className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+
+            <div className="space-y-2">
+              <Label htmlFor="bulk-action">Ação</Label>
+              <Select value={bulkAction} onValueChange={setBulkAction}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a ação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="status_active">Ativar</SelectItem>
+                  <SelectItem value="status_inactive">Desativar</SelectItem>
+                  <SelectItem value="approve">Aprovar</SelectItem>
+                  <SelectItem value="delete">Excluir</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-end">
+              <Button 
+                onClick={executeBulkAction}
+                disabled={selectedItems.length === 0 || !bulkAction || isLoading}
+                className="w-full"
+                variant={bulkAction === 'delete' ? 'destructive' : 'default'}
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                {isLoading ? 'Processando...' : 'Executar'}
+              </Button>
+            </div>
+          </div>
+
+          {selectedItems.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-800">
+                {selectedItems.length} item(s) selecionado(s) para {bulkAction}
+              </p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Operações em Massa */}
-      <BulkOperations
-        data={customers}
-        selectedItems={selectedCustomers}
-        onSelectionChange={setSelectedCustomers}
-        onBulkUpdate={handleBulkUpdate}
-        onBulkValidate={handleBulkValidate}
-        onBulkDelete={handleBulkDelete}
-        updateFields={updateFields}
-        moduleType="commercial"
-      />
-
-      {/* Exibição de Erros de Validação */}
-      {validationErrors.length > 0 && (
-        <ValidationErrorDisplay
-          errors={validationErrors}
-          onFixError={handleFixError}
-          moduleType="commercial"
-        />
+      {operationType && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>
+                {operationType === 'quotes' ? 'Orçamentos' : 'Deals'} 
+                ({currentData.length})
+              </span>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  checked={selectedItems.length === currentData.length && currentData.length > 0}
+                  onCheckedChange={handleSelectAll}
+                />
+                <Label className="text-sm">Selecionar todos</Label>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {currentData.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Layers className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                <p>Nenhum registro encontrado</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectedItems.length === currentData.length}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead>
+                      {operationType === 'quotes' ? 'Número' : 'Título'}
+                    </TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>
+                      {operationType === 'quotes' ? 'Total' : 'Valor'}
+                    </TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Data</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentData.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedItems.includes(item.id)}
+                          onCheckedChange={(checked) => 
+                            handleSelectItem(item.id, checked as boolean)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {operationType === 'quotes' 
+                          ? (item as any).quote_number 
+                          : (item as any).title}
+                      </TableCell>
+                      <TableCell>
+                        {operationType === 'quotes' 
+                          ? (item as any).customer_name 
+                          : (item as any).customers?.name || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        {operationType === 'quotes' 
+                          ? new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            }).format((item as any).total || 0)
+                          : new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            }).format((item as any).value || 0)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor((item as any).status)}>
+                          {(item as any).status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {new Date((item as any).created_at).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
