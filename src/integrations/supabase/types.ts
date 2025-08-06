@@ -2165,34 +2165,49 @@ export type Database = {
           contact_name: string
           created_at: string
           customer_id: string | null
+          direction: string | null
           id: string
+          is_read: boolean | null
           message: string
+          message_type: string
+          phone_number: string | null
+          received_at: string | null
           status: string
-          type: string
           updated_at: string
           user_id: string
+          whatsapp_message_id: string | null
         }
         Insert: {
           contact_name: string
           created_at?: string
           customer_id?: string | null
+          direction?: string | null
           id?: string
+          is_read?: boolean | null
           message: string
+          message_type: string
+          phone_number?: string | null
+          received_at?: string | null
           status?: string
-          type: string
           updated_at?: string
           user_id: string
+          whatsapp_message_id?: string | null
         }
         Update: {
           contact_name?: string
           created_at?: string
           customer_id?: string | null
+          direction?: string | null
           id?: string
+          is_read?: boolean | null
           message?: string
+          message_type?: string
+          phone_number?: string | null
+          received_at?: string | null
           status?: string
-          type?: string
           updated_at?: string
           user_id?: string
+          whatsapp_message_id?: string | null
         }
         Relationships: []
       }

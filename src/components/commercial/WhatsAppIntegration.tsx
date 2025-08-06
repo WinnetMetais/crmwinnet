@@ -13,10 +13,18 @@ import { toast } from "@/hooks/use-toast";
 
 interface WhatsAppMessage {
   id: string;
-  contact_name: string;
+  contact: string;
+  contact_name?: string;
   message: string;
-  type: string;
+  timestamp: string;
+  message_type: string;
+  direction: string;
   status: string;
+  customer_id?: string;
+  phone_number?: string;
+  whatsapp_message_id?: string;
+  is_read?: boolean;
+  received_at?: string;
   created_at: string;
 }
 
@@ -86,7 +94,25 @@ export const WhatsAppIntegration = () => {
         .limit(50);
 
       if (error) throw error;
-      setMessages(data || []);
+      const formattedMessages = data?.map((msg: any) => ({
+        id: msg.id,
+        contact: msg.contact_name || 'Contato não identificado',
+        message: msg.message,
+        timestamp: new Date(msg.received_at || msg.created_at).toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        message_type: msg.message_type || 'text',
+        direction: msg.direction || 'received',
+        status: msg.status,
+        customer_id: msg.customer_id,
+        phone_number: msg.phone_number,
+        whatsapp_message_id: msg.whatsapp_message_id,
+        is_read: msg.is_read,
+        received_at: msg.received_at,
+        created_at: msg.created_at
+      })) || [];
+      setMessages(formattedMessages);
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
     }
@@ -137,7 +163,8 @@ export const WhatsAppIntegration = () => {
           customer_id: selectedCustomer,
           contact_name: customer.name,
           message: messageContent,
-          type: selectedTemplate ? templates.find(t => t.id === selectedTemplate)?.type || 'custom' : 'custom',
+          message_type: 'text',
+          direction: 'sent',
           status: 'pending'
         });
 
@@ -317,7 +344,7 @@ export const WhatsAppIntegration = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <span className="font-medium">{message.contact_name}</span>
                           {getStatusBadge(message.status)}
-                          <Badge variant="outline">{message.type}</Badge>
+                          <Badge variant="outline">{message.message_type}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
                           {message.message}

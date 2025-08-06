@@ -5,9 +5,14 @@ export interface WhatsAppMessage {
   contact: string;
   message: string;
   timestamp: string;
-  type: 'sent' | 'received';
+  message_type: 'text' | 'audio' | 'image' | 'interactive' | 'button';
+  direction: 'sent' | 'received';
   status: 'delivered' | 'read' | 'pending';
   customer_id?: string;
+  phone_number?: string;
+  whatsapp_message_id?: string;
+  is_read?: boolean;
+  received_at?: string;
   created_at: string;
 }
 
@@ -32,13 +37,18 @@ export const whatsappService = {
         id: msg.id,
         contact: msg.contact_name || 'Contato não identificado',
         message: msg.message,
-        timestamp: new Date(msg.created_at).toLocaleTimeString('pt-BR', { 
+        timestamp: new Date(msg.received_at || msg.created_at).toLocaleTimeString('pt-BR', { 
           hour: '2-digit', 
           minute: '2-digit' 
         }),
-        type: msg.type,
+        message_type: msg.message_type || 'text',
+        direction: msg.direction || 'received',
         status: msg.status,
         customer_id: msg.customer_id,
+        phone_number: msg.phone_number,
+        whatsapp_message_id: msg.whatsapp_message_id,
+        is_read: msg.is_read,
+        received_at: msg.received_at,
         created_at: msg.created_at
       })) || [];
     } catch (error) {
@@ -61,7 +71,8 @@ export const whatsappService = {
         .insert({
           contact_name: data.contact,
           message: data.message,
-          type: 'sent',
+          message_type: 'text',
+          direction: 'sent',
           status: 'pending',
           customer_id: data.customer_id,
           user_id: user.id
