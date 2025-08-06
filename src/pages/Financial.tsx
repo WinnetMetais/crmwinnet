@@ -12,93 +12,107 @@ import { SpreadsheetSync } from "@/components/financial/SpreadsheetSync";
 import { DataValidationTool } from "@/components/financial/DataValidationTool";
 import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
 import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOperations";
+import { useFinancialSummary, useTransactions } from "@/hooks/useTransactions";
 
 const Financial = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const { data: financialSummary } = useFinancialSummary();
+  const { data: transactions = [] } = useTransactions();
 
-  // Dados mock para o dashboard
-  const dashboardData = {
-    totalReceitas: 186028.2,
-    totalDespesas: 31112.84,
-    saldo: 154915.36,
-    transacoes: 483
+  // Dados reais do resumo financeiro
+  const dashboardData = financialSummary ? {
+    ...financialSummary,
+    transacoes: transactions.length
+  } : {
+    totalReceitas: 0,
+    totalDespesas: 0,
+    saldo: 0,
+    transacoes: transactions.length
   };
 
-  // Dados mock para canais
-  const channelsData = {
-    site: { revenue: 86728, transactions: 265 },
-    mercadoLivre: { revenue: 64739, transactions: 193 },
-    madeiraMadeira: { revenue: 7971.67, transactions: 4 },
-    via: { revenue: 2495.42, transactions: 3 },
-    comercial: { revenue: 22093.86, transactions: 8 }
-  };
+  // Análise de canais baseada nas transações reais
+  const channelsData = React.useMemo(() => {
+    const channels: Record<string, { revenue: number; transactions: number }> = {};
+    
+    transactions.forEach(transaction => {
+      if (transaction.type === 'receita' && transaction.channel) {
+        if (!channels[transaction.channel]) {
+          channels[transaction.channel] = { revenue: 0, transactions: 0 };
+        }
+        channels[transaction.channel].revenue += Number(transaction.amount);
+        channels[transaction.channel].transactions++;
+      }
+    });
+
+    return channels;
+  }, [transactions]);
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-background">
         <DashboardSidebar />
         
         <div className="flex-1">
-          <div className="container mx-auto py-6 px-4">
+          <div className="container mx-auto py-6 px-4 max-w-7xl">
             <div className="flex items-center space-x-4 mb-6">
               <SidebarTrigger />
               <div>
-                <h1 className="text-3xl font-bold">Gestão Financeira</h1>
+                <h1 className="text-3xl font-bold text-primary">Gestão Financeira</h1>
                 <p className="text-muted-foreground">Controle completo das finanças da Winnet Metais</p>
               </div>
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-10 w-full">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="new">Nova</TabsTrigger>
-                <TabsTrigger value="cashflow">Fluxo</TabsTrigger>
-                <TabsTrigger value="expenses">Despesas</TabsTrigger>
-                <TabsTrigger value="revenue">Receitas</TabsTrigger>
-                <TabsTrigger value="channels">Canais</TabsTrigger>
-                <TabsTrigger value="spreadsheet">Planilha</TabsTrigger>
-                <TabsTrigger value="validation">Validação</TabsTrigger>
-                <TabsTrigger value="winnet">Winnet</TabsTrigger>
-                <TabsTrigger value="bulk">Operações</TabsTrigger>
+              <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full">
+                <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
+                <TabsTrigger value="new" className="text-sm">Nova</TabsTrigger>
+                <TabsTrigger value="cashflow" className="text-sm">Fluxo</TabsTrigger>
+                <TabsTrigger value="expenses" className="text-sm">Despesas</TabsTrigger>
+                <TabsTrigger value="revenue" className="text-sm">Receitas</TabsTrigger>
+                <TabsTrigger value="channels" className="text-sm">Canais</TabsTrigger>
+                <TabsTrigger value="spreadsheet" className="text-sm">Planilha</TabsTrigger>
+                <TabsTrigger value="validation" className="text-sm">Validação</TabsTrigger>
+                <TabsTrigger value="winnet" className="text-sm">Winnet</TabsTrigger>
+                <TabsTrigger value="bulk" className="text-sm">Operações</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="dashboard">
+              <TabsContent value="dashboard" className="space-y-4">
                 <FinancialDashboard data={dashboardData} />
               </TabsContent>
 
-              <TabsContent value="new">
+              <TabsContent value="new" className="space-y-4">
                 <NewTransactionForm onClose={() => setActiveTab('dashboard')} />
               </TabsContent>
 
-              <TabsContent value="cashflow">
+              <TabsContent value="cashflow" className="space-y-4">
                 <CashFlowManager />
               </TabsContent>
 
-              <TabsContent value="expenses">
+              <TabsContent value="expenses" className="space-y-4">
                 <ExpenseControl />
               </TabsContent>
 
-              <TabsContent value="revenue">
+              <TabsContent value="revenue" className="space-y-4">
                 <RevenueAnalysis />
               </TabsContent>
 
-              <TabsContent value="channels">
+              <TabsContent value="channels" className="space-y-4">
                 <ChannelAnalysis channels={channelsData} />
               </TabsContent>
 
-              <TabsContent value="spreadsheet">
+              <TabsContent value="spreadsheet" className="space-y-4">
                 <SpreadsheetSync />
               </TabsContent>
 
-              <TabsContent value="validation">
+              <TabsContent value="validation" className="space-y-4">
                 <DataValidationTool />
               </TabsContent>
 
-              <TabsContent value="winnet">
+              <TabsContent value="winnet" className="space-y-4">
                 <WinnetDataImporter />
               </TabsContent>
 
-              <TabsContent value="bulk">
+              <TabsContent value="bulk" className="space-y-4">
                 <FinancialBulkOperations />
               </TabsContent>
             </Tabs>

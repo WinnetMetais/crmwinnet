@@ -27,14 +27,14 @@ const Commercial = () => {
             </div>
 
             <Tabs defaultValue="whatsapp" className="space-y-6">
-              <TabsList className="grid grid-cols-7 w-full">
-                <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
-                <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="commission">Comissões</TabsTrigger>
-                <TabsTrigger value="goals">Metas</TabsTrigger>
-                <TabsTrigger value="negotiations">Negociações</TabsTrigger>
-                <TabsTrigger value="spreadsheet">Planilha</TabsTrigger>
-                <TabsTrigger value="bulk">Operações</TabsTrigger>
+              <TabsList className="grid grid-cols-4 lg:grid-cols-7 w-full overflow-x-auto">
+                <TabsTrigger value="whatsapp" className="text-sm">WhatsApp</TabsTrigger>
+                <TabsTrigger value="email" className="text-sm">Email</TabsTrigger>
+                <TabsTrigger value="commission" className="text-sm">Comissões</TabsTrigger>
+                <TabsTrigger value="goals" className="text-sm">Metas</TabsTrigger>
+                <TabsTrigger value="negotiations" className="text-sm">Negociações</TabsTrigger>
+                <TabsTrigger value="spreadsheet" className="text-sm">Planilha</TabsTrigger>
+                <TabsTrigger value="bulk" className="text-sm">Operações</TabsTrigger>
               </TabsList>
 
               <TabsContent value="whatsapp">
