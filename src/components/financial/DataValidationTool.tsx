@@ -291,7 +291,9 @@ export const DataValidationTool = () => {
               <Filter className="h-4 w-4" />
               <select
                 value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
+                onChange={(e) =>
+                  setFilterType(e.target.value as 'all' | 'valid' | 'invalid')
+                }
                 className="border rounded px-3 py-2"
               >
                 <option value="all">Todas</option>

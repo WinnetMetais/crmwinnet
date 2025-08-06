@@ -56,7 +56,10 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
     });
   };
 
-  const handleChange = (field: keyof CustomerFormData, value: any) => {
+  const handleChange = <K extends keyof CustomerFormData>(
+    field: K,
+    value: CustomerFormData[K]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

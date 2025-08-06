@@ -13,10 +13,26 @@ interface NewContentFormProps {
   onClose: () => void;
 }
 
+type ContentType =
+  | 'blog'
+  | 'ebook'
+  | 'infografico'
+  | 'webinar'
+  | 'video'
+  | 'podcast'
+  | 'post-social';
+type ContentObjective =
+  | 'conscientizacao'
+  | 'educacao'
+  | 'conversao'
+  | 'lead'
+  | 'autoridade'
+  | 'engajamento';
+
 export const NewContentForm = ({ onClose }: NewContentFormProps) => {
   const [title, setTitle] = useState('');
-  const [type, setType] = useState('');
-  const [objective, setObjective] = useState('');
+  const [type, setType] = useState<ContentType | ''>('');
+  const [objective, setObjective] = useState<ContentObjective | ''>('');
   const [persona, setPersona] = useState('');
   const [deadline, setDeadline] = useState('');
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -36,16 +52,15 @@ export const NewContentForm = ({ onClose }: NewContentFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aqui você implementaria a lógica para salvar o conteúdo
-    console.log({
-      title,
-      type,
-      objective,
-      persona,
-      deadline,
-      keywords,
-      notes
-    });
+    // TODO: enviar dados para API ou serviço de persistência
+    setTitle('');
+    setType('');
+    setObjective('');
+    setPersona('');
+    setDeadline('');
+    setKeywords([]);
+    setKeywordInput('');
+    setNotes('');
     onClose();
   };
 
