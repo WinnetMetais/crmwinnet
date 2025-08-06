@@ -366,9 +366,9 @@ const Performance = () => {
                           <div className="font-medium text-blue-800">Meta do Mês</div>
                           <div className="text-sm text-blue-600">85% da meta mensal atingida</div>
                         </div>
-                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
-                          <div className="font-medium text-yellow-800">Backup Agendado</div>
-                          <div className="text-sm text-yellow-600">Próximo backup em 2 horas</div>
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                          <div className="font-medium text-blue-800">Backup Agendado</div>
+                          <div className="text-sm text-blue-600">Próximo backup em 2 horas</div>
                         </div>
                       </div>
                     </CardContent>

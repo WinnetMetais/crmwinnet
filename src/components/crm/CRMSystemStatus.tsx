@@ -126,9 +126,9 @@ export const CRMSystemStatus = () => {
 
         {/* Resumo de Recomendações */}
         {checks.some(check => check.status !== 'ok') && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h5 className="font-medium text-yellow-800 mb-2">Recomendações:</h5>
-            <ul className="text-sm text-yellow-700 space-y-1">
+          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <h5 className="font-medium text-orange-800 mb-2">Recomendações:</h5>
+            <ul className="text-sm text-orange-700 space-y-1">
               {checks.filter(check => check.status === 'warning').map((check, index) => (
                 <li key={index}>• {check.module}: {check.message}</li>
               ))}

@@ -21,7 +21,7 @@ export const dealService = {
         .from('deals')
         .select(`
           *,
-          customers!deals_customer_id_fkey (
+          customers!fk_deals_customer (
             name,
             company,
             email

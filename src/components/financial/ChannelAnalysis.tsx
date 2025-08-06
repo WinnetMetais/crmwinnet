@@ -309,9 +309,9 @@ export const ChannelAnalysis = ({ channels }: ChannelAnalysisProps) => {
               </p>
             </div>
             
-            <div className="p-4 border rounded-lg bg-yellow-50">
-              <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Atenção Necessária</h4>
-              <p className="text-sm text-yellow-700">
+            <div className="p-4 border rounded-lg bg-orange-50">
+              <h4 className="font-semibold text-orange-800 mb-2">⚠️ Atenção Necessária</h4>
+              <p className="text-sm text-orange-700">
                 O canal <strong>Comercial</strong> teve queda de 11.6% este mês. 
                 Revisar estratégia de vendas B2B e identificar possíveis problemas no pipeline.
               </p>

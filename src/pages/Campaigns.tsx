@@ -329,7 +329,7 @@ const Campaigns = () => {
                               className={
                                 campaign.status === 'Ativa'
                                   ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-100"
-                                  : "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100"
+                                  : "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100"
                               }
                             >
                               {campaign.status}

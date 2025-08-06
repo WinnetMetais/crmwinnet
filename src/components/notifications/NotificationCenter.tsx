@@ -34,7 +34,7 @@ export const NotificationCenter = () => {
   const getNotificationColor = (type: string) => {
     switch (type) {
       case 'warning':
-        return 'border-l-yellow-500';
+        return 'border-l-orange-500';
       case 'success':
         return 'border-l-green-500';
       case 'info':

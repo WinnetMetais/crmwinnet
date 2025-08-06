@@ -254,7 +254,7 @@ const Products = () => {
                                     stockStatus.variant === 'default'
                                       ? 'bg-green-100 text-green-800 hover:bg-green-100'
                                       : stockStatus.variant === 'outline'
-                                      ? 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100'
+                                      ? 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100'
                                       : ''
                                   }
                                 >
