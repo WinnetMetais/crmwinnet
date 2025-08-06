@@ -117,6 +117,7 @@ export type Database = {
           created_at: string | null
           id: string
           ip_address: unknown | null
+          is_admin: boolean | null
           new_data: Json | null
           old_data: Json | null
           record_id: string | null
@@ -130,6 +131,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           ip_address?: unknown | null
+          is_admin?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
@@ -143,6 +145,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           ip_address?: unknown | null
+          is_admin?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
@@ -238,6 +241,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          is_admin: boolean
           max_sales: number
           min_sales: number
           name: string
@@ -249,6 +253,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          is_admin?: boolean
           max_sales: number
           min_sales: number
           name: string
@@ -260,6 +265,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          is_admin?: boolean
           max_sales?: number
           min_sales?: number
           name?: string
@@ -1672,6 +1678,7 @@ export type Database = {
           total: number
           unit: string
           unit_price: number
+          user_id: string | null
         }
         Insert: {
           code: string
@@ -1684,6 +1691,7 @@ export type Database = {
           total: number
           unit: string
           unit_price: number
+          user_id?: string | null
         }
         Update: {
           code?: string
@@ -1696,6 +1704,7 @@ export type Database = {
           total?: number
           unit?: string
           unit_price?: number
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -2059,7 +2068,7 @@ export type Database = {
           subcategory?: string | null
           tags?: string[] | null
           title: string
-          type: string
+          type?: string
           updated_at?: string | null
           user_id: string
           validation_errors?: Json | null
