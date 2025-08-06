@@ -12,6 +12,7 @@ import { LoadingFallback } from "@/components/layout/LoadingFallback";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { GlobalKeyboardShortcuts } from "@/components/shared/GlobalKeyboardShortcuts";
 import { routes, contentRoutes, campaignRoutes, NotFound } from "@/config/routes";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Configuração otimizada do QueryClient para Supabase
 const queryClient = new QueryClient({
@@ -48,11 +49,28 @@ function App() {
                     {/* Main routes */}
                     {routes.map((route) => {
                       const Component = route.element;
+                      const isAuthRoute = route.path === '/auth';
+                      const isIndexRoute = route.path === '/';
+                      
+                      if (isAuthRoute || isIndexRoute) {
+                        return (
+                          <Route 
+                            key={route.path} 
+                            path={route.path} 
+                            element={<Component />} 
+                          />
+                        );
+                      }
+                      
                       return (
                         <Route 
                           key={route.path} 
                           path={route.path} 
-                          element={<Component />} 
+                          element={
+                            <ProtectedRoute>
+                              <Component />
+                            </ProtectedRoute>
+                          } 
                         />
                       );
                     })}

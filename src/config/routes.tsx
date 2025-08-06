@@ -4,6 +4,7 @@ const { lazy } = React;
 // Lazy loading para melhor performance
 const Index = lazy(() => import('@/pages/Index'));
 const Auth = lazy(() => import('@/pages/Auth'));
+const ProtectedRoute = lazy(() => import('@/components/ProtectedRoute'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const Financial = lazy(() => import('@/pages/Financial'));
 const Customers = lazy(() => import('@/pages/Customers'));

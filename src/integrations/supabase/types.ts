@@ -955,6 +955,30 @@ export type Database = {
           },
         ]
       }
+      departments: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       integration_logs: {
         Row: {
           action: string
@@ -2133,6 +2157,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permissions_new: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission: Database["public"]["Enums"]["permission_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission: Database["public"]["Enums"]["permission_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["permission_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
@@ -2238,7 +2283,15 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      permission_type:
+        | "vendas"
+        | "clientes"
+        | "relatórios"
+        | "estoque"
+        | "financeiro"
+        | "configurações"
+        | "marketing"
+        | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2365,6 +2418,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      permission_type: [
+        "vendas",
+        "clientes",
+        "relatórios",
+        "estoque",
+        "financeiro",
+        "configurações",
+        "marketing",
+        "admin",
+      ],
+    },
   },
 } as const
