@@ -13,6 +13,7 @@ export const SimpleWhatsAppSetup = () => {
 
   const generateQRCode = async () => {
     setConnectionStatus('connecting');
+    setQrCode(null);
     
     console.log('Iniciando geração do QR Code...');
     
@@ -76,18 +77,18 @@ export const SimpleWhatsAppSetup = () => {
           description: "Falha ao gerar o QR Code. Tente novamente.",
           variant: "destructive"
         });
+        return;
       }
-      
-      // Simular conexão após 10 segundos
-      setTimeout(() => {
-        setConnectionStatus('connected');
-        console.log('Simulando conexão estabelecida');
-        toast({
-          title: "WhatsApp Conectado!",
-          description: "Seu WhatsApp foi conectado com sucesso ao CRM.",
-        });
-      }, 10000);
-    }, 2000);
+    }, 1000);
+  };
+
+  const simulateConnection = () => {
+    setConnectionStatus('connected');
+    console.log('Simulando conexão estabelecida');
+    toast({
+      title: "WhatsApp Conectado!",
+      description: "Seu WhatsApp foi conectado com sucesso ao CRM.",
+    });
   };
 
   const disconnect = () => {
@@ -167,6 +168,9 @@ export const SimpleWhatsAppSetup = () => {
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                       Aguardando conexão...
                     </div>
+                    <Button onClick={simulateConnection} variant="outline" size="sm">
+                      Simular Conexão (Teste)
+                    </Button>
                   </>
                 )}
 
