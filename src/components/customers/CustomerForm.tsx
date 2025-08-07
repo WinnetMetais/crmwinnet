@@ -57,49 +57,115 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
             {mode === 'create' ? 'Cadastro de Cliente' : 'Editar Cliente'}
           </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Preencha as informações do cliente. Clique em salvar quando finalizar.
+          </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
-            <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
-                <TabsTrigger value="contact">Contato</TabsTrigger>
-                <TabsTrigger value="commercial">Comercial</TabsTrigger>
-                <TabsTrigger value="additional">Adicional</TabsTrigger>
-              </TabsList>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Primeira linha - Nome e Email */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="Digite o nome completo"
+                  required
+                  className="border-yellow-400 focus:border-yellow-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  placeholder="Digite o email"
+                />
+              </div>
+            </div>
 
-              <TabsContent value="basic" className="space-y-6 mt-6">
+            {/* Segunda linha - Telefone e Empresa */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  placeholder="Digite o telefone"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="company">Empresa</Label>
+                <Input
+                  id="company"
+                  value={formData.company}
+                  onChange={(e) => handleChange('company', e.target.value)}
+                  placeholder="Digite o nome da empresa"
+                />
+              </div>
+            </div>
 
-                {/* Informações Principais */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nome/Razão Social *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleChange('name', e.target.value)}
-                      placeholder="Nome completo ou razão social"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Nome Fantasia</Label>
-                    <Input
-                      id="company"
-                      value={formData.company}
-                      onChange={(e) => handleChange('company', e.target.value)}
-                      placeholder="Nome fantasia da empresa"
-                    />
-                  </div>
-                </div>
+            {/* Terceira linha - Endereço completo */}
+            <div className="space-y-2">
+              <Label htmlFor="address">Endereço</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => handleChange('address', e.target.value)}
+                placeholder="Digite o endereço completo"
+              />
+            </div>
 
+            {/* Quarta linha - Cidade, Estado e CEP */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">Cidade</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  placeholder="Digite a cidade"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">Estado</Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => handleChange('state', e.target.value)}
+                  placeholder="UF"
+                  maxLength={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="zip_code">CEP</Label>
+                <Input
+                  id="zip_code"
+                  value={formData.zip_code}
+                  onChange={(e) => handleChange('zip_code', e.target.value)}
+                  placeholder="00000-000"
+                />
+              </div>
+            </div>
+
+            {/* Campos adicionais em collapse */}
+            <details className="border rounded-lg p-4">
+              <summary className="cursor-pointer font-medium text-sm">
+                Informações Adicionais (Clique para expandir)
+              </summary>
+              <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cnpj">CNPJ/CPF</Label>
@@ -108,84 +174,6 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                       value={formData.cnpj}
                       onChange={(e) => handleChange('cnpj', e.target.value)}
                       placeholder="XX.XXX.XXX/XXXX-XX"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="social_reason">Razão Social</Label>
-                    <Input
-                      id="social_reason"
-                      value={formData.social_reason}
-                      onChange={(e) => handleChange('social_reason', e.target.value)}
-                      placeholder="Razão social da empresa"
-                    />
-                  </div>
-                </div>
-
-                {/* Endereço */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Endereço
-                  </h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Endereço Completo</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => handleChange('address', e.target.value)}
-                      placeholder="Rua, Avenida, número, complemento"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">Cidade</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => handleChange('city', e.target.value)}
-                        placeholder="Nome da cidade"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">Estado</Label>
-                      <Input
-                        id="state"
-                        value={formData.state}
-                        onChange={(e) => handleChange('state', e.target.value)}
-                        placeholder="UF"
-                        maxLength={2}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zip_code">CEP</Label>
-                      <Input
-                        id="zip_code"
-                        value={formData.zip_code}
-                        onChange={(e) => handleChange('zip_code', e.target.value)}
-                        placeholder="XXXXX-XXX"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="contact" className="space-y-6 mt-6">
-                <h3 className="text-lg font-medium flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Informações de Contato
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">E-mail</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleChange('email', e.target.value)}
-                      placeholder="email@empresa.com"
                     />
                   </div>
                   <div className="space-y-2">
@@ -201,12 +189,12 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone</Label>
+                    <Label htmlFor="contact_person">Pessoa de Contato</Label>
                     <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => handleChange('phone', e.target.value)}
-                      placeholder="(11) 99999-9999"
+                      id="contact_person"
+                      value={formData.contact_person}
+                      onChange={(e) => handleChange('contact_person', e.target.value)}
+                      placeholder="Nome do responsável"
                     />
                   </div>
                   <div className="space-y-2">
@@ -219,23 +207,6 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                     />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="contact_person">Pessoa de Contato</Label>
-                  <Input
-                    id="contact_person"
-                    value={formData.contact_person}
-                    onChange={(e) => handleChange('contact_person', e.target.value)}
-                    placeholder="Nome do responsável"
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="commercial" className="space-y-6 mt-6">
-                <h3 className="text-lg font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Informações Comerciais
-                </h3>
 
                 <div className="space-y-2">
                   <Label htmlFor="status">Status *</Label>
@@ -252,31 +223,26 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                     </SelectContent>
                   </Select>
                 </div>
-              </TabsContent>
+              </div>
+            </details>
 
-              <TabsContent value="additional" className="space-y-6 mt-6">
-                <h3 className="text-lg font-medium flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Informações Adicionais
-                </h3>
+            {/* Observações */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">Observações</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => handleChange('notes', e.target.value)}
+                placeholder="Informações adicionais sobre o cliente..."
+                rows={4}
+                className="border-yellow-400 focus:border-yellow-500"
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Observações</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => handleChange('notes', e.target.value)}
-                    placeholder="Informações adicionais sobre o cliente, preferências, histórico, etc..."
-                    rows={5}
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
-
-            <div className="flex gap-3 mt-8 pt-6 border-t">
+            <div className="flex gap-3 pt-6 border-t">
               <Button type="submit" className="flex-1">
                 <User className="h-4 w-4 mr-2" />
-                {mode === 'create' ? 'Cadastrar Cliente' : 'Atualizar Cliente'}
+                {mode === 'create' ? 'Salvar Cliente' : 'Atualizar Cliente'}
               </Button>
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancelar
