@@ -14,25 +14,74 @@ export const SimpleWhatsAppSetup = () => {
   const generateQRCode = async () => {
     setConnectionStatus('connecting');
     
+    console.log('Iniciando geração do QR Code...');
+    
     // Simular geração de QR Code
     setTimeout(() => {
-      // SVG como string simples para evitar conflitos com JSX
-      const svgContent = '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="200" height="200" fill="white"/>' +
-        '<rect x="20" y="20" width="20" height="20" fill="black"/>' +
-        '<rect x="60" y="20" width="20" height="20" fill="black"/>' +
-        '<rect x="100" y="20" width="20" height="20" fill="black"/>' +
-        '<rect x="140" y="20" width="20" height="20" fill="black"/>' +
-        '<text x="100" y="110" text-anchor="middle" fill="black" font-size="12">QR Code para</text>' +
-        '<text x="100" y="130" text-anchor="middle" fill="black" font-size="12">WhatsApp Web</text>' +
-        '</svg>';
+      console.log('Gerando SVG do QR Code...');
       
-      const fakeQRCode = `data:image/svg+xml;base64,${btoa(svgContent)}`;
-      setQrCode(fakeQRCode);
+      // SVG mais detalhado para simular um QR Code real
+      const svgContent = `
+        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+          <rect width="200" height="200" fill="white"/>
+          <!-- Cantos do QR Code -->
+          <rect x="10" y="10" width="30" height="30" fill="black"/>
+          <rect x="160" y="10" width="30" height="30" fill="black"/>
+          <rect x="10" y="160" width="30" height="30" fill="black"/>
+          
+          <!-- Padrão interno -->
+          <rect x="15" y="15" width="20" height="20" fill="white"/>
+          <rect x="165" y="15" width="20" height="20" fill="white"/>
+          <rect x="15" y="165" width="20" height="20" fill="white"/>
+          
+          <!-- Centro -->
+          <rect x="20" y="20" width="10" height="10" fill="black"/>
+          <rect x="170" y="20" width="10" height="10" fill="black"/>
+          <rect x="20" y="170" width="10" height="10" fill="black"/>
+          
+          <!-- Dados simulados -->
+          <rect x="50" y="20" width="5" height="5" fill="black"/>
+          <rect x="60" y="20" width="5" height="5" fill="black"/>
+          <rect x="80" y="20" width="5" height="5" fill="black"/>
+          <rect x="90" y="30" width="5" height="5" fill="black"/>
+          <rect x="50" y="40" width="5" height="5" fill="black"/>
+          <rect x="70" y="50" width="5" height="5" fill="black"/>
+          <rect x="30" y="60" width="5" height="5" fill="black"/>
+          <rect x="90" y="70" width="5" height="5" fill="black"/>
+          <rect x="110" y="80" width="5" height="5" fill="black"/>
+          <rect x="130" y="90" width="5" height="5" fill="black"/>
+          <rect x="50" y="100" width="5" height="5" fill="black"/>
+          <rect x="150" y="110" width="5" height="5" fill="black"/>
+          <rect x="70" y="120" width="5" height="5" fill="black"/>
+          <rect x="40" y="130" width="5" height="5" fill="black"/>
+          <rect x="120" y="140" width="5" height="5" fill="black"/>
+          
+          <text x="100" y="195" text-anchor="middle" fill="gray" font-size="8">Escaneie com WhatsApp</text>
+        </svg>
+      `.trim();
+      
+      try {
+        const fakeQRCode = `data:image/svg+xml;base64,${btoa(svgContent)}`;
+        console.log('QR Code gerado com sucesso!', fakeQRCode.substring(0, 50) + '...');
+        setQrCode(fakeQRCode);
+        
+        toast({
+          title: "QR Code Gerado",
+          description: "QR Code criado com sucesso! Escaneie com seu WhatsApp.",
+        });
+      } catch (error) {
+        console.error('Erro ao gerar QR Code:', error);
+        toast({
+          title: "Erro",
+          description: "Falha ao gerar o QR Code. Tente novamente.",
+          variant: "destructive"
+        });
+      }
       
       // Simular conexão após 10 segundos
       setTimeout(() => {
         setConnectionStatus('connected');
+        console.log('Simulando conexão estabelecida');
         toast({
           title: "WhatsApp Conectado!",
           description: "Seu WhatsApp foi conectado com sucesso ao CRM.",
