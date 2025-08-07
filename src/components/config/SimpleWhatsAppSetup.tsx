@@ -16,17 +16,18 @@ export const SimpleWhatsAppSetup = () => {
     
     // Simular geração de QR Code
     setTimeout(() => {
-      const fakeQRCode = `data:image/svg+xml;base64,${btoa(`
-        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-          <rect width="200" height="200" fill="white"/>
-          <rect x="20" y="20" width="20" height="20" fill="black"/>
-          <rect x="60" y="20" width="20" height="20" fill="black"/>
-          <rect x="100" y="20" width="20" height="20" fill="black"/>
-          <rect x="140" y="20" width="20" height="20" fill="black"/>
-          <text x="100" y="110" text-anchor="middle" fill="black" font-size="12">QR Code para</text>
-          <text x="100" y="130" text-anchor="middle" fill="black" font-size="12">WhatsApp Web</text>
-        </svg>
-      `)}`;
+      // SVG como string simples para evitar conflitos com JSX
+      const svgContent = '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="200" height="200" fill="white"/>' +
+        '<rect x="20" y="20" width="20" height="20" fill="black"/>' +
+        '<rect x="60" y="20" width="20" height="20" fill="black"/>' +
+        '<rect x="100" y="20" width="20" height="20" fill="black"/>' +
+        '<rect x="140" y="20" width="20" height="20" fill="black"/>' +
+        '<text x="100" y="110" text-anchor="middle" fill="black" font-size="12">QR Code para</text>' +
+        '<text x="100" y="130" text-anchor="middle" fill="black" font-size="12">WhatsApp Web</text>' +
+        '</svg>';
+      
+      const fakeQRCode = `data:image/svg+xml;base64,${btoa(svgContent)}`;
       setQrCode(fakeQRCode);
       
       // Simular conexão após 10 segundos
