@@ -2718,6 +2718,14 @@ export type Database = {
         Args: { customer_id: string }
         Returns: number
       }
+      check_failed_auth_attempts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_email: string
+          attempt_count: number
+          last_attempt: string
+        }[]
+      }
       get_advanced_statistics: {
         Args: { start_date?: string; end_date?: string }
         Returns: Json
