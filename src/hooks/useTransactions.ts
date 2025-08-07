@@ -7,6 +7,8 @@ export const useTransactions = () => {
   return useQuery({
     queryKey: ['transactions'],
     queryFn: transactionService.getTransactions,
+    refetchInterval: 30000, // Atualiza a cada 30 segundos
+    staleTime: 10000, // Considera dados obsoletos após 10 segundos
   });
 };
 
@@ -14,6 +16,8 @@ export const useTransactionsByType = (type: 'receita' | 'despesa') => {
   return useQuery({
     queryKey: ['transactions', type],
     queryFn: () => transactionService.getTransactionsByType(type),
+    refetchInterval: 30000, // Atualiza a cada 30 segundos
+    staleTime: 10000, // Considera dados obsoletos após 10 segundos
   });
 };
 
@@ -21,6 +25,8 @@ export const useFinancialSummary = () => {
   return useQuery({
     queryKey: ['financial-summary'],
     queryFn: transactionService.getFinancialSummary,
+    refetchInterval: 30000, // Atualiza a cada 30 segundos
+    staleTime: 10000, // Considera dados obsoletos após 10 segundos
   });
 };
 

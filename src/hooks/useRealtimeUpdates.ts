@@ -86,6 +86,8 @@ export const useRealtimeUpdates = () => {
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['transactions'] });
+          queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
+          console.log('Transactions updated via realtime');
         }
       )
       .subscribe();

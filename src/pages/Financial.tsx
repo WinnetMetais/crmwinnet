@@ -16,11 +16,15 @@ import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOpe
 import { TransactionsList } from "@/components/financial/TransactionsList";
 import { CreateSampleData } from "@/components/financial/CreateSampleData";
 import { useFinancialSummary, useTransactions } from "@/hooks/useTransactions";
+import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 
 const Financial = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { data: financialSummary } = useFinancialSummary();
-  const { data: transactions = [] } = useTransactions();
+  const { data: financialSummary, isLoading: isSummaryLoading } = useFinancialSummary();
+  const { data: transactions = [], isLoading: isTransactionsLoading } = useTransactions();
+  
+  // Ativa atualizações em tempo real
+  useRealtimeUpdates();
 
   // Dados reais do resumo financeiro
   const dashboardData = financialSummary ? {
