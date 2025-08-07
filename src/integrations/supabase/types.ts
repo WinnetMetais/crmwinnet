@@ -2733,6 +2733,10 @@ export type Database = {
         Args: { start_date?: string; end_date?: string }
         Returns: Json
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       validate_deal_data: {
         Args: { deal_id: string }
         Returns: Json
