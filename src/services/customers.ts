@@ -70,114 +70,57 @@ export async function getCustomerById(id: string) {
   }
 }
 
-export async function createCustomer(customer: Omit<Customer, 'id'>) {
-  try {
-    const { data, error } = await supabase
-      .from('customers')
-      .insert(customer)
-      .select()
-      .single();
-      
-    if (error) throw error;
-    
-    toast({
-      title: "Cliente criado",
-      description: "O cliente foi criado com sucesso.",
-    });
-
-    // Enviar notificação para o sistema
-    await supabase.from('notifications').insert({
-      type: 'success',
-      title: 'Novo Cliente Cadastrado',
-      message: `Cliente ${customer.name} foi cadastrado com sucesso.`,
-      user_id: '', // Será preenchido pelo backend baseado no auth
-      metadata: { module: 'customers', customerId: data.id }
-    });
-    
-    return data;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao criar cliente",
-      description: error.message,
-      variant: "destructive",
-    });
-    return null;
+export async function createCustomer(customerData: Omit<Customer, "id" | "created_at" | "updated_at">): Promise<Customer> {
+  const { data: user } = await supabase.auth.getUser();
+  
+  if (!user?.user?.id) {
+    throw new Error("Usuário não autenticado");
   }
+
+  const { data, error } = await supabase
+    .from("customers")
+    .insert([{
+      ...customerData,
+      created_by: user.user.id,
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating customer:", error);
+    throw new Error("Erro ao criar cliente: " + error.message);
+  }
+
+  return data;
 }
 
-export async function updateCustomer(id: string, customer: Partial<Customer>) {
-  try {
-    const { data, error } = await supabase
-      .from('customers')
-      .update(customer)
-      .eq('id', id)
-      .select()
-      .single();
-      
-    if (error) throw error;
-    
-    toast({
-      title: "Cliente atualizado",
-      description: "O cliente foi atualizado com sucesso.",
-    });
+export async function updateCustomer(id: string, customerData: Partial<Customer>): Promise<Customer> {
+  const { data, error } = await supabase
+    .from("customers")
+    .update({
+      ...customerData,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
 
-    // Enviar notificação para o sistema
-    await supabase.from('notifications').insert({
-      type: 'info',
-      title: 'Cliente Atualizado',
-      message: `Dados do cliente ${data.name} foram atualizados.`,
-      user_id: '', // Será preenchido pelo backend baseado no auth
-      metadata: { module: 'customers', customerId: id }
-    });
-    
-    return data;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao atualizar cliente",
-      description: error.message,
-      variant: "destructive",
-    });
-    return null;
+  if (error) {
+    console.error("Error updating customer:", error);
+    throw new Error("Erro ao atualizar cliente: " + error.message);
   }
+
+  return data;
 }
 
-export async function deleteCustomer(id: string) {
-  try {
-    // Buscar dados do cliente antes de deletar
-    const { data: customerData } = await supabase
-      .from('customers')
-      .select('name')
-      .eq('id', id)
-      .single();
+export async function deleteCustomer(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("customers")
+    .delete()
+    .eq("id", id);
 
-    const { error } = await supabase
-      .from('customers')
-      .delete()
-      .eq('id', id);
-      
-    if (error) throw error;
-    
-    toast({
-      title: "Cliente removido",
-      description: "O cliente foi removido com sucesso.",
-    });
-
-    // Enviar notificação para o sistema
-    await supabase.from('notifications').insert({
-      type: 'warning',
-      title: 'Cliente Removido',
-      message: `Cliente ${customerData?.name || 'Desconhecido'} foi removido do sistema.`,
-      user_id: '', // Será preenchido pelo backend baseado no auth
-      metadata: { module: 'customers', customerId: id }
-    });
-    
-    return true;
-  } catch (error: any) {
-    toast({
-      title: "Erro ao remover cliente",
-      description: error.message,
-      variant: "destructive",
-    });
-    return false;
+  if (error) {
+    console.error("Error deleting customer:", error);
+    throw new Error("Erro ao excluir cliente: " + error.message);
   }
 }

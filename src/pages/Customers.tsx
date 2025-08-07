@@ -9,11 +9,16 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle, Search, Filter, Download, Mail, Phone, Building, MapPin, Trash2, Edit, MoreHorizontal } from "lucide-react";
-import { Customer, getCustomers, createCustomer } from "@/services/customers";
+import { Customer, getCustomers, createCustomer, updateCustomer, deleteCustomer } from "@/services/customers";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 const Customers = () => {
   const [open, setOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [deletingCustomer, setDeletingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [newCustomer, setNewCustomer] = useState({
     name: "",
@@ -30,6 +35,7 @@ const Customers = () => {
   });
 
   const queryClient = useQueryClient();
+  useRealtimeUpdates(); // Enable real-time updates
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],
@@ -42,6 +48,55 @@ const Customers = () => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       setOpen(false);
       resetForm();
+      toast({
+        title: "Cliente criado",
+        description: "Cliente cadastrado com sucesso!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao criar cliente: " + error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateCustomerMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Customer> }) => updateCustomer(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      setEditingCustomer(null);
+      toast({
+        title: "Cliente atualizado",
+        description: "Cliente atualizado com sucesso!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar cliente: " + error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCustomerMutation = useMutation({
+    mutationFn: deleteCustomer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      setDeletingCustomer(null);
+      toast({
+        title: "Cliente excluído",
+        description: "Cliente excluído com sucesso!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir cliente: " + error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -68,7 +123,39 @@ const Customers = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createCustomerMutation.mutate(newCustomer);
+    if (editingCustomer) {
+      updateCustomerMutation.mutate({ id: editingCustomer.id, data: newCustomer });
+    } else {
+      createCustomerMutation.mutate(newCustomer);
+    }
+  };
+
+  const handleEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setNewCustomer({
+      name: customer.name,
+      email: customer.email || '',
+      phone: customer.phone || '',
+      company: customer.company || '',
+      address: customer.address || '',
+      city: customer.city || '',
+      state: customer.state || '',
+      zip_code: customer.zip_code || '',
+      notes: customer.notes || '',
+      lead_source: customer.lead_source || '',
+      website: customer.website || '',
+    });
+    setOpen(true);
+  };
+
+  const handleDelete = (customer: Customer) => {
+    setDeletingCustomer(customer);
+  };
+
+  const confirmDelete = () => {
+    if (deletingCustomer) {
+      deleteCustomerMutation.mutate(deletingCustomer.id);
+    }
   };
 
   const filteredCustomers = customers.filter((customer: Customer) => 
@@ -92,7 +179,13 @@ const Customers = () => {
               
               <div className="flex items-center gap-2">
                 <SidebarTrigger />
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={open} onOpenChange={(open) => {
+                  setOpen(open);
+                  if (!open) {
+                    setEditingCustomer(null);
+                    resetForm();
+                  }
+                }}>
                   <DialogTrigger asChild>
                     <Button>
                       <PlusCircle className="mr-2 h-4 w-4" />
@@ -102,7 +195,7 @@ const Customers = () => {
                   <DialogContent className="sm:max-w-[600px]">
                     <form onSubmit={handleSubmit}>
                       <DialogHeader>
-                        <DialogTitle>Adicionar Novo Cliente</DialogTitle>
+                        <DialogTitle>{editingCustomer ? 'Editar Cliente' : 'Adicionar Novo Cliente'}</DialogTitle>
                         <DialogDescription>
                           Preencha as informações do cliente. Clique em salvar quando finalizar.
                         </DialogDescription>
@@ -208,9 +301,12 @@ const Customers = () => {
                         </Button>
                         <Button 
                           type="submit" 
-                          disabled={createCustomerMutation.isPending}
+                          disabled={createCustomerMutation.isPending || updateCustomerMutation.isPending}
                         >
-                          {createCustomerMutation.isPending ? "Salvando..." : "Salvar Cliente"}
+                          {(createCustomerMutation.isPending || updateCustomerMutation.isPending) 
+                            ? "Salvando..." 
+                            : editingCustomer ? "Atualizar Cliente" : "Salvar Cliente"
+                          }
                         </Button>
                       </DialogFooter>
                     </form>
@@ -325,10 +421,10 @@ const Customers = () => {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button size="icon" variant="ghost">
+                                <Button size="icon" variant="ghost" onClick={() => handleEdit(customer)}>
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button size="icon" variant="ghost">
+                                <Button size="icon" variant="ghost" onClick={() => handleDelete(customer)}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                                 <Button size="icon" variant="ghost">
@@ -344,6 +440,28 @@ const Customers = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deletingCustomer} onOpenChange={() => setDeletingCustomer(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir o cliente "{deletingCustomer?.name}"? 
+                    Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={confirmDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

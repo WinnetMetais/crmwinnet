@@ -13,8 +13,10 @@ import { NewOpportunityForm } from "@/components/sales/NewOpportunityForm";
 import { OpportunityFormModal } from "@/components/sales/OpportunityFormModal";
 import { CustomerFormModal } from "@/components/customers/CustomerFormModal";
 import { DealEditModal } from "@/components/sales/DealEditModal";
+import { OpportunitiesRealtime } from "@/components/sales/OpportunitiesRealtime";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createDeal } from "@/services/pipeline";
+import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 
 const Sales = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -24,6 +26,7 @@ const Sales = () => {
   const [showOpportunityModal, setShowOpportunityModal] = useState(false);
 
   const queryClient = useQueryClient();
+  useRealtimeUpdates(); // Enable real-time updates for sales
 
   const createDealMutation = useMutation({
     mutationFn: createDeal,
@@ -105,33 +108,7 @@ const Sales = () => {
                   </Card>
 
                   <Card className="md:col-span-2">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-medium">Principais Oportunidades</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-[300px] overflow-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="text-left border-b">
-                              <th className="pb-2">Cliente</th>
-                              <th className="pb-2">Valor</th>
-                              <th className="pb-2">Probabilidade</th>
-                              <th className="pb-2">Estágio</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {[1, 2, 3, 4, 5].map(i => (
-                              <tr key={i} className="border-b">
-                                <td className="py-3">Cliente {i}</td>
-                                <td className="py-3">R$ {(Math.random() * 10000).toFixed(2)}</td>
-                                <td className="py-3">{Math.floor(Math.random() * 100)}%</td>
-                                <td className="py-3">{["Qualificação", "Proposta", "Negociação", "Fechamento"][Math.floor(Math.random() * 4)]}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
+                    <OpportunitiesRealtime />
                   </Card>
                 </div>
               </TabsContent>
