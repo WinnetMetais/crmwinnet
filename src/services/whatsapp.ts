@@ -25,13 +25,22 @@ export interface WhatsAppContact {
 export const whatsappService = {
   async getMessages(): Promise<WhatsAppMessage[]> {
     try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('Auth error:', authError);
+        return [];
+      }
+
       const { data, error } = await supabase
-        .from('whatsapp_messages' as any)
+        .from('whatsapp_messages')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching messages:', error);
+        throw error;
+      }
 
       return data?.map((msg: any) => ({
         id: msg.id,
@@ -63,22 +72,30 @@ export const whatsappService = {
     customer_id?: string;
   }): Promise<void> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('Auth error:', authError);
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Sending WhatsApp message for user:', user.id);
 
       const { error } = await supabase
-        .from('whatsapp_messages' as any)
+        .from('whatsapp_messages')
         .insert({
+          user_id: user.id,
           contact_name: data.contact,
           message: data.message,
           message_type: 'text',
           direction: 'sent',
           status: 'pending',
-          customer_id: data.customer_id,
-          user_id: user.id
+          customer_id: data.customer_id
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
 
       // Here you would integrate with actual WhatsApp API
       // For now, simulate API call
