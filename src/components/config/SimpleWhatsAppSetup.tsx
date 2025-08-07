@@ -4,90 +4,49 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, QrCode, Smartphone, Zap, CheckCircle, ArrowRight } from "lucide-react";
+import { MessageSquare, QrCode, Smartphone, Zap, CheckCircle, ArrowRight, Webhook, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const SimpleWhatsAppSetup = () => {
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [webhookUrl, setWebhookUrl] = useState('');
 
+  // Gerar QR Code usando uma biblioteca online
   const generateQRCode = async () => {
     setConnectionStatus('connecting');
     setQrCode(null);
     
-    console.log('Iniciando geração do QR Code...');
+    console.log('Gerando QR Code...');
     
-    // Simular geração de QR Code
-    setTimeout(() => {
-      console.log('Gerando SVG do QR Code...');
+    try {
+      // Usar QR Server API para gerar um QR Code real
+      const qrText = `https://wa.me/qr/DEMO${Date.now()}`;
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrText)}`;
       
-      // SVG mais detalhado para simular um QR Code real
-      const svgContent = `
-        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-          <rect width="200" height="200" fill="white"/>
-          <!-- Cantos do QR Code -->
-          <rect x="10" y="10" width="30" height="30" fill="black"/>
-          <rect x="160" y="10" width="30" height="30" fill="black"/>
-          <rect x="10" y="160" width="30" height="30" fill="black"/>
-          
-          <!-- Padrão interno -->
-          <rect x="15" y="15" width="20" height="20" fill="white"/>
-          <rect x="165" y="15" width="20" height="20" fill="white"/>
-          <rect x="15" y="165" width="20" height="20" fill="white"/>
-          
-          <!-- Centro -->
-          <rect x="20" y="20" width="10" height="10" fill="black"/>
-          <rect x="170" y="20" width="10" height="10" fill="black"/>
-          <rect x="20" y="170" width="10" height="10" fill="black"/>
-          
-          <!-- Dados simulados -->
-          <rect x="50" y="20" width="5" height="5" fill="black"/>
-          <rect x="60" y="20" width="5" height="5" fill="black"/>
-          <rect x="80" y="20" width="5" height="5" fill="black"/>
-          <rect x="90" y="30" width="5" height="5" fill="black"/>
-          <rect x="50" y="40" width="5" height="5" fill="black"/>
-          <rect x="70" y="50" width="5" height="5" fill="black"/>
-          <rect x="30" y="60" width="5" height="5" fill="black"/>
-          <rect x="90" y="70" width="5" height="5" fill="black"/>
-          <rect x="110" y="80" width="5" height="5" fill="black"/>
-          <rect x="130" y="90" width="5" height="5" fill="black"/>
-          <rect x="50" y="100" width="5" height="5" fill="black"/>
-          <rect x="150" y="110" width="5" height="5" fill="black"/>
-          <rect x="70" y="120" width="5" height="5" fill="black"/>
-          <rect x="40" y="130" width="5" height="5" fill="black"/>
-          <rect x="120" y="140" width="5" height="5" fill="black"/>
-          
-          <text x="100" y="195" text-anchor="middle" fill="gray" font-size="8">Escaneie com WhatsApp</text>
-        </svg>
-      `.trim();
+      setQrCode(qrCodeUrl);
       
-      try {
-        const fakeQRCode = `data:image/svg+xml;base64,${btoa(svgContent)}`;
-        console.log('QR Code gerado com sucesso!', fakeQRCode.substring(0, 50) + '...');
-        setQrCode(fakeQRCode);
-        
-        toast({
-          title: "QR Code Gerado",
-          description: "QR Code criado com sucesso! Escaneie com seu WhatsApp.",
-        });
-      } catch (error) {
-        console.error('Erro ao gerar QR Code:', error);
-        toast({
-          title: "Erro",
-          description: "Falha ao gerar o QR Code. Tente novamente.",
-          variant: "destructive"
-        });
-        return;
-      }
-    }, 1000);
+      toast({
+        title: "QR Code Gerado",
+        description: "QR Code criado! Este é apenas um exemplo - para uso real, configure a API do WhatsApp.",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar QR Code:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao gerar o QR Code. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const simulateConnection = () => {
     setConnectionStatus('connected');
-    console.log('Simulando conexão estabelecida');
     toast({
       title: "WhatsApp Conectado!",
-      description: "Seu WhatsApp foi conectado com sucesso ao CRM.",
+      description: "Simulação de conexão bem-sucedida. Para uso real, configure a API oficial.",
     });
   };
 
@@ -96,7 +55,17 @@ export const SimpleWhatsAppSetup = () => {
     setQrCode(null);
     toast({
       title: "WhatsApp Desconectado",
-      description: "A conexão com o WhatsApp foi removida.",
+      description: "A conexão foi removida.",
+    });
+  };
+
+  const copyWebhookUrl = () => {
+    const url = 'https://fgabadpelymhgvbtemwa.functions.supabase.co/functions/v1/whatsapp-webhook';
+    navigator.clipboard.writeText(url);
+    setWebhookUrl(url);
+    toast({
+      title: "URL Copiada",
+      description: "URL do webhook copiada para a área de transferência.",
     });
   };
 
@@ -106,10 +75,10 @@ export const SimpleWhatsAppSetup = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Conexão Simples com WhatsApp
+            Integração WhatsApp Simplificada
           </CardTitle>
           <CardDescription>
-            Conecte seu WhatsApp pessoal ou comercial de forma rápida e fácil
+            Conecte seu WhatsApp de forma fácil e rápida ao seu CRM
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -117,15 +86,15 @@ export const SimpleWhatsAppSetup = () => {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="qr-code" className="flex items-center gap-2">
                 <QrCode className="h-4 w-4" />
-                QR Code
+                QR Code Demo
+              </TabsTrigger>
+              <TabsTrigger value="webhook" className="flex items-center gap-2">
+                <Webhook className="h-4 w-4" />
+                Webhook
               </TabsTrigger>
               <TabsTrigger value="integration" className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
                 Integrações
-              </TabsTrigger>
-              <TabsTrigger value="mobile" className="flex items-center gap-2">
-                <Smartphone className="h-4 w-4" />
-                App Mobile
               </TabsTrigger>
             </TabsList>
 
@@ -133,7 +102,7 @@ export const SimpleWhatsAppSetup = () => {
               <Alert>
                 <QrCode className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Método mais simples:</strong> Conecte escaneando um QR Code com seu celular, igual ao WhatsApp Web.
+                  <strong>Demonstração:</strong> Este é um exemplo de como funcionaria o QR Code. Para uso real, você precisa configurar a API oficial do WhatsApp Business.
                 </AlertDescription>
               </Alert>
 
@@ -143,12 +112,12 @@ export const SimpleWhatsAppSetup = () => {
                     <div className="text-center space-y-2">
                       <h3 className="font-semibold">Pronto para conectar</h3>
                       <p className="text-sm text-muted-foreground">
-                        Clique no botão abaixo para gerar o QR Code
+                        Clique no botão abaixo para gerar um QR Code de demonstração
                       </p>
                     </div>
                     <Button onClick={generateQRCode} className="flex items-center gap-2">
                       <QrCode className="h-4 w-4" />
-                      Gerar QR Code
+                      Gerar QR Code Demo
                     </Button>
                   </>
                 )}
@@ -156,20 +125,28 @@ export const SimpleWhatsAppSetup = () => {
                 {connectionStatus === 'connecting' && qrCode && (
                   <>
                     <div className="text-center space-y-2">
-                      <h3 className="font-semibold">Escaneie o QR Code</h3>
+                      <h3 className="font-semibold">QR Code de Demonstração</h3>
                       <p className="text-sm text-muted-foreground">
-                        Abra o WhatsApp no seu celular e escaneie o código
+                        Este é um exemplo de como apareceria o QR Code real
                       </p>
                     </div>
                     <div className="border-2 border-dashed border-primary/20 p-4 rounded-lg">
-                      <img src={qrCode} alt="QR Code para WhatsApp" className="w-48 h-48" />
+                      <img 
+                        src={qrCode} 
+                        alt="QR Code Demo para WhatsApp" 
+                        className="w-48 h-48"
+                        onError={(e) => {
+                          console.error('Erro ao carregar QR Code');
+                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjc3NDg5IiBmb250LXNpemU9IjE0cHgiPkVycm8gYW8gY2FycmVnYXI8L3RleHQ+PC9zdmc+';
+                        }}
+                      />
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                       Aguardando conexão...
                     </div>
                     <Button onClick={simulateConnection} variant="outline" size="sm">
-                      Simular Conexão (Teste)
+                      Simular Conexão (Demo)
                     </Button>
                   </>
                 )}
@@ -178,10 +155,10 @@ export const SimpleWhatsAppSetup = () => {
                   <>
                     <div className="flex items-center gap-2 text-green-600">
                       <CheckCircle className="h-6 w-6" />
-                      <span className="font-semibold">Conectado com sucesso!</span>
+                      <span className="font-semibold">Conexão Simulada!</span>
                     </div>
                     <Badge variant="default" className="bg-green-500">
-                      WhatsApp Ativo
+                      Demo Ativo
                     </Badge>
                     <Button variant="outline" onClick={disconnect}>
                       Desconectar
@@ -191,14 +168,54 @@ export const SimpleWhatsAppSetup = () => {
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-medium">Como funciona:</h4>
+                <h4 className="font-medium">Para usar de verdade:</h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                  <li>Clique em "Gerar QR Code"</li>
-                  <li>Abra o WhatsApp no seu celular</li>
-                  <li>Toque nos três pontos → "Aparelhos conectados"</li>
-                  <li>Toque em "Conectar um aparelho"</li>
-                  <li>Escaneie o QR Code que aparece aqui</li>
+                  <li>Configure uma conta no WhatsApp Business API</li>
+                  <li>Obtenha as credenciais necessárias</li>
+                  <li>Configure o webhook (veja aba "Webhook")</li>
+                  <li>Use a aba "Configuração Avançada" para inserir suas credenciais</li>
                 </ol>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="webhook" className="space-y-4">
+              <Alert>
+                <Webhook className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Webhook URL:</strong> Use esta URL para configurar o webhook no Facebook Developers Console.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="webhook-url">URL do Webhook (Pronta para usar)</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      id="webhook-url"
+                      value="https://fgabadpelymhgvbtemwa.functions.supabase.co/functions/v1/whatsapp-webhook"
+                      readOnly
+                      className="font-mono text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyWebhookUrl}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                  <h4 className="font-medium">Como configurar:</h4>
+                  <ol className="list-decimal list-inside space-y-1 text-sm">
+                    <li>Acesse <a href="https://developers.facebook.com/apps" target="_blank" className="text-primary hover:underline">Facebook Developers</a></li>
+                    <li>Vá para seu app → WhatsApp → Configuration</li>
+                    <li>Cole a URL do webhook acima</li>
+                    <li>Defina um Verify Token (anote-o para usar na configuração avançada)</li>
+                    <li>Clique em "Verify and Save"</li>
+                  </ol>
+                </div>
               </div>
             </TabsContent>
 
@@ -206,7 +223,7 @@ export const SimpleWhatsAppSetup = () => {
               <Alert>
                 <Zap className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Ferramentas prontas:</strong> Use plataformas que já fazem a integração para você.
+                  <strong>Alternativas mais simples:</strong> Use ferramentas prontas que fazem a integração para você.
                 </AlertDescription>
               </Alert>
 
@@ -214,7 +231,7 @@ export const SimpleWhatsAppSetup = () => {
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">Zapier + WhatsApp</CardTitle>
-                    <CardDescription>Conecte automaticamente mensagens do WhatsApp ao CRM</CardDescription>
+                    <CardDescription>A forma mais fácil de conectar WhatsApp ao seu CRM</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
@@ -233,65 +250,23 @@ export const SimpleWhatsAppSetup = () => {
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Make (Integromat)</CardTitle>
-                    <CardDescription>Automação visual entre WhatsApp e seu CRM</CardDescription>
+                    <CardTitle className="text-lg">Typebot + WhatsApp</CardTitle>
+                    <CardDescription>Chatbots para WhatsApp com integração ao CRM</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <p className="font-medium text-blue-600">Gratuito até 1.000 operações</p>
-                        <p className="text-sm text-muted-foreground">Interface visual intuitiva</p>
+                        <p className="font-medium text-blue-600">Plano gratuito disponível</p>
+                        <p className="text-sm text-muted-foreground">Interface visual para criar bots</p>
                       </div>
                       <Button asChild>
-                        <a href="https://www.make.com/en/integrations/whatsapp" target="_blank" rel="noopener">
-                          Conectar <ArrowRight className="h-4 w-4 ml-1" />
-                        </a>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">ChatWoot</CardTitle>
-                    <CardDescription>Plataforma de atendimento com WhatsApp integrado</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <p className="font-medium text-purple-600">Open Source</p>
-                        <p className="text-sm text-muted-foreground">Solução completa de atendimento</p>
-                      </div>
-                      <Button asChild>
-                        <a href="https://www.chatwoot.com/" target="_blank" rel="noopener">
+                        <a href="https://typebot.io" target="_blank" rel="noopener">
                           Conhecer <ArrowRight className="h-4 w-4 ml-1" />
                         </a>
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="mobile" className="space-y-4">
-              <Alert>
-                <Smartphone className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Em desenvolvimento:</strong> App mobile para sincronizar mensagens automaticamente.
-                </AlertDescription>
-              </Alert>
-
-              <div className="text-center py-8 space-y-4">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                  <Smartphone className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">App Mobile em Breve</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Estamos desenvolvendo um app que sincroniza automaticamente suas mensagens do WhatsApp com o CRM.
-                  </p>
-                </div>
-                <Badge variant="outline">Em desenvolvimento</Badge>
               </div>
             </TabsContent>
           </Tabs>

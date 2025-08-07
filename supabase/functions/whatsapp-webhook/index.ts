@@ -223,15 +223,17 @@ serve(async (req: Request): Promise<Response> => {
             messageText
           );
 
-          // Insert WhatsApp message record
+          // Insert WhatsApp message record with proper user_id
           const { error: messageError } = await supabase
             .from("whatsapp_messages")
             .insert({
+              user_id: 'ca24c26e-7024-4b41-834f-a2c21fb35c5d', // Usar um ID fixo do sistema para mensagens via webhook
               contact_name: contactName,
               message: messageText,
               whatsapp_message_id: message.id,
               phone_number: message.from,
-              type: 'received',
+              message_type: message.type,
+              direction: 'received',
               status: 'delivered',
               customer_id: customerId,
               received_at: new Date(parseInt(message.timestamp) * 1000).toISOString(),
