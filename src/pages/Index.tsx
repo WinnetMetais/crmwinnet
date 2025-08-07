@@ -9,13 +9,7 @@ import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
-// Mock data
-const recentActivities = [
-  { id: 1, type: "lead", title: "Novo lead: Metalúrgica São Paulo", time: "Há 5 minutos" },
-  { id: 2, type: "sale", title: "Venda finalizada: R$ 15.400,00", time: "Há 2 horas" },
-  { id: 3, type: "campaign", title: "Campanha 'Aço Premium' ativada", time: "Há 4 horas" },
-  { id: 4, type: "content", title: "Post programado para LinkedIn", time: "Há 1 dia" },
-];
+// Sistema limpo - sem dados mockados
 
 const Index = () => {
   const navigate = useNavigate();
@@ -189,19 +183,13 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentActivities.map((activity) => (
-                      <div key={activity.id} className="flex items-start">
-                        <div className={`w-2 h-2 mt-1.5 rounded-full mr-3 ${
-                          activity.type === 'lead' ? 'bg-blue-500' :
-                          activity.type === 'sale' ? 'bg-green-500' :
-                          activity.type === 'campaign' ? 'bg-purple-500' : 'bg-orange-500'
-                        }`} />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{activity.title}</p>
-                          <p className="text-xs text-muted-foreground">{activity.time}</p>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="text-center py-8">
+                      <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-sm text-muted-foreground">Nenhuma atividade registrada</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        As atividades aparecerão aqui conforme você usar o sistema
+                      </p>
+                    </div>
                     <Button variant="ghost" size="sm" className="w-full mt-2 text-xs" asChild>
                       <Link to="/reports" className="flex items-center justify-center">
                         Ver todas as atividades
