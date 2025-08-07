@@ -7,10 +7,39 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { MessageSquare, Webhook, Key, CheckCircle, AlertCircle, Copy, Eye, EyeOff } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MessageSquare, Webhook, Key, CheckCircle, AlertCircle, Copy, Eye, EyeOff, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { SimpleWhatsAppSetup } from "./SimpleWhatsAppSetup";
 
 export const WhatsAppConfiguration = () => {
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue="simple" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="simple" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Conexão Simples
+          </TabsTrigger>
+          <TabsTrigger value="advanced" className="flex items-center gap-2">
+            <Key className="h-4 w-4" />
+            Configuração Avançada
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="simple">
+          <SimpleWhatsAppSetup />
+        </TabsContent>
+
+        <TabsContent value="advanced">
+          <AdvancedWhatsAppSetup />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+const AdvancedWhatsAppSetup = () => {
   const [config, setConfig] = useState({
     webhookUrl: '',
     verifyToken: '',
@@ -114,11 +143,11 @@ export const WhatsAppConfiguration = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Configuração do WhatsApp Business
+            <Key className="h-5 w-5" />
+            Configuração Avançada - WhatsApp Business API
           </CardTitle>
           <CardDescription>
-            Configure a integração com a API do WhatsApp Business para receber e enviar mensagens
+            Configure a integração oficial com a API do WhatsApp Business (requer aprovação do Facebook)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
