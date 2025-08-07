@@ -979,6 +979,48 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_reports: {
+        Row: {
+          cash_flow: number | null
+          created_at: string | null
+          generated_by: string | null
+          id: string
+          net_profit: number | null
+          period_end: string
+          period_start: string
+          report_data: Json | null
+          report_type: string
+          total_expenses: number | null
+          total_revenue: number | null
+        }
+        Insert: {
+          cash_flow?: number | null
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          net_profit?: number | null
+          period_end: string
+          period_start: string
+          report_data?: Json | null
+          report_type: string
+          total_expenses?: number | null
+          total_revenue?: number | null
+        }
+        Update: {
+          cash_flow?: number | null
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          net_profit?: number | null
+          period_end?: string
+          period_start?: string
+          report_data?: Json | null
+          report_type?: string
+          total_expenses?: number | null
+          total_revenue?: number | null
+        }
+        Relationships: []
+      }
       integration_logs: {
         Row: {
           action: string
@@ -1008,6 +1050,57 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      invoice_items: {
+        Row: {
+          created_at: string | null
+          description: string
+          discount: number | null
+          id: string
+          product_id: string | null
+          quantity: number
+          quote_id: string | null
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          discount?: number | null
+          id?: string
+          product_id?: string | null
+          quantity: number
+          quote_id?: string | null
+          total: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          discount?: number | null
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          quote_id?: string | null
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lead_sources: {
         Row: {
@@ -1333,6 +1426,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_terms: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          days: number
+          discount_percentage: number | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          days?: number
+          discount_percentage?: number | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          days?: number
+          discount_percentage?: number | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       pipeline_activities: {
         Row: {
           activity_type: string
@@ -1474,6 +1597,56 @@ export type Database = {
           order_position?: number
         }
         Relationships: []
+      }
+      price_lists: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          max_quantity: number | null
+          min_quantity: number | null
+          name: string
+          price: number
+          product_id: string | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          max_quantity?: number | null
+          min_quantity?: number | null
+          name: string
+          price: number
+          product_id?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          max_quantity?: number | null
+          min_quantity?: number | null
+          name?: string
+          price?: number
+          product_id?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_lists_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       priorities: {
         Row: {
@@ -1913,6 +2086,51 @@ export type Database = {
           salesperson?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      sales_performance: {
+        Row: {
+          average_deal_size: number | null
+          commission_earned: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          deals_lost: number | null
+          deals_won: number | null
+          id: string
+          period_end: string
+          period_start: string
+          salesperson: string
+          total_revenue: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_deal_size?: number | null
+          commission_earned?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          deals_lost?: number | null
+          deals_won?: number | null
+          id?: string
+          period_end: string
+          period_start: string
+          salesperson: string
+          total_revenue?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          average_deal_size?: number | null
+          commission_earned?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          deals_lost?: number | null
+          deals_won?: number | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          salesperson?: string
+          total_revenue?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
