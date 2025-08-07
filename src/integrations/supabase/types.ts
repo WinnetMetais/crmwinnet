@@ -439,9 +439,10 @@ export type Database = {
           category: string
           created_at: string | null
           id: string
+          is_system_template: boolean | null
           name: string
           template_content: string
-          user_id: string
+          user_id: string | null
           variables: Json | null
         }
         Insert: {
@@ -449,9 +450,10 @@ export type Database = {
           category: string
           created_at?: string | null
           id?: string
+          is_system_template?: boolean | null
           name: string
           template_content: string
-          user_id: string
+          user_id?: string | null
           variables?: Json | null
         }
         Update: {
@@ -459,9 +461,10 @@ export type Database = {
           category?: string
           created_at?: string | null
           id?: string
+          is_system_template?: boolean | null
           name?: string
           template_content?: string
-          user_id?: string
+          user_id?: string | null
           variables?: Json | null
         }
         Relationships: []
