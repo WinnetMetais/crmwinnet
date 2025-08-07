@@ -236,6 +236,54 @@ export type Database = {
         }
         Relationships: []
       }
+      carriers: {
+        Row: {
+          active: boolean | null
+          cnpj: string | null
+          contact_person: string | null
+          coverage_areas: string[] | null
+          created_at: string | null
+          delivery_time_days: number | null
+          email: string | null
+          id: string
+          max_weight: number | null
+          min_weight: number | null
+          name: string
+          phone: string | null
+          price_per_kg: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          cnpj?: string | null
+          contact_person?: string | null
+          coverage_areas?: string[] | null
+          created_at?: string | null
+          delivery_time_days?: number | null
+          email?: string | null
+          id?: string
+          max_weight?: number | null
+          min_weight?: number | null
+          name: string
+          phone?: string | null
+          price_per_kg?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          cnpj?: string | null
+          contact_person?: string | null
+          coverage_areas?: string[] | null
+          created_at?: string | null
+          delivery_time_days?: number | null
+          email?: string | null
+          id?: string
+          max_weight?: number | null
+          min_weight?: number | null
+          name?: string
+          phone?: string | null
+          price_per_kg?: number | null
+        }
+        Relationships: []
+      }
       commission_rules: {
         Row: {
           active: boolean
@@ -1668,6 +1716,33 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+        }
+        Relationships: []
+      }
       product_configurations: {
         Row: {
           active: boolean | null
@@ -1710,6 +1785,8 @@ export type Database = {
         Row: {
           active: boolean | null
           category: string | null
+          category_id: string | null
+          code: string | null
           cost_price: number | null
           created_at: string
           custom_data: Json | null
@@ -1727,15 +1804,24 @@ export type Database = {
           min_stock: number | null
           name: string
           price: number | null
+          sale_price: number | null
           sku: string | null
+          specifications: Json | null
+          stock_current: number | null
+          stock_max: number | null
+          stock_min: number | null
           supplier: string | null
+          supplier_id: string | null
           unit: string | null
+          unit_id: string | null
           updated_at: string
           weight: number | null
         }
         Insert: {
           active?: boolean | null
           category?: string | null
+          category_id?: string | null
+          code?: string | null
           cost_price?: number | null
           created_at?: string
           custom_data?: Json | null
@@ -1753,15 +1839,24 @@ export type Database = {
           min_stock?: number | null
           name: string
           price?: number | null
+          sale_price?: number | null
           sku?: string | null
+          specifications?: Json | null
+          stock_current?: number | null
+          stock_max?: number | null
+          stock_min?: number | null
           supplier?: string | null
+          supplier_id?: string | null
           unit?: string | null
+          unit_id?: string | null
           updated_at?: string
           weight?: number | null
         }
         Update: {
           active?: boolean | null
           category?: string | null
+          category_id?: string | null
+          code?: string | null
           cost_price?: number | null
           created_at?: string
           custom_data?: Json | null
@@ -1779,9 +1874,16 @@ export type Database = {
           min_stock?: number | null
           name?: string
           price?: number | null
+          sale_price?: number | null
           sku?: string | null
+          specifications?: Json | null
+          stock_current?: number | null
+          stock_max?: number | null
+          stock_min?: number | null
           supplier?: string | null
+          supplier_id?: string | null
           unit?: string | null
+          unit_id?: string | null
           updated_at?: string
           weight?: number | null
         }
@@ -2127,6 +2229,75 @@ export type Database = {
         }
         Relationships: []
       }
+      suppliers: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          city: string | null
+          cnpj: string | null
+          company_name: string | null
+          contact_person: string | null
+          created_at: string | null
+          credit_limit: number | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          payment_terms: string | null
+          phone: string | null
+          rating: number | null
+          state: string | null
+          updated_at: string | null
+          website: string | null
+          whatsapp: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          city?: string | null
+          cnpj?: string | null
+          company_name?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          rating?: number | null
+          state?: string | null
+          updated_at?: string | null
+          website?: string | null
+          whatsapp?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          city?: string | null
+          cnpj?: string | null
+          company_name?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          rating?: number | null
+          state?: string | null
+          updated_at?: string | null
+          website?: string | null
+          whatsapp?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       system_config: {
         Row: {
           config_key: string
@@ -2332,6 +2503,39 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           validation_errors?: Json | null
+        }
+        Relationships: []
+      }
+      units: {
+        Row: {
+          abbreviation: string
+          active: boolean | null
+          base_unit_id: string | null
+          conversion_factor: number | null
+          created_at: string | null
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          abbreviation: string
+          active?: boolean | null
+          base_unit_id?: string | null
+          conversion_factor?: number | null
+          created_at?: string | null
+          id?: string
+          name: string
+          type: string
+        }
+        Update: {
+          abbreviation?: string
+          active?: boolean | null
+          base_unit_id?: string | null
+          conversion_factor?: number | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          type?: string
         }
         Relationships: []
       }
