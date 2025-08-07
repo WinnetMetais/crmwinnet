@@ -11,6 +11,7 @@ import { ChannelAnalysis } from "@/components/financial/ChannelAnalysis";
 import { SpreadsheetSync } from "@/components/financial/SpreadsheetSync";
 import { DataValidationTool } from "@/components/financial/DataValidationTool";
 import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
+import { WinnetSpreadsheetImporter } from "@/components/financial/WinnetSpreadsheetImporter";
 import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOperations";
 import { useFinancialSummary, useTransactions } from "@/hooks/useTransactions";
 
@@ -63,7 +64,7 @@ const Financial = () => {
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full">
+              <TabsList className="grid grid-cols-5 lg:grid-cols-11 w-full">
                 <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
                 <TabsTrigger value="new" className="text-sm">Nova</TabsTrigger>
                 <TabsTrigger value="cashflow" className="text-sm">Fluxo</TabsTrigger>
@@ -73,6 +74,7 @@ const Financial = () => {
                 <TabsTrigger value="spreadsheet" className="text-sm">Planilha</TabsTrigger>
                 <TabsTrigger value="validation" className="text-sm">Validação</TabsTrigger>
                 <TabsTrigger value="winnet" className="text-sm">Winnet</TabsTrigger>
+                <TabsTrigger value="winnet-real" className="text-sm">Winnet Real</TabsTrigger>
                 <TabsTrigger value="bulk" className="text-sm">Operações</TabsTrigger>
               </TabsList>
 
@@ -110,6 +112,10 @@ const Financial = () => {
 
               <TabsContent value="winnet" className="space-y-4">
                 <WinnetDataImporter />
+              </TabsContent>
+
+              <TabsContent value="winnet-real" className="space-y-4">
+                <WinnetSpreadsheetImporter />
               </TabsContent>
 
               <TabsContent value="bulk" className="space-y-4">
