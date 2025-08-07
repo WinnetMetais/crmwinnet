@@ -66,33 +66,63 @@ const Navbar = () => {
             >
               Dashboard
             </Link>
-            <Link 
-              to="/content" 
-              className={cn(
-                "px-3 py-2 rounded-md transition-colors hover:bg-secondary",
-                isActive('/content') ? "bg-secondary text-primary font-semibold" : "text-muted-foreground"
-              )}
-            >
-              Conteúdo
-            </Link>
-            <Link 
-              to="/sales" 
-              className={cn(
-                "px-3 py-2 rounded-md transition-colors hover:bg-secondary",
-                isActive('/sales') ? "bg-secondary text-primary font-semibold" : "text-muted-foreground"
-              )}
-            >
-              Vendas
-            </Link>
-            <Link 
-              to="/campaigns" 
-              className={cn(
-                "px-3 py-2 rounded-md transition-colors hover:bg-secondary",
-                isActive('/campaigns') ? "bg-secondary text-primary font-semibold" : "text-muted-foreground"
-              )}
-            >
-              Campanhas
-            </Link>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className={cn(
+                    "px-3 py-2 rounded-md transition-colors hover:bg-secondary",
+                    (isActive('/sales') || isActive('/products') || isActive('/customers')) ? "bg-secondary text-primary font-semibold" : "text-muted-foreground"
+                  )}
+                >
+                  Vendas
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 bg-background border shadow-lg">
+                <DropdownMenuItem asChild>
+                  <Link to="/sales" className="flex w-full px-4 py-2 hover:bg-secondary">
+                    Oportunidades
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/products" className="flex w-full px-4 py-2 hover:bg-secondary">
+                    Produtos
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/customers" className="flex w-full px-4 py-2 hover:bg-secondary">
+                    Clientes
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className={cn(
+                    "px-3 py-2 rounded-md transition-colors hover:bg-secondary",
+                    (isActive('/campaigns') || isActive('/automation')) ? "bg-secondary text-primary font-semibold" : "text-muted-foreground"
+                  )}
+                >
+                  Marketing
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 bg-background border shadow-lg">
+                <DropdownMenuItem asChild>
+                  <Link to="/campaigns" className="flex w-full px-4 py-2 hover:bg-secondary">
+                    Campanhas
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/automation" className="flex w-full px-4 py-2 hover:bg-secondary">
+                    Automação
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
         </div>
         

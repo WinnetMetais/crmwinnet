@@ -39,8 +39,6 @@ const DashboardSidebar = () => {
       </SidebarHeader>
       
       <SidebarContent className="bg-white px-3 py-2" style={{backgroundColor: 'white'}}>
-        <AnalysisGroup isActive={isActive} isActiveGroup={isActiveGroup} />
-        <ContentGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <CommercialGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <FinancialGroup isActive={isActive} isActiveGroup={isActiveGroup} />
         <ToolsGroup isActive={isActive} isActiveGroup={isActiveGroup} />
