@@ -21,7 +21,7 @@ export const dealService = {
         .from('deals')
         .select(`
           *,
-          customers!fk_deals_customer (
+          customers!deals_customer_id_fkey (
             name,
             company,
             email
@@ -44,7 +44,7 @@ export const dealService = {
         .from('deals')
         .select(`
           *,
-          customers (
+          customers!deals_customer_id_fkey (
             name,
             company,
             email,
@@ -70,7 +70,7 @@ export const dealService = {
         .insert(deal)
         .select(`
           *,
-          customers (
+          customers!deals_customer_id_fkey (
             name,
             company,
             email
@@ -95,7 +95,7 @@ export const dealService = {
         .eq('id', id)
         .select(`
           *,
-          customers (
+          customers!deals_customer_id_fkey (
             name,
             company,
             email

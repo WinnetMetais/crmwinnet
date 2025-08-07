@@ -940,13 +940,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_deals_customer"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_deals_pipeline_stage"
             columns: ["pipeline_stage_id"]
             isOneToOne: false

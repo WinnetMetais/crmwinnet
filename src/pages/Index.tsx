@@ -98,15 +98,13 @@ const Index = () => {
                 <CardHeader className="pb-2">
                   <CardDescription>Vendas este mês</CardDescription>
                   <CardTitle className="text-2xl flex justify-between items-center">
-                    R$ 148.500
-                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    R$ 0,00
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-xs text-muted-foreground flex items-center">
-                    <ArrowUp className="h-3 w-3 mr-1 text-green-500" />
-                    <span className="text-green-500 font-medium">12%</span>
-                    <span className="ml-1">vs. mês anterior</span>
+                    <span>Nenhum dado disponível</span>
                   </div>
                 </CardContent>
               </Card>
@@ -115,15 +113,13 @@ const Index = () => {
                 <CardHeader className="pb-2">
                   <CardDescription>Novos leads</CardDescription>
                   <CardTitle className="text-2xl flex justify-between items-center">
-                    24
-                    <Users className="h-4 w-4 text-blue-500" />
+                    0
+                    <Users className="h-4 w-4 text-muted-foreground" />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-xs text-muted-foreground flex items-center">
-                    <ArrowDown className="h-3 w-3 mr-1 text-red-500" />
-                    <span className="text-red-500 font-medium">3%</span>
-                    <span className="ml-1">vs. mês anterior</span>
+                    <span>Nenhum dado disponível</span>
                   </div>
                 </CardContent>
               </Card>
@@ -132,14 +128,14 @@ const Index = () => {
                 <CardHeader className="pb-2">
                   <CardDescription>Pedidos em aberto</CardDescription>
                   <CardTitle className="text-2xl flex justify-between items-center">
-                    18
-                    <ShoppingBag className="h-4 w-4 text-amber-500" />
+                    0
+                    <ShoppingBag className="h-4 w-4 text-muted-foreground" />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-xs text-muted-foreground flex items-center mt-1">
-                    <Progress value={65} className="h-1.5" />
-                    <span className="ml-2">65% concluídos</span>
+                    <Progress value={0} className="h-1.5" />
+                    <span className="ml-2">Nenhum pedido</span>
                   </div>
                 </CardContent>
               </Card>
@@ -148,15 +144,13 @@ const Index = () => {
                 <CardHeader className="pb-2">
                   <CardDescription>Conversão anúncios</CardDescription>
                   <CardTitle className="text-2xl flex justify-between items-center">
-                    8.4%
-                    <BarChart3 className="h-4 w-4 text-violet-500" />
+                    0%
+                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-xs text-muted-foreground flex items-center">
-                    <ArrowUp className="h-3 w-3 mr-1 text-green-500" />
-                    <span className="text-green-500 font-medium">1.8%</span>
-                    <span className="ml-1">vs. mês anterior</span>
+                    <span>Nenhum dado disponível</span>
                   </div>
                 </CardContent>
               </Card>
@@ -233,15 +227,15 @@ const Index = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Posts programados</div>
-                      <div className="font-medium">8</div>
+                      <div className="font-medium">0</div>
                     </div>
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Campanhas ativas</div>
-                      <div className="font-medium">3</div>
+                      <div className="font-medium">0</div>
                     </div>
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Anúncios ativos</div>
-                      <div className="font-medium">5</div>
+                      <div className="font-medium">0</div>
                     </div>
                   </div>
                 </CardContent>
@@ -260,15 +254,15 @@ const Index = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Total de clientes</div>
-                      <div className="font-medium">152</div>
+                      <div className="font-medium">0</div>
                     </div>
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Novos este mês</div>
-                      <div className="font-medium">17</div>
+                      <div className="font-medium">0</div>
                     </div>
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Taxa de retenção</div>
-                      <div className="font-medium">85%</div>
+                      <div className="font-medium">-</div>
                     </div>
                   </div>
                 </CardContent>
@@ -287,15 +281,15 @@ const Index = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Total produtos</div>
-                      <div className="font-medium">48</div>
+                      <div className="font-medium">0</div>
                     </div>
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Baixo estoque</div>
-                      <div className="font-medium">7</div>
+                      <div className="font-medium">0</div>
                     </div>
                     <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
                       <div className="text-sm">Mais vendidos</div>
-                      <div className="font-medium">Aço inox</div>
+                      <div className="font-medium">-</div>
                     </div>
                   </div>
                 </CardContent>

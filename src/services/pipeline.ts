@@ -225,7 +225,7 @@ export async function getDealsWithRelations() {
       .from('deals')
       .select(`
         *,
-        customers (
+        customers!deals_customer_id_fkey (
           id,
           name,
           company,
