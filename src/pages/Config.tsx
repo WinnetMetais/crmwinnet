@@ -4,7 +4,7 @@ import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Users, Database, Shield, Bell, Palette, Mail, DollarSign, Zap } from "lucide-react";
+import { Settings, Users, Database, Shield, Bell, Palette, Mail, DollarSign, Zap, MessageSquare } from "lucide-react";
 import PreferencesSection from "@/components/config/PreferencesSection";
 import { TeamSection } from "@/components/config/TeamSection";
 import { EmailConfiguration } from "@/components/config/EmailConfiguration";
@@ -13,6 +13,7 @@ import { MarginConfiguration } from "@/components/config/MarginConfiguration";
 import { FieldCustomization } from "@/components/config/FieldCustomization";
 import { SegmentManagement } from "@/components/config/SegmentManagement";
 import { IntegrationsSection } from "@/components/config/IntegrationsSection";
+import { WhatsAppConfiguration } from "@/components/config/WhatsAppConfiguration";
 
 const Config = () => {
   const [activeTab, setActiveTab] = useState('preferences');
@@ -34,7 +35,7 @@ const Config = () => {
 
             <Tabs defaultValue="preferences" className="space-y-6" onValueChange={setActiveTab}>
               <div className="w-full overflow-x-auto">
-                <TabsList className="grid grid-cols-4 lg:grid-cols-9 w-full min-w-max">
+                <TabsList className="grid grid-cols-4 lg:grid-cols-10 w-full min-w-max">
                   <TabsTrigger value="preferences" className="flex items-center gap-2 text-xs">
                     <Settings className="h-3 w-3" />
                     <span className="hidden sm:inline">Preferências</span>
@@ -66,6 +67,10 @@ const Config = () => {
                   <TabsTrigger value="margins" className="flex items-center gap-2 text-xs">
                     <Palette className="h-3 w-3" />
                     <span className="hidden sm:inline">Margens</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="whatsapp" className="flex items-center gap-2 text-xs">
+                    <MessageSquare className="h-3 w-3" />
+                    <span className="hidden sm:inline">WhatsApp</span>
                   </TabsTrigger>
                   <TabsTrigger value="notifications" className="flex items-center gap-2 text-xs">
                     <Bell className="h-3 w-3" />
@@ -104,6 +109,10 @@ const Config = () => {
 
               <TabsContent value="margins">
                 <MarginConfiguration />
+              </TabsContent>
+
+              <TabsContent value="whatsapp">
+                <WhatsAppConfiguration />
               </TabsContent>
 
               <TabsContent value="notifications">
