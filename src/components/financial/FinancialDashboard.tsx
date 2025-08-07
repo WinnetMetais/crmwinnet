@@ -14,30 +14,28 @@ interface FinancialDashboardProps {
 }
 
 export const FinancialDashboard = ({ data }: FinancialDashboardProps) => {
-  // Dados do fluxo de caixa mensal baseados na planilha
-  const monthlyData = [
-    { month: 'Jan', receita: 2239.54, despesa: 18599.54, saldo: -16360 },
-    { month: 'Fev', receita: 417.55, despesa: 4961.33, saldo: -4543.78 },
-    { month: 'Mar', receita: 17204.96, despesa: 4961.33, saldo: 12243.63 },
-    { month: 'Abr', receita: 4676.21, despesa: 2590.94, saldo: 2085.27 },
-    { month: 'Mai', receita: 11411.22, despesa: 0, saldo: 11411.22 }
+  // Se não há dados reais, mostrar resumo vazio mas funcional
+  const hasRealData = data.totalReceitas > 0 || data.totalDespesas > 0;
+
+  // Dados do fluxo de caixa mensal - usar dados reais quando disponíveis
+  const monthlyData = hasRealData ? [
+    { month: 'Este Mês', receita: data.totalReceitas, despesa: data.totalDespesas, saldo: data.saldo }
+  ] : [
+    { month: 'Nenhum dado', receita: 0, despesa: 0, saldo: 0 }
   ];
 
-  // Dados por canal de vendas
-  const channelData = [
-    { name: 'Site', value: 86728, color: '#8884d8' },
-    { name: 'Mercado Livre CNPJ', value: 64739, color: '#83a6ed' },
-    { name: 'Madeira Madeira', value: 7971.67, color: '#8dd1e1' },
-    { name: 'VIA', value: 2495.42, color: '#82ca9d' },
-    { name: 'Comercial', value: 22093.86, color: '#ffc658' }
+  // Dados por canal de vendas - usar dados reais ou placeholder
+  const channelData = hasRealData ? [
+    { name: 'Sistema', value: data.totalReceitas, color: '#22c55e' }
+  ] : [
+    { name: 'Nenhum dado', value: 0, color: '#94a3b8' }
   ];
 
-  // Dados de despesas por categoria
-  const expenseCategories = [
-    { category: 'Fixas', value: 185000, percentage: 36.5 },
-    { category: 'Variáveis', value: 156000, percentage: 30.8 },
-    { category: 'Operacionais', value: 98320, percentage: 19.4 },
-    { category: 'Marketing', value: 68000, percentage: 13.3 }
+  // Dados de despesas por categoria - usar dados reais ou placeholder
+  const expenseCategories = hasRealData ? [
+    { category: 'Total Despesas', value: data.totalDespesas, percentage: 100 }
+  ] : [
+    { category: 'Nenhum dado', value: 0, percentage: 0 }
   ];
 
   return (
@@ -151,30 +149,43 @@ export const FinancialDashboard = ({ data }: FinancialDashboardProps) => {
         </CardContent>
       </Card>
 
-      {/* Métricas Avançadas */}
+      {/* Resumo Financeiro Real */}
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Métricas Avançadas</CardTitle>
+          <CardTitle>Resumo Financeiro</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">21.8%</div>
-              <div className="text-sm text-muted-foreground">Margem de Lucro</div>
+              <div className="text-2xl font-bold text-green-600">
+                R$ {data.totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Receitas</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">R$ 15.950</div>
-              <div className="text-sm text-muted-foreground">Ticket Médio</div>
+              <div className="text-2xl font-bold text-red-600">
+                R$ {data.totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Despesas</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">45 dias</div>
-              <div className="text-sm text-muted-foreground">Prazo Médio Recebimento</div>
+              <div className={`text-2xl font-bold ${data.saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                R$ {data.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+              <div className="text-sm text-muted-foreground">Saldo</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">2.3x</div>
-              <div className="text-sm text-muted-foreground">Giro do Estoque</div>
+              <div className="text-2xl font-bold text-blue-600">{data.transacoes}</div>
+              <div className="text-sm text-muted-foreground">Total Transações</div>
             </div>
           </div>
+          {!hasRealData && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Nenhuma transação encontrada.</strong> Comece criando sua primeira receita ou despesa na aba "Nova".
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -13,6 +13,8 @@ import { DataValidationTool } from "@/components/financial/DataValidationTool";
 import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
 import { WinnetSpreadsheetImporter } from "@/components/financial/WinnetSpreadsheetImporter";
 import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOperations";
+import { TransactionsList } from "@/components/financial/TransactionsList";
+import { CreateSampleData } from "@/components/financial/CreateSampleData";
 import { useFinancialSummary, useTransactions } from "@/hooks/useTransactions";
 
 const Financial = () => {
@@ -64,9 +66,11 @@ const Financial = () => {
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-5 lg:grid-cols-11 w-full">
+              <TabsList className="grid grid-cols-6 lg:grid-cols-13 w-full">
                 <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
+                <TabsTrigger value="transactions" className="text-sm">Transações</TabsTrigger>
                 <TabsTrigger value="new" className="text-sm">Nova</TabsTrigger>
+                <TabsTrigger value="sample" className="text-sm">Exemplo</TabsTrigger>
                 <TabsTrigger value="cashflow" className="text-sm">Fluxo</TabsTrigger>
                 <TabsTrigger value="expenses" className="text-sm">Despesas</TabsTrigger>
                 <TabsTrigger value="revenue" className="text-sm">Receitas</TabsTrigger>
@@ -82,8 +86,16 @@ const Financial = () => {
                 <FinancialDashboard data={dashboardData} />
               </TabsContent>
 
+              <TabsContent value="transactions" className="space-y-4">
+                <TransactionsList />
+              </TabsContent>
+
               <TabsContent value="new" className="space-y-4">
-                <NewTransactionForm onClose={() => setActiveTab('dashboard')} />
+                <NewTransactionForm onClose={() => setActiveTab('transactions')} />
+              </TabsContent>
+
+              <TabsContent value="sample" className="space-y-4">
+                <CreateSampleData />
               </TabsContent>
 
               <TabsContent value="cashflow" className="space-y-4">
