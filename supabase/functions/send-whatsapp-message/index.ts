@@ -13,6 +13,63 @@ interface WhatsAppMessageRequest {
   type?: 'quote' | 'follow_up' | 'custom';
 }
 
+// XSS Protection utility
+const sanitizeInput = (input: string): string => {
+  if (!input) return '';
+  return input
+    .replace(/[<>\"'&]/g, (match) => {
+      const escapeMap: { [key: string]: string } = {
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '&': '&amp;'
+      };
+      return escapeMap[match];
+    })
+    .trim();
+};
+
+// Brazilian phone validation
+const validateBrazilianPhone = (phone: string): { isValid: boolean; error?: string } => {
+  if (!phone) {
+    return { isValid: false, error: 'Telefone é obrigatório' };
+  }
+
+  const cleanPhone = phone.replace(/\D/g, '');
+  
+  if (cleanPhone.length < 10 || cleanPhone.length > 13) {
+    return { 
+      isValid: false, 
+      error: 'Telefone deve ter entre 10 e 13 dígitos' 
+    };
+  }
+
+  // Valid Brazilian area codes
+  const validAreaCodes = [
+    '11', '12', '13', '14', '15', '16', '17', '18', '19', // SP
+    '21', '22', '24', // RJ
+    '27', '28', // ES
+    '31', '32', '33', '34', '35', '37', '38', // MG
+    '41', '42', '43', '44', '45', '46', // PR
+    '47', '48', '49', // SC
+    '51', '53', '54', '55', // RS
+    '61', '62', '63', '64', '65', '66', '67', '68', '69', // Centro-Oeste/Norte
+    '71', '73', '74', '75', '77', '79', // Nordeste
+    '81', '82', '83', '84', '85', '86', '87', '88', '89', // Nordeste
+    '91', '92', '93', '94', '95', '96', '97', '98', '99' // Norte
+  ];
+
+  if (cleanPhone.length >= 10) {
+    const areaCode = cleanPhone.substring(0, 2);
+    if (!validAreaCodes.includes(areaCode)) {
+      return { isValid: false, error: 'Código de área inválido' };
+    }
+  }
+
+  return { isValid: true };
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -22,7 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { phone, message, customerName, type = 'custom' }: WhatsAppMessageRequest = await req.json();
 
-    // Validate required fields
+    // Validate and sanitize required fields
     if (!phone || !message || !customerName) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: phone, message, customerName" }),
@@ -33,13 +90,30 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Sanitize inputs to prevent XSS
+    const sanitizedMessage = sanitizeInput(message);
+    const sanitizedCustomerName = sanitizeInput(customerName);
+    const sanitizedType = type && ['quote', 'follow_up', 'custom'].includes(type) ? type : 'custom';
+
+    // Validate message length
+    if (sanitizedMessage.length > 4096) {
+      return new Response(
+        JSON.stringify({ error: "Mensagem muito longa (máximo 4096 caracteres)" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     // Clean phone number (remove non-numeric characters)
     const cleanPhone = phone.replace(/\D/g, '');
     
-    // Validate Brazilian phone number format
-    if (cleanPhone.length < 10 || cleanPhone.length > 13) {
+// Comprehensive Brazilian phone validation
+    const phoneValidation = validateBrazilianPhone(cleanPhone);
+    if (!phoneValidation.isValid) {
       return new Response(
-        JSON.stringify({ error: "Invalid phone number format" }),
+        JSON.stringify({ error: phoneValidation.error }),
         {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
