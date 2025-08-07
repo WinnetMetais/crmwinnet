@@ -1337,7 +1337,9 @@ export type Database = {
           id: string
           last_validated_at: string | null
           lead_source: string | null
+          priority_id: string | null
           probability: number | null
+          qualification_status_id: string | null
           stage: string
           status: string | null
           title: string
@@ -1357,7 +1359,9 @@ export type Database = {
           id?: string
           last_validated_at?: string | null
           lead_source?: string | null
+          priority_id?: string | null
           probability?: number | null
+          qualification_status_id?: string | null
           stage?: string
           status?: string | null
           title: string
@@ -1377,7 +1381,9 @@ export type Database = {
           id?: string
           last_validated_at?: string | null
           lead_source?: string | null
+          priority_id?: string | null
           probability?: number | null
+          qualification_status_id?: string | null
           stage?: string
           status?: string | null
           title?: string
@@ -1391,6 +1397,20 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_priority_id_fkey"
+            columns: ["priority_id"]
+            isOneToOne: false
+            referencedRelation: "priorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_qualification_status_id_fkey"
+            columns: ["qualification_status_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_status"
             referencedColumns: ["id"]
           },
         ]
@@ -1934,6 +1954,8 @@ export type Database = {
           phone: string | null
           position: string | null
           preferences: Json | null
+          role: string | null
+          status: string | null
           updated_at: string | null
           user_id: string
         }
@@ -1948,6 +1970,8 @@ export type Database = {
           phone?: string | null
           position?: string | null
           preferences?: Json | null
+          role?: string | null
+          status?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -1962,6 +1986,8 @@ export type Database = {
           phone?: string | null
           position?: string | null
           preferences?: Json | null
+          role?: string | null
+          status?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -2736,6 +2762,17 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      send_notification: {
+        Args: {
+          p_user_id: string
+          p_title: string
+          p_message: string
+          p_type?: string
+          p_action_url?: string
+          p_metadata?: Json
+        }
+        Returns: string
       }
       validate_deal_data: {
         Args: { deal_id: string }
