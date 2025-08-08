@@ -110,6 +110,48 @@ export type Database = {
         }
         Relationships: []
       }
+      atividades: {
+        Row: {
+          assunto: string | null
+          created_at: string | null
+          descricao: string | null
+          feito: boolean | null
+          feito_em: string | null
+          id: string
+          owner_id: string | null
+          quando: string | null
+          ref_id: string
+          ref_type: string
+          tipo: string
+        }
+        Insert: {
+          assunto?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          feito?: boolean | null
+          feito_em?: string | null
+          id?: string
+          owner_id?: string | null
+          quando?: string | null
+          ref_id: string
+          ref_type: string
+          tipo: string
+        }
+        Update: {
+          assunto?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          feito?: boolean | null
+          feito_em?: string | null
+          id?: string
+          owner_id?: string | null
+          quando?: string | null
+          ref_id?: string
+          ref_type?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -236,6 +278,30 @@ export type Database = {
         }
         Relationships: []
       }
+      canais_venda: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          id: string
+          nome: string
+          tipo: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome: string
+          tipo?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+          tipo?: string | null
+        }
+        Relationships: []
+      }
       carriers: {
         Row: {
           active: boolean | null
@@ -281,6 +347,107 @@ export type Database = {
           name?: string
           phone?: string | null
           price_per_kg?: number | null
+        }
+        Relationships: []
+      }
+      categorias: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          nome: string
+          parent_id: string | null
+          tipo: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nome: string
+          parent_id?: string | null
+          tipo: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nome?: string
+          parent_id?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categorias_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      centros_custo: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      clientes: {
+        Row: {
+          cnpj_cpf: string | null
+          created_at: string | null
+          criado_por: string | null
+          email: string | null
+          endereco: Json | null
+          id: string
+          nome_fantasia: string | null
+          origem: string | null
+          razao_social: string | null
+          telefone: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          cnpj_cpf?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          email?: string | null
+          endereco?: Json | null
+          id?: string
+          nome_fantasia?: string | null
+          origem?: string | null
+          razao_social?: string | null
+          telefone?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          cnpj_cpf?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          email?: string | null
+          endereco?: Json | null
+          id?: string
+          nome_fantasia?: string | null
+          origem?: string | null
+          razao_social?: string | null
+          telefone?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -376,6 +543,217 @@ export type Database = {
             columns: ["quote_id"]
             isOneToOne: false
             referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contas: {
+        Row: {
+          created_at: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      contas_financeiras: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          moeda: string | null
+          nome: string
+          saldo_inicial: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          moeda?: string | null
+          nome: string
+          saldo_inicial?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          moeda?: string | null
+          nome?: string
+          saldo_inicial?: number | null
+        }
+        Relationships: []
+      }
+      contas_pagar: {
+        Row: {
+          categoria_id: string | null
+          centro_custo_id: string | null
+          created_at: string | null
+          created_by: string | null
+          emissao: string | null
+          fatura_ref: string | null
+          fornecedor: string
+          id: string
+          meio_pagamento: string | null
+          pago_em: string | null
+          status: string | null
+          valor: number
+          valor_pago: number | null
+          vencimento: string
+        }
+        Insert: {
+          categoria_id?: string | null
+          centro_custo_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          emissao?: string | null
+          fatura_ref?: string | null
+          fornecedor: string
+          id?: string
+          meio_pagamento?: string | null
+          pago_em?: string | null
+          status?: string | null
+          valor: number
+          valor_pago?: number | null
+          vencimento: string
+        }
+        Update: {
+          categoria_id?: string | null
+          centro_custo_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          emissao?: string | null
+          fatura_ref?: string | null
+          fornecedor?: string
+          id?: string
+          meio_pagamento?: string | null
+          pago_em?: string | null
+          status?: string | null
+          valor?: number
+          valor_pago?: number | null
+          vencimento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_pagar_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contas_pagar_centro_custo_id_fkey"
+            columns: ["centro_custo_id"]
+            isOneToOne: false
+            referencedRelation: "centros_custo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contas_receber: {
+        Row: {
+          canal: string | null
+          conta_id: string | null
+          created_at: string | null
+          created_by: string | null
+          emissao: string | null
+          id: string
+          meio_pagamento: string | null
+          pedido: string | null
+          recebido_em: string | null
+          status: string | null
+          valor: number
+          valor_recebido: number | null
+          vencimento: string | null
+        }
+        Insert: {
+          canal?: string | null
+          conta_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          emissao?: string | null
+          id?: string
+          meio_pagamento?: string | null
+          pedido?: string | null
+          recebido_em?: string | null
+          status?: string | null
+          valor: number
+          valor_recebido?: number | null
+          vencimento?: string | null
+        }
+        Update: {
+          canal?: string | null
+          conta_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          emissao?: string | null
+          id?: string
+          meio_pagamento?: string | null
+          pedido?: string | null
+          recebido_em?: string | null
+          status?: string | null
+          valor?: number
+          valor_recebido?: number | null
+          vencimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_receber_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contatos: {
+        Row: {
+          cargo: string | null
+          cliente_id: string | null
+          created_at: string | null
+          criado_por: string | null
+          email: string | null
+          id: string
+          nome: string
+          telefone: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          email?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          cargo?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          email?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contatos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
         ]
@@ -1146,6 +1524,82 @@ export type Database = {
           },
         ]
       }
+      lancamentos: {
+        Row: {
+          categoria_id: string | null
+          centro_custo_id: string | null
+          conta_fin_id: string | null
+          created_at: string | null
+          created_by: string | null
+          data_lanc: string
+          descricao: string | null
+          entrada: number | null
+          forma_pagamento: string | null
+          id: string
+          origem: string | null
+          referencia_id: string | null
+          saida: number | null
+          status: string | null
+          valor: number | null
+        }
+        Insert: {
+          categoria_id?: string | null
+          centro_custo_id?: string | null
+          conta_fin_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_lanc: string
+          descricao?: string | null
+          entrada?: number | null
+          forma_pagamento?: string | null
+          id?: string
+          origem?: string | null
+          referencia_id?: string | null
+          saida?: number | null
+          status?: string | null
+          valor?: number | null
+        }
+        Update: {
+          categoria_id?: string | null
+          centro_custo_id?: string | null
+          conta_fin_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_lanc?: string
+          descricao?: string | null
+          entrada?: number | null
+          forma_pagamento?: string | null
+          id?: string
+          origem?: string | null
+          referencia_id?: string | null
+          saida?: number | null
+          status?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lancamentos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_centro_custo_id_fkey"
+            columns: ["centro_custo_id"]
+            isOneToOne: false
+            referencedRelation: "centros_custo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_conta_fin_id_fkey"
+            columns: ["conta_fin_id"]
+            isOneToOne: false
+            referencedRelation: "contas_financeiras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_sources: {
         Row: {
           active: boolean | null
@@ -1167,6 +1621,45 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          empresa: string | null
+          etapa: string | null
+          id: string
+          nome: string | null
+          origem: string | null
+          owner_id: string | null
+          telefone: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          empresa?: string | null
+          etapa?: string | null
+          id?: string
+          nome?: string | null
+          origem?: string | null
+          owner_id?: string | null
+          telefone?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          empresa?: string | null
+          etapa?: string | null
+          id?: string
+          nome?: string | null
+          origem?: string | null
+          owner_id?: string | null
+          telefone?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -1215,6 +1708,51 @@ export type Database = {
           target_audience?: Json | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      metas_vendas: {
+        Row: {
+          canal: string
+          created_at: string | null
+          created_by: string | null
+          diferenca: number | null
+          faturado: number | null
+          id: string
+          investido: number | null
+          mes: string
+          meta: number | null
+          meta_minima: number | null
+          ticket_medio: number | null
+          vendas: number | null
+        }
+        Insert: {
+          canal: string
+          created_at?: string | null
+          created_by?: string | null
+          diferenca?: number | null
+          faturado?: number | null
+          id?: string
+          investido?: number | null
+          mes: string
+          meta?: number | null
+          meta_minima?: number | null
+          ticket_medio?: number | null
+          vendas?: number | null
+        }
+        Update: {
+          canal?: string
+          created_at?: string | null
+          created_by?: string | null
+          diferenca?: number | null
+          faturado?: number | null
+          id?: string
+          investido?: number | null
+          mes?: string
+          meta?: number | null
+          meta_minima?: number | null
+          ticket_medio?: number | null
+          vendas?: number | null
         }
         Relationships: []
       }
@@ -1323,6 +1861,76 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      oportunidades: {
+        Row: {
+          cliente_id: string | null
+          created_at: string | null
+          etapa: string | null
+          fechamento_previsto: string | null
+          ganho: boolean | null
+          id: string
+          lead_id: string | null
+          lost_reason: string | null
+          owner_id: string | null
+          pipeline_id: string | null
+          probabilidade: number | null
+          titulo: string
+          valor_previsto: number | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string | null
+          etapa?: string | null
+          fechamento_previsto?: string | null
+          ganho?: boolean | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          owner_id?: string | null
+          pipeline_id?: string | null
+          probabilidade?: number | null
+          titulo: string
+          valor_previsto?: number | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string | null
+          etapa?: string | null
+          fechamento_previsto?: string | null
+          ganho?: boolean | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          owner_id?: string | null
+          pipeline_id?: string | null
+          probabilidade?: number | null
+          titulo?: string
+          valor_previsto?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oportunidades_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oportunidades_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oportunidades_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       opportunities: {
         Row: {
@@ -1520,6 +2128,115 @@ export type Database = {
         }
         Relationships: []
       }
+      pedido_itens: {
+        Row: {
+          id: string
+          pedido_id: string | null
+          preco_unit: number | null
+          produto_id: string | null
+          qtde: number | null
+          total_item: number | null
+        }
+        Insert: {
+          id?: string
+          pedido_id?: string | null
+          preco_unit?: number | null
+          produto_id?: string | null
+          qtde?: number | null
+          total_item?: number | null
+        }
+        Update: {
+          id?: string
+          pedido_id?: string | null
+          preco_unit?: number | null
+          produto_id?: string | null
+          qtde?: number | null
+          total_item?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_itens_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedidos: {
+        Row: {
+          canal_id: string | null
+          cliente_id: string | null
+          created_at: string | null
+          desconto: number | null
+          emissao: string | null
+          frete: number | null
+          id: string
+          numero: string | null
+          oportunidade_id: string | null
+          status: string | null
+          total_bruto: number | null
+          total_liquido: number | null
+        }
+        Insert: {
+          canal_id?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          desconto?: number | null
+          emissao?: string | null
+          frete?: number | null
+          id?: string
+          numero?: string | null
+          oportunidade_id?: string | null
+          status?: string | null
+          total_bruto?: number | null
+          total_liquido?: number | null
+        }
+        Update: {
+          canal_id?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          desconto?: number | null
+          emissao?: string | null
+          frete?: number | null
+          id?: string
+          numero?: string | null
+          oportunidade_id?: string | null
+          status?: string | null
+          total_bruto?: number | null
+          total_liquido?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_canal_id_fkey"
+            columns: ["canal_id"]
+            isOneToOne: false
+            referencedRelation: "canais_venda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_activities: {
         Row: {
           activity_type: string
@@ -1659,6 +2376,30 @@ export type Database = {
           id?: string
           name?: string
           order_position?: number
+        }
+        Relationships: []
+      }
+      pipelines: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          etapas: string[]
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          etapas?: string[]
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          etapas?: string[]
+          id?: string
+          nome?: string
         }
         Relationships: []
       }
@@ -1942,6 +2683,36 @@ export type Database = {
           },
         ]
       }
+      produtos: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          preco: number | null
+          sku: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          preco?: number | null
+          sku?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          preco?: number | null
+          sku?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2200,6 +2971,50 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saldos_mensais: {
+        Row: {
+          conta_fin_id: string
+          created_at: string | null
+          created_by: string | null
+          entradas: number | null
+          id: string
+          mes: string
+          saidas: number | null
+          saldo_final: number | null
+          saldo_inicio: number | null
+        }
+        Insert: {
+          conta_fin_id: string
+          created_at?: string | null
+          created_by?: string | null
+          entradas?: number | null
+          id?: string
+          mes: string
+          saidas?: number | null
+          saldo_final?: number | null
+          saldo_inicio?: number | null
+        }
+        Update: {
+          conta_fin_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          entradas?: number | null
+          id?: string
+          mes?: string
+          saidas?: number | null
+          saldo_final?: number | null
+          saldo_inicio?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saldos_mensais_conta_fin_id_fkey"
+            columns: ["conta_fin_id"]
+            isOneToOne: false
+            referencedRelation: "contas_financeiras"
             referencedColumns: ["id"]
           },
         ]

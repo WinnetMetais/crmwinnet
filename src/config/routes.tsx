@@ -38,6 +38,15 @@ const ContentPlan = lazy(() => import('@/pages/content/ContentPlan'));
 const Social = lazy(() => import('@/pages/content/Social'));
 const Ads = lazy(() => import('@/pages/content/Ads'));
 
+// CRM & Financeiro (PT) pages
+const Leads = lazy(() => import('@/pages/Leads'));
+const ClientesPT = lazy(() => import('@/pages/Clientes'));
+const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
+const VendasPT = lazy(() => import('@/pages/Vendas'));
+const FinanceiroDashboard = lazy(() => import('@/pages/FinanceiroDashboard'));
+const FinanceiroUploadXLSX = lazy(() => import('@/pages/FinanceiroUploadXLSX'));
+const ConfiguracoesIntegracoes = lazy(() => import('@/pages/ConfiguracoesIntegracoes'));
+
 // Campaign sub-pages
 const GoogleCampaigns = lazy(() => import('@/pages/campaigns/GoogleCampaigns'));
 
@@ -77,6 +86,14 @@ export const routes: RouteConfig[] = [
   { path: '/data-quality', element: DataQuality },
   { path: '/production-setup', element: ProductionSetup },
   { path: '/quotes', element: Quotes },
+  // New PT routes
+  { path: '/leads', element: Leads },
+  { path: '/clientes', element: ClientesPT },
+  { path: '/oportunidades', element: Oportunidades },
+  { path: '/vendas', element: VendasPT },
+  { path: '/financeiro', element: FinanceiroDashboard },
+  { path: '/financeiro/upload', element: FinanceiroUploadXLSX },
+  { path: '/config-integracoes', element: ConfiguracoesIntegracoes },
 ];
 
 export const contentRoutes: RouteConfig[] = [

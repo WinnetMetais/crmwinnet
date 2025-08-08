@@ -115,6 +115,40 @@ export const CommercialGroup = ({ isActive, isActiveGroup }: CommercialGroupProp
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        <SidebarMenu className="mt-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isActive('/leads')} asChild>
+              <Link to="/leads" className="w-full flex items-center">
+                <Users className="mr-2 h-4 w-4" />
+                <span>Leads (PT)</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isActive('/clientes')} asChild>
+              <Link to="/clientes" className="w-full flex items-center">
+                <Users className="mr-2 h-4 w-4" />
+                <span>Clientes (PT)</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isActive('/oportunidades')} asChild>
+              <Link to="/oportunidades" className="w-full flex items-center">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                <span>Oportunidades</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isActive('/vendas')} asChild>
+              <Link to="/vendas" className="w-full flex items-center">
+                <DollarSign className="mr-2 h-4 w-4" />
+                <span>Vendas (PT)</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
   );
