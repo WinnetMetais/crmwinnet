@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +17,7 @@ import { TransactionsList } from "@/components/financial/TransactionsList";
 import { CreateSampleData } from "@/components/financial/CreateSampleData";
 import { useFinancialSummary, useTransactions } from "@/hooks/useTransactions";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import FinanceiroDashboard from "@/pages/FinanceiroDashboard";
 
 const Financial = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -25,6 +26,11 @@ const Financial = () => {
   
   // Ativa atualizações em tempo real
   useRealtimeUpdates();
+
+  // SEO title
+  useEffect(() => {
+    document.title = 'Gestão Financeira | Winnet';
+  }, []);
 
   // Dados reais do resumo financeiro
   const dashboardData = financialSummary ? {
@@ -70,24 +76,29 @@ const Financial = () => {
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-6 lg:grid-cols-13 w-full">
-                <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
-                <TabsTrigger value="transactions" className="text-sm">Transações</TabsTrigger>
-                <TabsTrigger value="new" className="text-sm">Nova</TabsTrigger>
-                <TabsTrigger value="sample" className="text-sm">Exemplo</TabsTrigger>
-                <TabsTrigger value="cashflow" className="text-sm">Fluxo</TabsTrigger>
-                <TabsTrigger value="expenses" className="text-sm">Despesas</TabsTrigger>
-                <TabsTrigger value="revenue" className="text-sm">Receitas</TabsTrigger>
-                <TabsTrigger value="channels" className="text-sm">Canais</TabsTrigger>
-                <TabsTrigger value="spreadsheet" className="text-sm">Planilha</TabsTrigger>
-                <TabsTrigger value="validation" className="text-sm">Validação</TabsTrigger>
-                <TabsTrigger value="winnet" className="text-sm">Winnet</TabsTrigger>
-                <TabsTrigger value="winnet-real" className="text-sm">Winnet Real</TabsTrigger>
-                <TabsTrigger value="bulk" className="text-sm">Operações</TabsTrigger>
-              </TabsList>
+            <TabsList className="grid grid-cols-6 lg:grid-cols-13 w-full">
+              <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
+              <TabsTrigger value="realtime" className="text-sm">Tempo Real</TabsTrigger>
+              <TabsTrigger value="transactions" className="text-sm">Transações</TabsTrigger>
+              <TabsTrigger value="new" className="text-sm">Nova</TabsTrigger>
+              <TabsTrigger value="sample" className="text-sm">Exemplo</TabsTrigger>
+              <TabsTrigger value="cashflow" className="text-sm">Fluxo</TabsTrigger>
+              <TabsTrigger value="expenses" className="text-sm">Despesas</TabsTrigger>
+              <TabsTrigger value="revenue" className="text-sm">Receitas</TabsTrigger>
+              <TabsTrigger value="channels" className="text-sm">Canais</TabsTrigger>
+              <TabsTrigger value="spreadsheet" className="text-sm">Planilha</TabsTrigger>
+              <TabsTrigger value="validation" className="text-sm">Validação</TabsTrigger>
+              <TabsTrigger value="winnet" className="text-sm">Winnet</TabsTrigger>
+              <TabsTrigger value="winnet-real" className="text-sm">Winnet Real</TabsTrigger>
+              <TabsTrigger value="bulk" className="text-sm">Operações</TabsTrigger>
+            </TabsList>
 
               <TabsContent value="dashboard" className="space-y-4">
                 <FinancialDashboard data={dashboardData} />
+              </TabsContent>
+
+              <TabsContent value="realtime" className="space-y-4">
+                <FinanceiroDashboard />
               </TabsContent>
 
               <TabsContent value="transactions" className="space-y-4">

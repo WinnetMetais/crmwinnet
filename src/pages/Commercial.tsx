@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,17 +11,18 @@ import { CommercialSpreadsheetSync } from "@/components/commercial/CommercialSpr
 import { CommercialBulkOperations } from "@/components/commercial/CommercialBulkOperations";
 
 const Commercial = () => {
+  useEffect(() => { document.title = 'Comercial | Winnet'; }, []);
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-background">
         <DashboardSidebar />
         
         <div className="flex-1">
-          <div className="container mx-auto py-6 px-4">
+          <div className="container mx-auto py-6 px-4 max-w-7xl">
             <div className="flex items-center space-x-4 mb-6">
               <SidebarTrigger />
               <div>
-                <h1 className="text-3xl font-bold">Módulo Comercial</h1>
+                <h1 className="text-3xl font-bold text-primary">Módulo Comercial</h1>
                 <p className="text-muted-foreground">Gestão completa do processo comercial da Winnet Metais</p>
               </div>
             </div>

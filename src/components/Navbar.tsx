@@ -66,7 +66,34 @@ const Navbar = () => {
             >
               Dashboard
             </Link>
-            
+
+            {/* Módulos dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className={cn(
+                    "px-3 py-2 rounded-md transition-colors hover:bg-secondary",
+                    (isActive('/commercial') || isActive('/financial')) ? "bg-secondary text-primary font-semibold" : "text-muted-foreground"
+                  )}
+                >
+                  Módulos
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 bg-background border shadow-lg z-50">
+                <DropdownMenuItem asChild>
+                  <Link to="/commercial" className="flex w-full px-4 py-2 hover:bg-secondary">
+                    Comercial
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/financial" className="flex w-full px-4 py-2 hover:bg-secondary">
+                    Financeiro
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
