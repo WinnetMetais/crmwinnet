@@ -1,16 +1,44 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, DollarSign, Calendar, User } from "lucide-react";
 import { useOpportunities } from "@/hooks/useOpportunities";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const OpportunitiesRealtime = () => {
   const { data: opportunities = [], isLoading } = useOpportunities();
   useRealtimeUpdates(); // Enable real-time updates
 
-  const openOpportunities = opportunities.filter(opp => opp.status === 'active' || opp.stage !== 'won');
+  const [selectedOpp, setSelectedOpp] = useState<any | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const normalizeStage = (stage?: string) => {
+    const s = (stage || '').toLowerCase();
+    if (['prospecting','prospect','prospecto','prospecção','prospeccao'].includes(s)) return 'prospecting';
+    if (['qualification','qualificacao','qualificação'].includes(s)) return 'qualification';
+    if (['proposal','proposta'].includes(s)) return 'proposal';
+    if (['negotiation','negociacao','negociação'].includes(s)) return 'negotiation';
+    if (['won','ganho','fechado ganho'].includes(s)) return 'won';
+    if (['lost','perdido','fechado perdido'].includes(s)) return 'lost';
+    return s || 'prospecting';
+  };
+
+  const isOpen = (opp: any) => {
+    const status = (opp?.status || '').toLowerCase();
+    const stage = normalizeStage(opp?.stage);
+    if (status) return status !== 'won' && status !== 'lost' && status !== 'closed';
+    return stage !== 'won' && stage !== 'lost';
+  };
+
+  const normalizedOpps = useMemo(() => opportunities.map((o: any) => ({
+    ...o,
+    stage_normalized: normalizeStage(o?.stage),
+    status_normalized: (o?.status || '').toLowerCase(),
+  })), [opportunities]);
+
+  const openOpportunities = useMemo(() => normalizedOpps.filter(isOpen), [normalizedOpps]);
 
   const getStageColor = (stage: string) => {
     switch (stage) {
@@ -102,14 +130,14 @@ export const OpportunitiesRealtime = () => {
                         </span>
                       </div>
                       <div>
-                        <Badge variant="outline" className={getStageColor(opportunity.stage)}>
-                          {getStageLabel(opportunity.stage)}
+                        <Badge variant="outline" className={getStageColor(normalizeStage(opportunity.stage))}>
+                          {getStageLabel(normalizeStage(opportunity.stage))}
                         </Badge>
                       </div>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => { setSelectedOpp(opportunity); setDetailsOpen(true); }}>
                       Ver Detalhes
                     </Button>
                   </div>
@@ -142,6 +170,63 @@ export const OpportunitiesRealtime = () => {
           </div>
         )}
       </CardContent>
+
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Oportunidade</DialogTitle>
+          </DialogHeader>
+          {selectedOpp ? (
+            <div className="space-y-3">
+              <div>
+                <span className="text-sm text-muted-foreground">Título</span>
+                <p className="font-medium">{selectedOpp.title}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>{selectedOpp.customer_name || selectedOpp.customer_id || 'Cliente não definido'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  <span>{selectedOpp.value ? `R$ ${Number(selectedOpp.value).toLocaleString('pt-BR')}` : 'Sem valor'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    {selectedOpp.expected_close_date ? new Date(selectedOpp.expected_close_date).toLocaleDateString('pt-BR') : 'Sem data'}
+                  </span>
+                </div>
+                <div>
+                  <Badge variant="outline" className={getStageColor(normalizeStage(selectedOpp.stage))}>
+                    {getStageLabel(normalizeStage(selectedOpp.stage))}
+                  </Badge>
+                </div>
+              </div>
+              {selectedOpp.description && (
+                <div>
+                  <span className="text-sm text-muted-foreground">Descrição</span>
+                  <p className="whitespace-pre-wrap text-sm">{selectedOpp.description}</p>
+                </div>
+              )}
+              {typeof selectedOpp.probability === 'number' && (
+                <div>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span>Probabilidade</span>
+                    <span>{selectedOpp.probability}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-primary h-2 rounded-full" style={{ width: `${selectedOpp.probability}%` }} />
+                  </div>
+                </div>
+              )}
+              <div className="pt-2 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setDetailsOpen(false)}>Fechar</Button>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
