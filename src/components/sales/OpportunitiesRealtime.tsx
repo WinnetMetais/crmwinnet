@@ -6,10 +6,12 @@ import { Eye, DollarSign, Calendar, User } from "lucide-react";
 import { useOpportunities } from "@/hooks/useOpportunities";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 export const OpportunitiesRealtime = () => {
   const { data: opportunities = [], isLoading } = useOpportunities();
   useRealtimeUpdates(); // Enable real-time updates
+  const navigate = useNavigate();
 
   const [selectedOpp, setSelectedOpp] = useState<any | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -137,7 +139,7 @@ export const OpportunitiesRealtime = () => {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <Button size="sm" variant="outline" onClick={() => { setSelectedOpp(opportunity); setDetailsOpen(true); }}>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/sales/opportunities/${opportunity.id}`)}>
                       Ver Detalhes
                     </Button>
                   </div>

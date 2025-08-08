@@ -32,6 +32,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const DataQuality = lazy(() => import('@/pages/DataQuality'));
 const ProductionSetup = lazy(() => import('@/pages/ProductionSetup'));
 const Quotes = lazy(() => import('@/pages/Quotes'));
+const OpportunityDetail = lazy(() => import('@/pages/OpportunityDetail'));
 
 // Content sub-pages
 const ContentPlan = lazy(() => import('@/pages/content/ContentPlan'));
@@ -63,6 +64,7 @@ export const routes: RouteConfig[] = [
   { path: '/financial', element: Financial },
   { path: '/customers', element: Customers },
   { path: '/sales', element: Sales },
+  { path: '/sales/opportunities/:id', element: OpportunityDetail },
   { path: '/products', element: Products },
   { path: '/analysis', element: Analysis },
   { path: '/config', element: Config },
