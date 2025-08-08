@@ -1509,6 +1509,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_invoice_items_quote"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "invoice_items_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -2214,6 +2221,20 @@ export type Database = {
           total_liquido?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_pedidos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pedidos_oportunidade"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "oportunidades"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pedidos_canal_id_fkey"
             columns: ["canal_id"]
