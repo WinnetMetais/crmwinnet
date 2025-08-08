@@ -88,8 +88,8 @@ export const routes: RouteConfig[] = [
   { path: '/quotes', element: Quotes },
   // New PT routes
   { path: '/leads', element: Leads },
-  { path: '/clientes', element: ClientesPT },
-  { path: '/oportunidades', element: Oportunidades },
+  { path: '/clientes', element: Customers },
+  { path: '/oportunidades', element: Sales },
   { path: '/vendas', element: VendasPT },
   { path: '/financeiro', element: FinanceiroDashboard },
   { path: '/financeiro/upload', element: FinanceiroUploadXLSX },
