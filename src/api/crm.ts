@@ -40,6 +40,6 @@ export async function deleteOportunidade(id:string){
 }
 
 export async function listPedidos(){
-  const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*), clientes(*), oportunidades(*)').order('emissao', { ascending: false });
+  const { data, error } = await supabase.from('pedidos').select('*').order('emissao', { ascending: false });
   if (error) throw error; return data || [];
 }

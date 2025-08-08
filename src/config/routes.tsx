@@ -42,7 +42,7 @@ const Ads = lazy(() => import('@/pages/content/Ads'));
 const Leads = lazy(() => import('@/pages/Leads'));
 const ClientesPT = lazy(() => import('@/pages/Clientes'));
 const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
-const VendasPT = lazy(() => import('@/pages/Vendas'));
+
 const FinanceiroDashboard = lazy(() => import('@/pages/FinanceiroDashboard'));
 const FinanceiroUploadXLSX = lazy(() => import('@/pages/FinanceiroUploadXLSX'));
 const ConfiguracoesIntegracoes = lazy(() => import('@/pages/ConfiguracoesIntegracoes'));
@@ -90,7 +90,7 @@ export const routes: RouteConfig[] = [
   { path: '/leads', element: Leads },
   { path: '/clientes', element: Customers },
   { path: '/oportunidades', element: Sales },
-  { path: '/vendas', element: VendasPT },
+  
   { path: '/financeiro', element: FinanceiroDashboard },
   { path: '/financeiro/upload', element: FinanceiroUploadXLSX },
   { path: '/config-integracoes', element: ConfiguracoesIntegracoes },

@@ -132,14 +132,6 @@ export const CommercialGroup = ({ isActive, isActiveGroup }: CommercialGroupProp
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton isActive={isActive('/vendas')} asChild>
-              <Link to="/vendas" className="w-full flex items-center">
-                <DollarSign className="mr-2 h-4 w-4" />
-                <span>Pedidos</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
