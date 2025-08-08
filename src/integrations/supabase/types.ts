@@ -2356,8 +2356,13 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_lost: boolean | null
+          is_won: boolean | null
           name: string
           order_position: number
+          probability: number | null
+          stage_key: string | null
+          updated_at: string
         }
         Insert: {
           active?: boolean | null
@@ -2365,8 +2370,13 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_lost?: boolean | null
+          is_won?: boolean | null
           name: string
           order_position: number
+          probability?: number | null
+          stage_key?: string | null
+          updated_at?: string
         }
         Update: {
           active?: boolean | null
@@ -2374,8 +2384,13 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_lost?: boolean | null
+          is_won?: boolean | null
           name?: string
           order_position?: number
+          probability?: number | null
+          stage_key?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
