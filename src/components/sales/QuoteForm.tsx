@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ import { QuoteFormData, QuoteItem } from "@/types/quote";
 import { Product } from "@/services/products";
 import { ProductSelector } from "@/components/products/ProductSelector";
 import { toast } from "@/hooks/use-toast";
-
+import { quoteService, QuoteItemInsert, QuoteInsert } from "@/services/quotes";
+import { useQueryClient } from "@tanstack/react-query";
 interface QuoteFormProps {
   onClose: () => void;
   initialData?: Partial<QuoteFormData>;
@@ -46,8 +47,21 @@ export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormPr
     status: 'rascunho',
     ...initialData
   });
+const [saving, setSaving] = useState(false);
+const queryClient = useQueryClient();
 
-  function generateQuoteNumber(): string {
+useEffect(() => {
+  if (mode === 'create' && !initialData?.quoteNumber) {
+    quoteService
+      .generateQuoteNumber()
+      .then((num) => setFormData((prev) => ({ ...prev, quoteNumber: num })))
+      .catch(() => {});
+  }
+  // run on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
+function generateQuoteNumber(): string {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -140,15 +154,70 @@ export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormPr
     }, 0);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Orçamento:', formData);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setSaving(true);
+  try {
+    const header: Omit<QuoteInsert, 'user_id'> = {
+      quote_number: formData.quoteNumber,
+      date: formData.date,
+      valid_until: formData.validUntil,
+      customer_name: formData.customerName,
+      customer_email: formData.customerEmail || null,
+      customer_phone: formData.customerPhone || null,
+      customer_address: formData.customerAddress || null,
+      customer_cnpj: formData.customerCnpj || null,
+      contact_person: formData.contactPerson || null,
+      requested_by: formData.requestedBy || null,
+      subtotal: formData.subtotal,
+      discount: formData.discount,
+      total: formData.total,
+      payment_terms: formData.paymentTerms || null,
+      delivery_terms: formData.deliveryTerms || null,
+      warranty: formData.warranty || null,
+      notes: formData.notes || null,
+      internal_notes: formData.internalNotes || null,
+      status: formData.status,
+      // user_id is set in the service
+    };
+
+    const quote = await quoteService.createQuote(header as unknown as QuoteInsert);
+
+    if (formData.items.length > 0) {
+      await Promise.all(
+        formData.items.map((it) => {
+          const item: QuoteItemInsert = {
+            quote_id: quote.id,
+            code: it.code,
+            description: it.description,
+            quantity: it.quantity,
+            unit: it.unit,
+            unit_price: it.unitPrice,
+            total: it.total,
+          };
+          return quoteService.addQuoteItem(item);
+        })
+      );
+    }
+
+    await queryClient.invalidateQueries({ queryKey: ['quotes'] });
+
     toast({
-      title: "Orçamento Criado",
-      description: `Orçamento ${formData.quoteNumber} foi criado com sucesso!`,
+      title: 'Sucesso',
+      description: `Orçamento ${quote.quote_number} criado com sucesso!`,
     });
     onClose();
-  };
+  } catch (error: any) {
+    console.error(error);
+    toast({
+      title: 'Erro',
+      description: error?.message || 'Falha ao salvar orçamento',
+      variant: 'destructive',
+    });
+  } finally {
+    setSaving(false);
+  }
+};
 
   const generatePDF = () => {
     toast({
@@ -458,10 +527,10 @@ export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormPr
 
         {/* Ações */}
         <div className="flex gap-3 pt-2">
-          <Button type="submit" className="flex-1">
-            <Calculator className="h-4 w-4 mr-2" />
-            Salvar Orçamento
-          </Button>
+<Button type="submit" className="flex-1" disabled={saving}>
+  <Calculator className="h-4 w-4 mr-2" />
+  {saving ? 'Salvando...' : 'Salvar Orçamento'}
+</Button>
           <Button type="button" variant="outline" onClick={generatePDF}>
             <Download className="h-4 w-4 mr-2" />
             Gerar PDF
