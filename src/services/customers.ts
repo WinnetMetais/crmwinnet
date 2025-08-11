@@ -120,7 +120,12 @@ export async function deleteCustomer(id: string): Promise<void> {
     .eq("id", id);
 
   if (error) {
+    const code = (error as any)?.code || '';
+    const msg = (error as any)?.message || '';
+    if (code === '23503' || /foreign key constraint/i.test(msg)) {
+      throw new Error('Não é possível excluir este cliente porque existem negociações/oportunidades vinculadas. Exclua ou desvincule-as antes de continuar.');
+    }
     console.error("Error deleting customer:", error);
-    throw new Error("Erro ao excluir cliente: " + error.message);
+    throw new Error("Erro ao excluir cliente: " + msg);
   }
 }

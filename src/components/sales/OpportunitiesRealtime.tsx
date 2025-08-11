@@ -2,16 +2,19 @@ import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, DollarSign, Calendar, User } from "lucide-react";
-import { useOpportunities } from "@/hooks/useOpportunities";
+import { Eye, DollarSign, Calendar, User, Trash } from "lucide-react";
+import { useOpportunities, useDeleteOpportunity } from "@/hooks/useOpportunities";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 export const OpportunitiesRealtime = () => {
   const { data: opportunities = [], isLoading } = useOpportunities();
   useRealtimeUpdates(); // Enable real-time updates
   const navigate = useNavigate();
+
+  const deleteMutation = useDeleteOpportunity();
 
   const [selectedOpp, setSelectedOpp] = useState<any | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -111,7 +114,7 @@ export const OpportunitiesRealtime = () => {
                     <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        <span>{opportunity.customer_id || 'Cliente não definido'}</span>
+                        <span>{opportunity.customers?.name || opportunity.customer?.name || opportunity.customer_name || opportunity.customer_id || 'Cliente não definido'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4" />
@@ -138,9 +141,15 @@ export const OpportunitiesRealtime = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="ml-4">
+                  <div className="ml-4 flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => navigate(`/sales/opportunities/${opportunity.id}`)}>
                       Ver Detalhes
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(opportunity.id, {
+                      onSuccess: () => toast({ title: 'Oportunidade excluída', description: 'Removida com sucesso' }),
+                      onError: (e: any) => toast({ title: 'Erro ao excluir', description: e?.message || 'Tente novamente', variant: 'destructive' })
+                    })}>
+                      <Trash className="h-4 w-4 mr-1" /> Excluir
                     </Button>
                   </div>
                 </div>

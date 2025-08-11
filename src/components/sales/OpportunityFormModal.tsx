@@ -6,10 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
 
 import { Target, DollarSign, Calendar, User } from "lucide-react";
 import { useCreateOpportunity, useUpdateOpportunity } from "@/hooks/useOpportunities";
 import { toast } from "@/hooks/use-toast";
+import { getCustomers } from "@/services/customers";
 
 interface OpportunityFormModalProps {
   open: boolean;
@@ -34,6 +36,7 @@ export const OpportunityFormModal = ({ open, onClose, opportunity, mode = 'creat
 
   const createOpportunityMutation = useCreateOpportunity();
   const updateOpportunityMutation = useUpdateOpportunity();
+  const { data: customers = [] } = useQuery({ queryKey: ['customers'], queryFn: getCustomers });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,9 +120,13 @@ export const OpportunityFormModal = ({ open, onClose, opportunity, mode = 'creat
                     <SelectValue placeholder="Selecione o cliente" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="customer-1">Cliente Exemplo 1</SelectItem>
-                    <SelectItem value="customer-2">Cliente Exemplo 2</SelectItem>
-                    <SelectItem value="customer-3">Cliente Exemplo 3</SelectItem>
+                    {customers.length > 0 ? (
+                      customers.map((c: any) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>Nenhum cliente encontrado</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

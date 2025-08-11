@@ -16,6 +16,8 @@ import { DealEditModal } from "@/components/sales/DealEditModal";
 import { OpportunitiesRealtime } from "@/components/sales/OpportunitiesRealtime";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createDeal } from "@/services/pipeline";
+import { createCustomer } from "@/services/customers";
+import { toast } from "@/hooks/use-toast";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 
 const Sales = () => {
@@ -147,9 +149,30 @@ const Sales = () => {
             {/* Modais */}
             {showCustomerModal && (
               <CustomerFormModal
-                onSubmit={(data) => {
-                  console.log('Customer data:', data);
-                  setShowCustomerModal(false);
+                onSubmit={async (data) => {
+                  try {
+                    const created = await createCustomer({
+                      name: data.name,
+                      email: data.email,
+                      phone: data.phone,
+                      company: data.company,
+                      address: data.address,
+                      city: data.city,
+                      state: data.state,
+                      zip_code: data.zip_code,
+                      cnpj: data.cnpj,
+                      notes: data.notes,
+                      status: data.status,
+                      lead_source: data.lead_source,
+                      website: data.website,
+                    });
+                    queryClient.invalidateQueries({ queryKey: ['customers'] });
+                    toast({ title: 'Cliente salvo', description: `${created.name} criado com sucesso` });
+                  } catch (e: any) {
+                    toast({ title: 'Erro ao salvar cliente', description: e.message || 'Tente novamente', variant: 'destructive' });
+                  } finally {
+                    setShowCustomerModal(false);
+                  }
                 }}
                 onCancel={() => setShowCustomerModal(false)}
                 mode="create"
