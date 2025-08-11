@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Search, Filter, Download, Mail, Phone, Building, MapPin, Trash2, Edit, MoreHorizontal } from "lucide-react";
 import { Customer, getCustomers, createCustomer, updateCustomer, deleteCustomer } from "@/services/customers";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,6 +33,7 @@ const Customers = () => {
     notes: "",
     lead_source: "",
     website: "",
+    status: "prospect" as "prospect" | "qualified" | "customer" | "active" | "inactive",
   });
 
   const queryClient = useQueryClient();
@@ -113,6 +115,7 @@ const Customers = () => {
       notes: "",
       lead_source: "",
       website: "",
+      status: "prospect",
     });
   };
 
@@ -279,6 +282,32 @@ const Customers = () => {
                               value={newCustomer.zip_code} 
                               onChange={handleChange} 
                             />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="lead_source">Origem do Lead</Label>
+                            <Input 
+                              id="lead_source" 
+                              name="lead_source" 
+                              value={newCustomer.lead_source} 
+                              onChange={handleChange} 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="status">Status *</Label>
+                            <Select value={newCustomer.status} onValueChange={(v) => setNewCustomer(prev => ({ ...prev, status: v as any }))}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="prospect">Prospecto</SelectItem>
+                                <SelectItem value="qualified">Qualificado</SelectItem>
+                                <SelectItem value="customer">Cliente</SelectItem>
+                                <SelectItem value="active">Ativo</SelectItem>
+                                <SelectItem value="inactive">Inativo</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                         <div className="space-y-2">
