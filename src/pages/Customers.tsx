@@ -147,6 +147,8 @@ const Customers = () => {
       notes: customer.notes || '',
       lead_source: customer.lead_source || '',
       website: customer.website || '',
+      // Garantir status válido no formulário de edição
+      status: (customer.status === 'lead' ? 'prospect' : (customer.status as any)) || 'prospect',
     });
     setOpen(true);
   };
