@@ -10,16 +10,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Search, Filter, Download, Mail, Phone, Building, MapPin, Trash2, Edit, MoreHorizontal } from "lucide-react";
-import { Customer, getCustomers, createCustomer, updateCustomer, deleteCustomer } from "@/services/customers";
+import { Customer, getCustomers, createCustomer, updateCustomer, deleteCustomer, deleteCustomerCascade } from "@/services/customers";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 const Customers = () => {
   const [open, setOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [deletingCustomer, setDeletingCustomer] = useState<Customer | null>(null);
+  const [deleteCascade, setDeleteCascade] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [newCustomer, setNewCustomer] = useState({
     name: "",
@@ -83,24 +85,43 @@ const Customers = () => {
     },
   });
 
-  const deleteCustomerMutation = useMutation({
-    mutationFn: deleteCustomer,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
-      setDeletingCustomer(null);
-      toast({
-        title: "Cliente excluído",
-        description: "Cliente excluído com sucesso!",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir cliente: " + error.message,
-        variant: "destructive",
-      });
-    },
-  });
+const deleteCustomerMutation = useMutation({
+  mutationFn: deleteCustomer,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["customers"] });
+    setDeletingCustomer(null);
+    toast({
+      title: "Cliente excluído",
+      description: "Cliente excluído com sucesso!",
+    });
+  },
+  onError: (error) => {
+    toast({
+      title: "Erro",
+      description: "Erro ao excluir cliente: " + (error as any).message,
+      variant: "destructive",
+    });
+  },
+});
+
+const deleteCustomerCascadeMutation = useMutation({
+  mutationFn: deleteCustomerCascade,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["customers"] });
+    setDeletingCustomer(null);
+    toast({
+      title: "Cliente e vínculos excluídos",
+      description: "Cliente e oportunidades/negócios vinculados removidos.",
+    });
+  },
+  onError: (error) => {
+    toast({
+      title: "Erro",
+      description: "Erro ao excluir com vínculos: " + (error as any).message,
+      variant: "destructive",
+    });
+  },
+});
 
   const resetForm = () => {
     setNewCustomer({
@@ -153,15 +174,20 @@ const Customers = () => {
     setOpen(true);
   };
 
-  const handleDelete = (customer: Customer) => {
-    setDeletingCustomer(customer);
-  };
+const handleDelete = (customer: Customer) => {
+  setDeleteCascade(true);
+  setDeletingCustomer(customer);
+};
 
-  const confirmDelete = () => {
-    if (deletingCustomer) {
+const confirmDelete = () => {
+  if (deletingCustomer) {
+    if (deleteCascade) {
+      deleteCustomerCascadeMutation.mutate(deletingCustomer.id);
+    } else {
       deleteCustomerMutation.mutate(deletingCustomer.id);
     }
-  };
+  }
+};
 
   const filteredCustomers = customers.filter((customer: Customer) => 
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -477,10 +503,14 @@ const Customers = () => {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Tem certeza que deseja excluir o cliente "{deletingCustomer?.name}"? 
-                    Esta ação não pode ser desfeita.
-                  </AlertDialogDescription>
+<AlertDialogDescription>
+  Tem certeza que deseja excluir o cliente "{deletingCustomer?.name}"?
+  Esta ação não pode ser desfeita.
+</AlertDialogDescription>
+<div className="mt-4 flex items-center gap-3">
+  <Switch id="cascade" checked={deleteCascade} onCheckedChange={setDeleteCascade} />
+  <Label htmlFor="cascade">Excluir também oportunidades/negócios vinculados</Label>
+</div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>

@@ -129,3 +129,35 @@ export async function deleteCustomer(id: string): Promise<void> {
     throw new Error("Erro ao excluir cliente: " + msg);
   }
 }
+
+export async function deleteCustomerCascade(id: string): Promise<void> {
+  try {
+    // Apagar itens ligados às oportunidades do cliente (quando não houver CASCADE no banco)
+    const { data: opps } = await supabase
+      .from('opportunities')
+      .select('id')
+      .eq('customer_id', id);
+
+    const oppIds = (opps || []).map((o: any) => o.id);
+    if (oppIds.length > 0) {
+      await supabase.from('opportunity_items').delete().in('opportunity_id', oppIds);
+    }
+
+    // Apagar oportunidades, negócios (deals) e interações
+    await supabase.from('opportunities').delete().eq('customer_id', id);
+    await supabase.from('deals').delete().eq('customer_id', id);
+    await supabase.from('customer_interactions').delete().eq('customer_id', id);
+
+    // Por fim, apagar o cliente
+    const { error } = await supabase.from('customers').delete().eq('id', id);
+    if (error) throw error;
+
+    toast({
+      title: 'Cliente excluído',
+      description: 'Cliente e registros vinculados foram removidos com sucesso.',
+    });
+  } catch (e: any) {
+    console.error('Cascade delete error:', e);
+    throw new Error('Erro ao excluir cliente e vínculos: ' + (e?.message || ''));
+  }
+}
