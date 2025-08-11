@@ -1443,6 +1443,42 @@ export type Database = {
         }
         Relationships: []
       }
+      index_usage_snapshots: {
+        Row: {
+          captured_at: string
+          id: string
+          idx_scan: number
+          idx_tup_fetch: number
+          idx_tup_read: number
+          index_size_bytes: number
+          indexname: string
+          schemaname: string
+          tablename: string
+        }
+        Insert: {
+          captured_at?: string
+          id?: string
+          idx_scan: number
+          idx_tup_fetch: number
+          idx_tup_read: number
+          index_size_bytes: number
+          indexname: string
+          schemaname: string
+          tablename: string
+        }
+        Update: {
+          captured_at?: string
+          id?: string
+          idx_scan?: number
+          idx_tup_fetch?: number
+          idx_tup_read?: number
+          index_size_bytes?: number
+          indexname?: string
+          schemaname?: string
+          tablename?: string
+        }
+        Relationships: []
+      }
       integration_logs: {
         Row: {
           action: string
@@ -3591,7 +3627,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_index_roles: {
+        Row: {
+          covers_fk: boolean | null
+          indexname: unknown | null
+          indexrelid: unknown | null
+          indisprimary: boolean | null
+          indisunique: boolean | null
+          schemaname: unknown | null
+          tablename: unknown | null
+        }
+        Relationships: []
+      }
+      vw_unused_index_candidates_30d: {
+        Row: {
+          first_seen: string | null
+          indexname: string | null
+          last_seen: string | null
+          max_scan: number | null
+          min_scan: number | null
+          scan_delta: number | null
+          schemaname: string | null
+          size_mb: number | null
+          tablename: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_customer_data_quality: {
@@ -3610,9 +3671,25 @@ export type Database = {
         Args: { start_date?: string; end_date?: string }
         Returns: Json
       }
+      get_unused_index_candidates: {
+        Args: { min_days?: number }
+        Returns: {
+          schemaname: string
+          tablename: string
+          indexname: string
+          scan_delta: number
+          size_mb: number
+          first_seen: string
+          last_seen: string
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_unused_index_report: {
+        Args: { min_days?: number }
+        Returns: undefined
       }
       send_notification: {
         Args: {
@@ -3624,6 +3701,10 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: string
+      }
+      snapshot_index_usage: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       validate_deal_data: {
         Args: { deal_id: string }
