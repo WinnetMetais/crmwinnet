@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -3547,6 +3547,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          roles: string[]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          roles?: string[]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          roles?: string[]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
@@ -3655,6 +3676,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_user_role: {
+        Args: { p_role: string; p_user_id: string }
+        Returns: undefined
+      }
       calculate_customer_data_quality: {
         Args: { customer_id: string }
         Returns: number
@@ -3662,25 +3687,25 @@ export type Database = {
       check_failed_auth_attempts: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_email: string
           attempt_count: number
           last_attempt: string
+          user_email: string
         }[]
       }
       get_advanced_statistics: {
-        Args: { start_date?: string; end_date?: string }
+        Args: { end_date?: string; start_date?: string }
         Returns: Json
       }
       get_unused_index_candidates: {
         Args: { min_days?: number }
         Returns: {
-          schemaname: string
-          tablename: string
-          indexname: string
-          scan_delta: number
-          size_mb: number
           first_seen: string
+          indexname: string
           last_seen: string
+          scan_delta: number
+          schemaname: string
+          size_mb: number
+          tablename: string
         }[]
       }
       is_admin: {
@@ -3691,14 +3716,18 @@ export type Database = {
         Args: { min_days?: number }
         Returns: undefined
       }
+      remove_user_role: {
+        Args: { p_role: string; p_user_id: string }
+        Returns: undefined
+      }
       send_notification: {
         Args: {
-          p_user_id: string
-          p_title: string
-          p_message: string
-          p_type?: string
           p_action_url?: string
+          p_message: string
           p_metadata?: Json
+          p_title: string
+          p_type?: string
+          p_user_id: string
         }
         Returns: string
       }
