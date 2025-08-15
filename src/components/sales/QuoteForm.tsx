@@ -12,9 +12,12 @@ import { Plus, Trash2, Download, Send, Calculator, FileText, Package2 } from "lu
 import { QuoteFormData, QuoteItem } from "@/types/quote";
 import { Product } from "@/services/products";
 import { ProductSelector } from "@/components/products/ProductSelector";
+import { CustomerSelector } from "@/components/quotes/CustomerSelector";
+import { CustomerQuote } from "@/services/customersQuotes";
 import { toast } from "@/hooks/use-toast";
 import { quoteService, QuoteItemInsert, QuoteInsert } from "@/services/quotes";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRealtimeQuotes } from "@/hooks/useRealtimeQuotes";
 interface QuoteFormProps {
   onClose: () => void;
   initialData?: Partial<QuoteFormData>;
@@ -23,6 +26,7 @@ interface QuoteFormProps {
 
 export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormProps) => {
   const [showProductSelector, setShowProductSelector] = useState(false);
+  const [showCustomerSelector, setShowCustomerSelector] = useState(false);
   const [formData, setFormData] = useState<QuoteFormData>({
     quoteNumber: generateQuoteNumber(),
     date: new Date().toISOString().split('T')[0],
@@ -49,6 +53,9 @@ export const QuoteForm = ({ onClose, initialData, mode = 'create' }: QuoteFormPr
   });
 const [saving, setSaving] = useState(false);
 const queryClient = useQueryClient();
+
+// Habilitar realtime updates
+useRealtimeQuotes();
 
 useEffect(() => {
   if (mode === 'create' && !initialData?.quoteNumber) {
@@ -84,6 +91,26 @@ function generateQuoteNumber(): string {
       ...prev,
       items: [...prev.items, newItem]
     }));
+  };
+
+  const handleCustomerSelect = (customer: CustomerQuote) => {
+    setFormData(prev => ({
+      ...prev,
+      customerId: customer.id,
+      customerName: customer.name,
+      customerEmail: customer.email || '',
+      customerPhone: customer.phone || '',
+      customerAddress: customer.address || '',
+      customerCnpj: customer.cnpj_cpf || '',
+      contactPerson: customer.contact_person || ''
+    }));
+
+    setShowCustomerSelector(false);
+
+    toast({
+      title: "Cliente selecionado",
+      description: `${customer.name} foi selecionado para o orçamento`,
+    });
   };
 
   const handleProductSelect = (product: Product, marginPercent: number) => {
@@ -291,7 +318,18 @@ const handleSubmit = async (e: React.FormEvent) => {
 
         {/* Dados do Cliente */}
         <div className="border rounded-lg p-4 bg-gray-50">
-          <h3 className="font-medium mb-3">CLIENTE</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-medium">CLIENTE</h3>
+            <Button 
+              type="button" 
+              onClick={() => setShowCustomerSelector(true)} 
+              variant="outline" 
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Buscar Cliente
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customerName">Nome/Razão Social *</Label>
@@ -548,6 +586,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       {/* Seletor de Produtos */}
       {showProductSelector && (
         <ProductSelector onSelect={handleProductSelect} onClose={() => setShowProductSelector(false)} />
+      )}
+
+      {/* Seletor de Clientes */}
+      {showCustomerSelector && (
+        <CustomerSelector onSelect={handleCustomerSelect} onClose={() => setShowCustomerSelector(false)} />
       )}
     </div>
   );

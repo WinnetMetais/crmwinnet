@@ -1202,6 +1202,51 @@ export type Database = {
           },
         ]
       }
+      customers_quotes: {
+        Row: {
+          address: string | null
+          city: string | null
+          cnpj_cpf: string | null
+          contact_person: string | null
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          state: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          cnpj_cpf?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          state?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          cnpj_cpf?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          state?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       data_validation_logs: {
         Row: {
           created_at: string | null
