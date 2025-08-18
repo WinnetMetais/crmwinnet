@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
 import { ProductForm } from "@/components/products/ProductForm";
+import { XMLProductImporter } from "@/components/products/XMLProductImporter";
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -153,23 +154,65 @@ const Products = () => {
                       onValueChange={setSelectedTab}
                       value={selectedTab}
                     >
-                      <TabsList className="grid grid-cols-4 w-full md:w-auto">
-                        <TabsTrigger value="all">Todos</TabsTrigger>
-                        <TabsTrigger value="available">Disponíveis</TabsTrigger>
-                        <TabsTrigger value="lowStock">Baixo Estoque</TabsTrigger>
-                        <TabsTrigger value="outOfStock">Sem Estoque</TabsTrigger>
-                      </TabsList>
+                       <TabsList className="grid grid-cols-5 w-full md:w-auto">
+                         <TabsTrigger value="all">Todos</TabsTrigger>
+                         <TabsTrigger value="available">Disponíveis</TabsTrigger>
+                         <TabsTrigger value="lowStock">Baixo Estoque</TabsTrigger>
+                         <TabsTrigger value="outOfStock">Sem Estoque</TabsTrigger>
+                         <TabsTrigger value="import">Importar XML</TabsTrigger>
+                       </TabsList>
                     </Tabs>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
-                  <div className="text-center py-8">
-                    <p>Carregando produtos...</p>
-                  </div>
-                ) : (
-                  <Table>
+                <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+                  <TabsContent value="all">
+                    {renderProductTable()}
+                  </TabsContent>
+                  <TabsContent value="available">
+                    {renderProductTable()}
+                  </TabsContent>
+                  <TabsContent value="lowStock">
+                    {renderProductTable()}
+                  </TabsContent>
+                  <TabsContent value="outOfStock">
+                    {renderProductTable()}
+                  </TabsContent>
+                  <TabsContent value="import">
+                    <XMLProductImporter />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      <ProductForm
+        open={showProductForm}
+        onClose={() => {
+          setShowProductForm(false);
+          setEditingProduct(null);
+        }}
+        onSubmit={(data) => {
+          // TODO: Implement create/update logic
+          console.log('Product data:', data);
+        }}
+        initialData={editingProduct}
+      />
+    </SidebarProvider>
+  );
+
+  function renderProductTable() {
+    return (
+      <>
+        {isLoading ? (
+          <div className="text-center py-8">
+            <p>Carregando produtos...</p>
+          </div>
+        ) : (
+          <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>SKU</TableHead>
@@ -285,27 +328,10 @@ const Products = () => {
                       )}
                     </TableBody>
                   </Table>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      <ProductForm
-        open={showProductForm}
-        onClose={() => {
-          setShowProductForm(false);
-          setEditingProduct(null);
-        }}
-        onSubmit={(data) => {
-          // TODO: Implement create/update logic
-          console.log('Product data:', data);
-        }}
-        initialData={editingProduct}
-      />
-    </SidebarProvider>
-  );
+        )}
+      </>
+    );
+  }
 };
 
 export default Products;
