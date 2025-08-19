@@ -201,29 +201,27 @@ async function parseXMLProducts(xmlText: string, fieldMapping: FieldMapping): Pr
   const products: ProductData[] = []
   
   try {
-    // Parse XML usando DOMParser
-    const parser = new DOMParser()
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+    // Use regex to parse XML since DOMParser is not available in Deno
+    const itemMatches = xmlText.match(/<item[^>]*>([\s\S]*?)<\/item>/g)
     
-    // Verificar erros de parsing
-    const parserError = xmlDoc.querySelector('parsererror')
-    if (parserError) {
-      throw new Error('XML mal formado: ' + parserError.textContent)
+    if (!itemMatches) {
+      console.log('No items found in XML')
+      return products
     }
-
-    // Buscar items no XML (podem estar em diferentes estruturas)
-    const items = xmlDoc.querySelectorAll('item, entry, product')
     
-    console.log('Items encontrados no XML:', items.length)
+    console.log('Items found in XML:', itemMatches.length)
 
-    for (const item of items) {
+    for (const itemText of itemMatches) {
       const product: ProductData = {}
       
-      // Aplicar mapeamentos
+      // Aplicar mapeamentos usando regex
       for (const [xmlTag, productField] of Object.entries(fieldMapping)) {
-        const element = item.querySelector(xmlTag)
-        if (element && element.textContent) {
-          const value = element.textContent.trim()
+        // Create regex to find the tag content
+        const tagRegex = new RegExp(`<${xmlTag.replace(':', '\\:')}[^>]*>([^<]*)<\/${xmlTag.replace(':', '\\:')}>`, 'i')
+        const match = itemText.match(tagRegex)
+        
+        if (match && match[1]) {
+          const value = match[1].trim()
           
           // Aplicar transformações específicas por campo
           switch (productField) {
