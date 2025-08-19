@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createHmac } from "https://deno.land/std@0.190.0/crypto/mod.ts";
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -174,9 +174,23 @@ serve(async (req: Request): Promise<Response> => {
 
     // Verify webhook signature if app secret is provided
     if (envVars.WHATSAPP_APP_SECRET && signature) {
-      const expectedSignature = createHmac("sha256", envVars.WHATSAPP_APP_SECRET!)
-        .update(body)
-        .digest("hex");
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(envVars.WHATSAPP_APP_SECRET!),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+      
+      const signature_bytes = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        new TextEncoder().encode(body)
+      );
+      
+      const expectedSignature = Array.from(new Uint8Array(signature_bytes))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
 
       if (signature !== expectedSignature) {
         console.error("Invalid webhook signature");
