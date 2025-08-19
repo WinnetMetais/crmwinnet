@@ -3762,7 +3762,7 @@ export type Database = {
         Returns: undefined
       }
       remove_user_role: {
-        Args: { p_role: string; p_user_id: string }
+        Args: { p_role_name: string; p_user_id: string }
         Returns: undefined
       }
       send_notification: {
