@@ -3693,6 +3693,14 @@ export type Database = {
       }
     }
     Views: {
+      security_status_summary: {
+        Row: {
+          category: string | null
+          item: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       vw_index_roles: {
         Row: {
           covers_fk: boolean | null
