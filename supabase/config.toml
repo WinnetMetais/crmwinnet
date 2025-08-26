@@ -1,14 +1,1 @@
-
 project_id = "fgabadpelymhgvbtemwa"
-
-[functions.exchange-google-auth-code]
-verify_jwt = false
-
-[functions.validate-form-data]
-verify_jwt = false
-
-[functions.import-xlsx]
-verify_jwt = false
-
-[functions.quote-pdf]
-verify_jwt = false
