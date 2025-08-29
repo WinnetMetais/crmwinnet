@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { KanbanSquare, Plus, Edit, Trash2, User, Building, MapPin, Phone } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { 
   getDealsWithRelations, 
   getPipelineStages, 
@@ -29,6 +30,7 @@ export const SalesKanban = () => {
   const [dealToDelete, setDealToDelete] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: deals = [], isLoading: dealsLoading } = useQuery({
     queryKey: ['deals-kanban'],
@@ -45,6 +47,10 @@ export const SalesKanban = () => {
       updateDealStage(dealId, stageId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
+      toast({
+        title: 'Status Atualizado',
+        description: 'O status da oportunidade foi atualizado com sucesso!',
+      });
     }
   });
 
@@ -63,6 +69,10 @@ export const SalesKanban = () => {
       queryClient.invalidateQueries({ queryKey: ['deals-kanban'] });
       setEditModalOpen(false);
       setSelectedDeal(null);
+      toast({
+        title: 'Oportunidade Atualizada',
+        description: 'As informações da oportunidade foram salvas!',
+      });
     }
   });
 

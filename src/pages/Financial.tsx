@@ -15,8 +15,10 @@ import { WinnetSpreadsheetImporter } from "@/components/financial/WinnetSpreadsh
 import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOperations";
 import { TransactionsList } from "@/components/financial/TransactionsList";
 import { CreateSampleData } from "@/components/financial/CreateSampleData";
+import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
 import { useFinancialSummary, useTransactions } from "@/hooks/useTransactions";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
 import FinanceiroDashboard from "@/pages/FinanceiroDashboard";
 
 const Financial = () => {
@@ -26,6 +28,7 @@ const Financial = () => {
   
   // Ativa atualizações em tempo real
   useRealtimeUpdates();
+  useRealtimeTransactions();
 
   // SEO title
   useEffect(() => {
@@ -62,6 +65,7 @@ const Financial = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
+      <RealtimeNotifications />
       <div className="flex min-h-screen w-full bg-background">
         <DashboardSidebar />
         

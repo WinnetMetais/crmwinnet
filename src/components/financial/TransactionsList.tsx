@@ -7,6 +7,7 @@ import { Edit, Trash2, DollarSign, Calendar, Plus } from "lucide-react";
 import { useTransactions, useDeleteTransaction } from "@/hooks/useTransactions";
 import { NewTransactionForm } from "./NewTransactionForm";
 import { toast } from "@/hooks/use-toast";
+import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
 import type { Transaction } from "@/services/transactions";
 
 export const TransactionsList = () => {
@@ -20,8 +21,17 @@ export const TransactionsList = () => {
     if (window.confirm('Tem certeza que deseja excluir esta transação?')) {
       try {
         await deleteTransaction.mutateAsync(id);
+        toast({
+          title: 'Sucesso',
+          description: 'Transação excluída com sucesso!',
+        });
       } catch (error) {
         console.error('Erro ao excluir transação:', error);
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível excluir a transação',
+          variant: 'destructive',
+        });
       }
     }
   };
@@ -61,6 +71,7 @@ export const TransactionsList = () => {
 
   return (
     <div className="space-y-6">
+      <RealtimeNotifications />
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
