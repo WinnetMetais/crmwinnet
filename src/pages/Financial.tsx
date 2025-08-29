@@ -19,6 +19,7 @@ import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifi
 import { useFinancialSummary, useTransactions } from "@/hooks/useTransactions";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
+import { useRealtimeFinancial } from "@/hooks/useRealtimeFinancial";
 import FinanceiroDashboard from "@/pages/FinanceiroDashboard";
 
 const Financial = () => {
@@ -29,6 +30,7 @@ const Financial = () => {
   // Ativa atualizações em tempo real
   useRealtimeUpdates();
   useRealtimeTransactions();
+  useRealtimeFinancial();
 
   // SEO title
   useEffect(() => {

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,59 +29,63 @@ export const CashFlowManager = () => {
   const { data: transactions = [], isLoading } = useTransactions();
   const deleteTransaction = useDeleteTransaction();
 
-  // Dados do fluxo de caixa baseados na planilha
-  const cashFlowData: CashFlowItem[] = [
-    {
-      id: '1',
-      date: '02/jan',
-      description: 'Anuidade',
-      category: 'Despesa Fixa',
-      type: 'despesa',
-      value: -22.00,
-      status: 'Pago',
-      method: 'Débito Automático'
-    },
-    {
-      id: '2',
-      date: '05/mai',
-      description: 'Venda - Melhor Envio',
-      category: 'Receita',
-      type: 'receita',
-      value: 30.83,
-      status: 'Recebido',
-      method: 'PIX'
-    },
-    {
-      id: '3',
-      date: '07/mai',
-      description: 'Venda - Produto',
-      category: 'Receita',
-      type: 'receita',
-      value: 4.85,
-      status: 'Recebido',
-      method: 'Débito Automático'
-    },
-    {
-      id: '4',
-      date: '09/mai',
-      description: 'Imposto de Renda',
-      category: 'Despesa Fixa',
-      type: 'despesa',
-      value: -184.00,
-      status: 'Pendente',
-      method: 'PIX'
-    },
-    {
-      id: '5',
-      date: '12/mai',
-      description: 'Transferência',
-      category: 'Movimentação',
-      type: 'receita',
-      value: 1218.43,
-      status: 'Recebido',
-      method: 'Transferência'
-    }
-  ];
+  // Combinar dados reais e de exemplo
+  const allTransactions = useMemo(() => {
+    const realTransactions = transactions.map((transaction: any) => ({
+      id: transaction.id,
+      date: new Date(transaction.date).toLocaleDateString('pt-BR'),
+      description: transaction.title,
+      category: transaction.category,
+      type: transaction.type,
+      value: transaction.type === 'receita' ? Number(transaction.amount) : -Number(transaction.amount),
+      status: transaction.status,
+      method: transaction.payment_method || 'Não informado'
+    }));
+
+    // Dados de exemplo para demonstração
+    const exampleData: CashFlowItem[] = [
+      {
+        id: 'example-1',
+        date: '02/jan',
+        description: 'Anuidade',
+        category: 'Despesa Fixa',
+        type: 'despesa',
+        value: -22.00,
+        status: 'Pago',
+        method: 'Débito Automático'
+      },
+      {
+        id: 'example-2',
+        date: '05/mai',
+        description: 'Venda - Melhor Envio',
+        category: 'Receita',
+        type: 'receita',
+        value: 30.83,
+        status: 'Recebido',
+        method: 'PIX'
+      }
+    ];
+
+    return [...realTransactions, ...exampleData];
+  }, [transactions]);
+
+  // Calcular totais
+  const totals = useMemo(() => {
+    const entradas = allTransactions
+      .filter(t => t.type === 'receita')
+      .reduce((sum, t) => sum + Math.abs(t.value), 0);
+    
+    const saidas = allTransactions
+      .filter(t => t.type === 'despesa')
+      .reduce((sum, t) => sum + Math.abs(t.value), 0);
+
+    return {
+      entradas,
+      saidas,
+      saldo: entradas - saidas,
+      acumulado: entradas - saidas + 25000 // Saldo anterior simulado
+    };
+  }, [allTransactions]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -175,19 +179,27 @@ export const CashFlowManager = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-4 border rounded-lg bg-green-50">
-              <div className="text-lg font-bold text-green-600">R$ 1.254,11</div>
+              <div className="text-lg font-bold text-green-600">
+                R$ {totals.entradas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
               <div className="text-sm text-muted-foreground">Total Entradas</div>
             </div>
             <div className="text-center p-4 border rounded-lg bg-red-50">
-              <div className="text-lg font-bold text-red-600">R$ 206,00</div>
+              <div className="text-lg font-bold text-red-600">
+                R$ {totals.saidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
               <div className="text-sm text-muted-foreground">Total Saídas</div>
             </div>
             <div className="text-center p-4 border rounded-lg bg-blue-50">
-              <div className="text-lg font-bold text-blue-600">R$ 1.048,11</div>
+              <div className={`text-lg font-bold ${totals.saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                R$ {totals.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
               <div className="text-sm text-muted-foreground">Saldo Líquido</div>
             </div>
             <div className="text-center p-4 border rounded-lg bg-purple-50">
-              <div className="text-lg font-bold text-purple-600">R$ 26.508,14</div>
+              <div className="text-lg font-bold text-purple-600">
+                R$ {totals.acumulado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
               <div className="text-sm text-muted-foreground">Saldo Acumulado</div>
             </div>
           </div>
@@ -214,8 +226,8 @@ export const CashFlowManager = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* Dados da planilha */}
-              {cashFlowData.map((item) => (
+              {/* Dados combinados (reais + exemplo) */}
+              {allTransactions.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.date}</TableCell>
                   <TableCell>{item.description}</TableCell>
@@ -241,44 +253,12 @@ export const CashFlowManager = () => {
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id.toString())}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              
-              {/* Dados do Supabase */}
-              {transactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell className="font-medium">
-                    {new Date(transaction.date).toLocaleDateString('pt-BR')}
-                  </TableCell>
-                  <TableCell>{transaction.title}</TableCell>
-                  <TableCell>{transaction.category}</TableCell>
-                  <TableCell>
-                    <span className={getTypeColor(transaction.type)}>
-                      {transaction.type.toUpperCase()}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={getTypeColor(transaction.type)}>
-                      R$ {Number(transaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(transaction.status)}>
-                      {transaction.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{transaction.payment_method || '-'}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(transaction)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(transaction.id)}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDelete(item.id)}
+                        disabled={item.id.startsWith('example-')}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import { useTransactions } from "@/hooks/useTransactions";
 
 interface FinancialDashboardProps {
   data: {
@@ -14,29 +15,85 @@ interface FinancialDashboardProps {
 }
 
 export const FinancialDashboard = ({ data }: FinancialDashboardProps) => {
-  // Se não há dados reais, mostrar resumo vazio mas funcional
-  const hasRealData = data.totalReceitas > 0 || data.totalDespesas > 0;
+  const { data: transactions = [] } = useTransactions();
+  
+  // Processar dados reais das transações
+  const processedData = useMemo(() => {
+    if (transactions.length === 0) {
+      return {
+        monthlyData: [{ month: 'Nenhum dado', receita: 0, despesa: 0, saldo: 0 }],
+        channelData: [{ name: 'Nenhum dado', value: 0, color: '#94a3b8' }],
+        expenseCategories: [{ category: 'Nenhum dado', value: 0, percentage: 0 }],
+        hasRealData: false
+      };
+    }
 
-  // Dados do fluxo de caixa mensal - usar dados reais quando disponíveis
-  const monthlyData = hasRealData ? [
-    { month: 'Este Mês', receita: data.totalReceitas, despesa: data.totalDespesas, saldo: data.saldo }
-  ] : [
-    { month: 'Nenhum dado', receita: 0, despesa: 0, saldo: 0 }
-  ];
+    // Agrupar por mês
+    const monthlyGrouped = transactions.reduce((acc: any, transaction: any) => {
+      const date = new Date(transaction.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!acc[monthKey]) {
+        acc[monthKey] = { month: monthKey, receita: 0, despesa: 0, saldo: 0 };
+      }
+      
+      const amount = Number(transaction.amount);
+      if (transaction.type === 'receita') {
+        acc[monthKey].receita += amount;
+      } else {
+        acc[monthKey].despesa += amount;
+      }
+      acc[monthKey].saldo = acc[monthKey].receita - acc[monthKey].despesa;
+      
+      return acc;
+    }, {});
 
-  // Dados por canal de vendas - usar dados reais ou placeholder
-  const channelData = hasRealData ? [
-    { name: 'Sistema', value: data.totalReceitas, color: '#22c55e' }
-  ] : [
-    { name: 'Nenhum dado', value: 0, color: '#94a3b8' }
-  ];
+    const monthlyData = Object.values(monthlyGrouped).sort((a: any, b: any) => a.month.localeCompare(b.month));
 
-  // Dados de despesas por categoria - usar dados reais ou placeholder
-  const expenseCategories = hasRealData ? [
-    { category: 'Total Despesas', value: data.totalDespesas, percentage: 100 }
-  ] : [
-    { category: 'Nenhum dado', value: 0, percentage: 0 }
-  ];
+    // Agrupar por canal
+    const channelGrouped = transactions
+      .filter((t: any) => t.type === 'receita')
+      .reduce((acc: any, transaction: any) => {
+        const channel = transaction.channel || 'Outros';
+        acc[channel] = (acc[channel] || 0) + Number(transaction.amount);
+        return acc;
+      }, {});
+
+    const channelData = Object.entries(channelGrouped).map(([name, value]: [string, any], index) => ({
+      name,
+      value,
+      color: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]
+    }));
+
+    // Agrupar despesas por categoria
+    const expenseGrouped = transactions
+      .filter((t: any) => t.type === 'despesa')
+      .reduce((acc: any, transaction: any) => {
+        const category = transaction.category || 'Outros';
+        acc[category] = (acc[category] || 0) + Number(transaction.amount);
+        return acc;
+      }, {});
+
+    const expenseValues = Object.values(expenseGrouped).map(val => Number(val));
+    const totalExpenses = expenseValues.reduce((sum: number, val: number) => sum + val, 0);
+    const expenseCategories = Object.entries(expenseGrouped).map(([category, value]: [string, any]) => {
+      const numValue = Number(value);
+      return {
+        category,
+        value: numValue,
+        percentage: totalExpenses > 0 ? Number(((numValue / totalExpenses) * 100).toFixed(1)) : 0
+      };
+    });
+
+    return {
+      monthlyData,
+      channelData,
+      expenseCategories,
+      hasRealData: true
+    };
+  }, [transactions]);
+
+  const { monthlyData, channelData, expenseCategories, hasRealData } = processedData;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
