@@ -117,14 +117,6 @@ export const CommercialGroup = ({ isActive, isActiveGroup }: CommercialGroupProp
         </SidebarMenu>
         <SidebarMenu className="mt-2">
           <SidebarMenuItem>
-            <SidebarMenuButton isActive={isActive('/leads')} asChild>
-              <Link to="/leads" className="w-full flex items-center">
-                <Users className="mr-2 h-4 w-4" />
-                <span>Leads</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
             <SidebarMenuButton isActive={isActive('/sales')} asChild>
               <Link to="/sales" className="w-full flex items-center">
                 <TrendingUp className="mr-2 h-4 w-4" />

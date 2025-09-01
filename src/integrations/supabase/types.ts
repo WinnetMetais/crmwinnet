@@ -1712,45 +1712,6 @@ export type Database = {
         }
         Relationships: []
       }
-      leads: {
-        Row: {
-          created_at: string | null
-          email: string | null
-          empresa: string | null
-          etapa: string | null
-          id: string
-          nome: string | null
-          origem: string | null
-          owner_id: string | null
-          telefone: string | null
-          whatsapp: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email?: string | null
-          empresa?: string | null
-          etapa?: string | null
-          id?: string
-          nome?: string | null
-          origem?: string | null
-          owner_id?: string | null
-          telefone?: string | null
-          whatsapp?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string | null
-          empresa?: string | null
-          etapa?: string | null
-          id?: string
-          nome?: string | null
-          origem?: string | null
-          owner_id?: string | null
-          telefone?: string | null
-          whatsapp?: string | null
-        }
-        Relationships: []
-      }
       marketing_campaigns: {
         Row: {
           budget: number | null
@@ -1949,76 +1910,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      oportunidades: {
-        Row: {
-          cliente_id: string | null
-          created_at: string | null
-          etapa: string | null
-          fechamento_previsto: string | null
-          ganho: boolean | null
-          id: string
-          lead_id: string | null
-          lost_reason: string | null
-          owner_id: string | null
-          pipeline_id: string | null
-          probabilidade: number | null
-          titulo: string
-          valor_previsto: number | null
-        }
-        Insert: {
-          cliente_id?: string | null
-          created_at?: string | null
-          etapa?: string | null
-          fechamento_previsto?: string | null
-          ganho?: boolean | null
-          id?: string
-          lead_id?: string | null
-          lost_reason?: string | null
-          owner_id?: string | null
-          pipeline_id?: string | null
-          probabilidade?: number | null
-          titulo: string
-          valor_previsto?: number | null
-        }
-        Update: {
-          cliente_id?: string | null
-          created_at?: string | null
-          etapa?: string | null
-          fechamento_previsto?: string | null
-          ganho?: boolean | null
-          id?: string
-          lead_id?: string | null
-          lost_reason?: string | null
-          owner_id?: string | null
-          pipeline_id?: string | null
-          probabilidade?: number | null
-          titulo?: string
-          valor_previsto?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "oportunidades_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "oportunidades_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "oportunidades_pipeline_id_fkey"
-            columns: ["pipeline_id"]
-            isOneToOne: false
-            referencedRelation: "pipelines"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       opportunities: {
         Row: {
@@ -2310,13 +2201,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_pedidos_oportunidade"
-            columns: ["oportunidade_id"]
-            isOneToOne: false
-            referencedRelation: "oportunidades"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "pedidos_canal_id_fkey"
             columns: ["canal_id"]
             isOneToOne: false
@@ -2328,13 +2212,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pedidos_oportunidade_id_fkey"
-            columns: ["oportunidade_id"]
-            isOneToOne: false
-            referencedRelation: "oportunidades"
             referencedColumns: ["id"]
           },
         ]

@@ -40,9 +40,7 @@ const Social = lazy(() => import('@/pages/content/Social'));
 const Ads = lazy(() => import('@/pages/content/Ads'));
 
 // CRM & Financeiro (PT) pages
-const Leads = lazy(() => import('@/pages/Leads'));
 const ClientesPT = lazy(() => import('@/pages/Clientes'));
-const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
 
 const FinanceiroDashboard = lazy(() => import('@/pages/FinanceiroDashboard'));
 const FinanceiroUploadXLSX = lazy(() => import('@/pages/FinanceiroUploadXLSX'));
@@ -89,9 +87,7 @@ export const routes: RouteConfig[] = [
   { path: '/production-setup', element: ProductionSetup },
   { path: '/quotes', element: Quotes },
   // New PT routes
-  { path: '/leads', element: Leads },
   { path: '/clientes', element: Customers },
-  { path: '/oportunidades', element: Sales },
   
   { path: '/financeiro', element: FinanceiroDashboard },
   { path: '/financeiro/upload', element: FinanceiroUploadXLSX },
