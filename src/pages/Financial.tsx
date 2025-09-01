@@ -82,20 +82,15 @@ const Financial = () => {
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-6 lg:grid-cols-13 w-full">
+            <TabsList className="grid grid-cols-6 lg:grid-cols-9 w-full">
               <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
               <TabsTrigger value="realtime" className="text-sm">Tempo Real</TabsTrigger>
               <TabsTrigger value="transactions" className="text-sm">Transações</TabsTrigger>
               <TabsTrigger value="new" className="text-sm">Nova</TabsTrigger>
-              <TabsTrigger value="sample" className="text-sm">Exemplo</TabsTrigger>
               <TabsTrigger value="cashflow" className="text-sm">Fluxo</TabsTrigger>
               <TabsTrigger value="expenses" className="text-sm">Despesas</TabsTrigger>
               <TabsTrigger value="revenue" className="text-sm">Receitas</TabsTrigger>
               <TabsTrigger value="channels" className="text-sm">Canais</TabsTrigger>
-              <TabsTrigger value="spreadsheet" className="text-sm">Planilha</TabsTrigger>
-              <TabsTrigger value="validation" className="text-sm">Validação</TabsTrigger>
-              <TabsTrigger value="winnet" className="text-sm">Winnet</TabsTrigger>
-              <TabsTrigger value="winnet-real" className="text-sm">Winnet Real</TabsTrigger>
               <TabsTrigger value="bulk" className="text-sm">Operações</TabsTrigger>
             </TabsList>
 
@@ -115,10 +110,6 @@ const Financial = () => {
                 <NewTransactionForm onClose={() => setActiveTab('transactions')} />
               </TabsContent>
 
-              <TabsContent value="sample" className="space-y-4">
-                <CreateSampleData />
-              </TabsContent>
-
               <TabsContent value="cashflow" className="space-y-4">
                 <CashFlowManager />
               </TabsContent>
@@ -133,22 +124,6 @@ const Financial = () => {
 
               <TabsContent value="channels" className="space-y-4">
                 <ChannelAnalysis channels={channelsData} />
-              </TabsContent>
-
-              <TabsContent value="spreadsheet" className="space-y-4">
-                <SpreadsheetSync />
-              </TabsContent>
-
-              <TabsContent value="validation" className="space-y-4">
-                <DataValidationTool />
-              </TabsContent>
-
-              <TabsContent value="winnet" className="space-y-4">
-                <WinnetDataImporter />
-              </TabsContent>
-
-              <TabsContent value="winnet-real" className="space-y-4">
-                <WinnetSpreadsheetImporter />
               </TabsContent>
 
               <TabsContent value="bulk" className="space-y-4">

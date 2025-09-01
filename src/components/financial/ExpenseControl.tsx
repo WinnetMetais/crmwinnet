@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,76 +19,68 @@ export const ExpenseControl = () => {
   const { data: expenses = [], isLoading } = useTransactionsByType('despesa');
   const deleteTransaction = useDeleteTransaction();
 
-  // Dados de despesas categorizadas
-  const expensesByCategory = [
-    { category: 'Despesas Fixas', value: 185000, color: '#ef4444', percentage: 36.5 },
-    { category: 'Despesas Variáveis', value: 156000, color: '#f97316', percentage: 30.8 },
-    { category: 'Despesas Operacionais', value: 98320, color: '#eab308', percentage: 19.4 },
-    { category: 'Marketing/Publicidade', value: 68000, color: '#22c55e', percentage: 13.3 }
-  ];
-
-  // Despesas mensais baseadas na planilha
-  const monthlyExpenses = [
-    { month: 'Jan', fixas: 18599.54, variaveis: 2000, operacionais: 1500, marketing: 800 },
-    { month: 'Fev', fixas: 4961.33, variaveis: 1800, operacionais: 1200, marketing: 600 },
-    { month: 'Mar', fixas: 4961.33, variaveis: 2200, operacionais: 1400, marketing: 900 },
-    { month: 'Abr', fixas: 2590.94, variaveis: 1900, operacionais: 1100, marketing: 700 },
-    { month: 'Mai', fixas: 0, variaveis: 1600, operacionais: 1000, marketing: 500 }
-  ];
-
-  // Despesas detalhadas (baseadas em dados reais + simulados)
-  const detailedExpenses = [
-    {
-      id: 'mock-1',
-      date: '02/jan',
-      description: 'Anuidade Sistema',
-      category: 'Fixa',
-      value: 22.00,
-      status: 'Pago',
-      dueDate: '02/jan',
-      recurring: true
-    },
-    {
-      id: 'mock-2',
-      date: '09/mai',
-      description: 'Imposto de Renda',
-      category: 'Fixa',
-      value: 184.00,
-      status: 'Pendente',
-      dueDate: '15/mai',
-      recurring: false
-    },
-    {
-      id: 'mock-3',
-      date: '20/mai',
-      description: 'Frete/Transporte',
-      category: 'Variável',
-      value: 145.00,
-      status: 'Pago',
-      dueDate: '20/mai',
-      recurring: false
-    },
-    {
-      id: 'mock-4',
-      date: '01/mai',
-      description: 'Taxa Bancária',
-      category: 'Operacional',
-      value: 85.50,
-      status: 'Pago',
-      dueDate: '01/mai',
-      recurring: true
-    },
-    {
-      id: 'mock-5',
-      date: '25/mai',
-      description: 'Publicidade Online',
-      category: 'Marketing',
-      value: 450.00,
-      status: 'Pendente',
-      dueDate: '25/mai',
-      recurring: true
+  // Processar dados reais das despesas
+  const processedData = useMemo(() => {
+    if (expenses.length === 0) {
+      return {
+        totalExpenses: 0,
+        expensesByCategory: [],
+        monthlyExpenses: [],
+        pendingExpenses: 0,
+        pendingCount: 0
+      };
     }
-  ];
+
+    // Agrupar por categoria
+    const categoryGroups = expenses.reduce((acc: Record<string, number>, expense: any) => {
+      const category = expense.category || 'Outras';
+      if (!acc[category]) {
+        acc[category] = 0;
+      }
+      acc[category] += Number(expense.amount);
+      return acc;
+    }, {});
+
+    const totalExpenses = Object.values(categoryGroups).reduce((sum: number, val: number) => sum + val, 0);
+    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
+    
+    const expensesByCategory = Object.entries(categoryGroups).map(([category, value], index) => ({
+      category,
+      value: Number(value),
+      color: colors[index % colors.length],
+      percentage: totalExpenses > 0 ? Number(((Number(value) / totalExpenses) * 100).toFixed(1)) : 0
+    }));
+
+    // Agrupar por mês
+    const monthlyGroups = expenses.reduce((acc: Record<string, any>, expense: any) => {
+      const date = new Date(expense.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
+      
+      if (!acc[monthKey]) {
+        acc[monthKey] = { month: monthName, total: 0 };
+      }
+      acc[monthKey].total += Number(expense.amount);
+      return acc;
+    }, {});
+
+    const monthlyExpenses = Object.values(monthlyGroups).sort((a: any, b: any) => a.month.localeCompare(b.month));
+
+    // Calcular pendências
+    const pendingExpenses = expenses
+      .filter((expense: any) => expense.status === 'pendente')
+      .reduce((sum: number, expense: any) => sum + Number(expense.amount), 0);
+    
+    const pendingCount = expenses.filter((expense: any) => expense.status === 'pendente').length;
+
+    return {
+      totalExpenses,
+      expensesByCategory,
+      monthlyExpenses,
+      pendingExpenses,
+      pendingCount
+    };
+  }, [expenses]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -123,15 +114,6 @@ export const ExpenseControl = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (id.startsWith('mock-')) {
-      toast({
-        title: "Aviso",
-        description: "Não é possível excluir dados de exemplo",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
       try {
         await deleteTransaction.mutateAsync(id);
@@ -159,6 +141,10 @@ export const ExpenseControl = () => {
     setShowNewExpenseForm(true);
   };
 
+  if (isLoading) {
+    return <div>Carregando despesas...</div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* Métricas de Despesas */}
@@ -169,9 +155,11 @@ export const ExpenseControl = () => {
             <TrendingDown className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">R$ 507.320,00</div>
+            <div className="text-2xl font-bold text-red-600">
+              R$ {processedData.totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
             <div className="text-xs text-muted-foreground">
-              +8.3% vs mês anterior
+              {expenses.length} despesas cadastradas
             </div>
           </CardContent>
         </Card>
@@ -182,9 +170,11 @@ export const ExpenseControl = () => {
             <AlertTriangle className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">R$ 185.000,00</div>
+            <div className="text-2xl font-bold text-blue-600">
+              R$ {(processedData.expensesByCategory.find(cat => cat.category.includes('Fixa'))?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
             <div className="text-xs text-muted-foreground">
-              36.5% do total
+              Despesas fixas
             </div>
           </CardContent>
         </Card>
@@ -195,9 +185,11 @@ export const ExpenseControl = () => {
             <TrendingDown className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">R$ 156.000,00</div>
+            <div className="text-2xl font-bold text-orange-600">
+              R$ {(processedData.expensesByCategory.find(cat => cat.category.includes('Variável'))?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
             <div className="text-xs text-muted-foreground">
-              30.8% do total
+              Despesas variáveis
             </div>
           </CardContent>
         </Card>
@@ -208,9 +200,11 @@ export const ExpenseControl = () => {
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">R$ 634,00</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              R$ {processedData.pendingExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
             <div className="text-xs text-muted-foreground">
-              2 despesas pendentes
+              {processedData.pendingCount} despesas pendentes
             </div>
           </CardContent>
         </Card>
@@ -224,41 +218,47 @@ export const ExpenseControl = () => {
             <CardTitle>Distribuição por Categoria</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              config={{
-                value: {
-                  label: "Valor",
-                  color: "#ef4444",
-                },
-              }}
-              className="h-[250px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={expensesByCategory}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#ef4444"
-                    dataKey="value"
-                    label={({ category, percentage }) => `${category}: ${percentage}%`}
-                  >
-                    {expensesByCategory.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip 
-                    content={<ChartTooltipContent 
-                      formatter={(value) => [
-                        `R$ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-                        'Valor'
-                      ]}
-                    />} 
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            {processedData.expensesByCategory.length > 0 ? (
+              <ChartContainer
+                config={{
+                  value: {
+                    label: "Valor",
+                    color: "#ef4444",
+                  },
+                }}
+                className="h-[250px]"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={processedData.expensesByCategory}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#ef4444"
+                      dataKey="value"
+                      label={({ category, percentage }) => `${category}: ${percentage}%`}
+                    >
+                      {processedData.expensesByCategory.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip 
+                      content={<ChartTooltipContent 
+                        formatter={(value) => [
+                          `R$ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                          'Valor'
+                        ]}
+                      />} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                Nenhuma despesa por categoria
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -268,28 +268,28 @@ export const ExpenseControl = () => {
             <CardTitle>Evolução Mensal das Despesas</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              config={{
-                fixas: { label: "Fixas", color: "#3b82f6" },
-                variaveis: { label: "Variáveis", color: "#f97316" },
-                operacionais: { label: "Operacionais", color: "#8b5cf6" },
-                marketing: { label: "Marketing", color: "#22c55e" },
-              }}
-              className="h-[250px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyExpenses}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="fixas" stackId="a" fill="#3b82f6" />
-                  <Bar dataKey="variaveis" stackId="a" fill="#f97316" />
-                  <Bar dataKey="operacionais" stackId="a" fill="#8b5cf6" />
-                  <Bar dataKey="marketing" stackId="a" fill="#22c55e" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            {processedData.monthlyExpenses.length > 0 ? (
+              <ChartContainer
+                config={{
+                  total: { label: "Total", color: "#ef4444" },
+                }}
+                className="h-[250px]"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={processedData.monthlyExpenses}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="total" fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                Nenhuma despesa mensal
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -326,52 +326,7 @@ export const ExpenseControl = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* Dados simulados */}
-              {detailedExpenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell className="font-medium">{expense.date || '-'}</TableCell>
-                  <TableCell>{expense.description}</TableCell>
-                  <TableCell>
-                    <Badge className={getCategoryColor(expense.category)}>
-                      {expense.category}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-red-600 font-semibold">
-                    R$ {expense.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </TableCell>
-                  <TableCell>{expense.dueDate}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(expense.status)}>
-                      {expense.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {expense.recurring ? (
-                      <Badge className="bg-purple-100 text-purple-800">Sim</Badge>
-                    ) : (
-                      <Badge variant="outline">Não</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(expense)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleDelete(expense.id)}
-                        disabled={expense.id.startsWith('mock-')}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              
-              {/* Dados do Supabase */}
-              {expenses.map((expense) => (
+              {expenses.length > 0 ? expenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="font-medium">
                     {new Date(expense.date).toLocaleDateString('pt-BR')}
@@ -411,7 +366,13 @@ export const ExpenseControl = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    Nenhuma despesa cadastrada. Clique em "Nova Despesa" para começar.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
