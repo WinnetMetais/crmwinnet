@@ -7,7 +7,7 @@ import { MetricsSection } from "@/components/crm/MetricsSection";
 import { RealtimeDataSection } from "@/components/crm/RealtimeDataSection";
 import { AnalysisSection } from "@/components/crm/AnalysisSection";
 import { useCustomers, useDeals, useTasks, useCRMMetrics } from "@/hooks/useCRM";
-import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 import { RefreshCw, BarChart3, Sparkles } from "lucide-react";
 import { CRMDataService } from "@/services/crmData";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ const CRMOverview = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   // Configurar realtime updates
-  useRealtimeUpdates();
+  useUnifiedRealtimeSync();
   
   const { data: customers, isLoading: customersLoading } = useCustomers();
   const { data: deals, isLoading: dealsLoading } = useDeals();

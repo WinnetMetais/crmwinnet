@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Search, Filter, Download, Mail, Phone, Building, MapPin, Trash2, Edit, MoreHorizontal } from "lucide-react";
 import { Customer, getCustomers, createCustomer, updateCustomer, deleteCustomer, deleteCustomerCascade } from "@/services/customers";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
@@ -39,7 +39,7 @@ const Customers = () => {
   });
 
   const queryClient = useQueryClient();
-  useRealtimeUpdates(); // Enable real-time updates
+  useUnifiedRealtimeSync(); // Enable real-time updates
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],

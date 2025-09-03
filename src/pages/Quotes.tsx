@@ -10,7 +10,7 @@ import { Plus, FileText, Send, Edit, Trash2, Eye } from "lucide-react";
 import { useQuotes, useDeleteQuote } from "@/hooks/useQuotes";
 import { QuoteForm } from "@/components/sales/QuoteForm";
 import { useToast } from "@/hooks/use-toast";
-import { useRealtimeQuotes } from "@/hooks/useRealtimeQuotes";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 
 const Quotes = () => {
   const [showNewQuoteForm, setShowNewQuoteForm] = useState(false);
@@ -21,7 +21,7 @@ const Quotes = () => {
   const { toast } = useToast();
 
   // Habilitar realtime updates
-  useRealtimeQuotes();
+  useUnifiedRealtimeSync();
 
   const handleDeleteQuote = async (id: string) => {
     if (confirm('Tem certeza que deseja deletar este orçamento?')) {

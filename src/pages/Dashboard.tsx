@@ -5,8 +5,10 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { KpiCards } from "@/components/dashboard/KpiCards";
 import { CampaignCharts } from "@/components/dashboard/CampaignCharts";
 import { RecentCampaignsTable } from "@/components/dashboard/RecentCampaignsTable";
-import { AudienceSegmentation } from "@/components/dashboard/AudienceSegmentation";
 import { ContentPlanning } from "@/components/dashboard/ContentPlanning";
+import { AudienceSegmentation } from "@/components/dashboard/AudienceSegmentation";
+import { UnifiedAnalyticsDashboard } from '@/components/dashboard/UnifiedAnalyticsDashboard';
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 
 // Sample data - in a real app, this would come from an API
 const campaignData = [
@@ -45,6 +47,9 @@ const Dashboard = () => {
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | '12m'>('30d');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Unified realtime sync for all data
+  useUnifiedRealtimeSync();
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
@@ -53,6 +58,9 @@ const Dashboard = () => {
         <div className="flex-1">
           <div className="container mx-auto py-10 px-4">
             <DashboardHeader dateRange={dateRange} setDateRange={setDateRange} />
+            
+            {/* Unified Analytics - Primary Dashboard */}
+            <UnifiedAnalyticsDashboard />
             
             {/* Métricas principais */}
             <KpiCards kpiData={kpiData} />

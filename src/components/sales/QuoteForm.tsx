@@ -17,7 +17,7 @@ import { CustomerQuote } from "@/services/customersQuotes";
 import { toast } from "@/hooks/use-toast";
 import { quoteService, QuoteItemInsert, QuoteInsert } from "@/services/quotes";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRealtimeQuotes } from "@/hooks/useRealtimeQuotes";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 interface QuoteFormProps {
   onClose: () => void;
   initialData?: Partial<QuoteFormData>;
@@ -55,7 +55,7 @@ const [saving, setSaving] = useState(false);
 const queryClient = useQueryClient();
 
 // Habilitar realtime updates
-useRealtimeQuotes();
+useUnifiedRealtimeSync();
 
 useEffect(() => {
   if (mode === 'create' && !initialData?.quoteNumber) {

@@ -18,7 +18,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createDeal } from "@/services/pipeline";
 import { createCustomer } from "@/services/customers";
 import { toast } from "@/hooks/use-toast";
-import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 
 const Sales = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -28,7 +28,7 @@ const Sales = () => {
   const [showOpportunityModal, setShowOpportunityModal] = useState(false);
 
   const queryClient = useQueryClient();
-  useRealtimeUpdates(); // Enable real-time updates for sales
+  useUnifiedRealtimeSync(); // Enable real-time updates for sales
 
   const createDealMutation = useMutation({
     mutationFn: createDeal,

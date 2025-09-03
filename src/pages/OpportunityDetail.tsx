@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Eye, ArrowLeft, Calendar, DollarSign, User, Tags } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 
 interface Opportunity {
   id: string;
@@ -67,7 +67,7 @@ const OpportunityDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useRealtimeUpdates();
+  useUnifiedRealtimeSync();
 
   useEffect(() => {
     // SEO basics

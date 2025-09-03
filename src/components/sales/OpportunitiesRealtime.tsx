@@ -4,14 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, DollarSign, Calendar, User, Trash } from "lucide-react";
 import { useOpportunities, useDeleteOpportunity } from "@/hooks/useOpportunities";
-import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 export const OpportunitiesRealtime = () => {
   const { data: opportunities = [], isLoading } = useOpportunities();
-  useRealtimeUpdates(); // Enable real-time updates
+  useUnifiedRealtimeSync(); // Enable real-time updates
   const navigate = useNavigate();
 
   const deleteMutation = useDeleteOpportunity();

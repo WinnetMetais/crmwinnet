@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Calendar, User, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { useTasks, useCreateTask, useCompleteTask } from "@/hooks/useTasks";
-import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
@@ -43,7 +43,7 @@ export const TaskManager = () => {
   const { data: tasks = [], isLoading } = useTasks();
   const createTaskMutation = useCreateTask();
   const completeTaskMutation = useCompleteTask();
-  useRealtimeUpdates(); // Enable real-time updates
+  useUnifiedRealtimeSync(); // Enable real-time updates
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
