@@ -1373,6 +1373,7 @@ export type Database = {
           qualification_status_id: string | null
           quote_id: string | null
           status: string | null
+          team: string | null
           title: string
           updated_at: string
           validation_errors: Json | null
@@ -1404,6 +1405,7 @@ export type Database = {
           qualification_status_id?: string | null
           quote_id?: string | null
           status?: string | null
+          team?: string | null
           title: string
           updated_at?: string
           validation_errors?: Json | null
@@ -1435,6 +1437,7 @@ export type Database = {
           qualification_status_id?: string | null
           quote_id?: string | null
           status?: string | null
+          team?: string | null
           title?: string
           updated_at?: string
           validation_errors?: Json | null
@@ -2319,6 +2322,7 @@ export type Database = {
           owner_id: string | null
           sales_channel_id: string | null
           status: string | null
+          team: string | null
           updated_at: string | null
           user_id: string
         }
@@ -2336,6 +2340,7 @@ export type Database = {
           owner_id?: string | null
           sales_channel_id?: string | null
           status?: string | null
+          team?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -2353,6 +2358,7 @@ export type Database = {
           owner_id?: string | null
           sales_channel_id?: string | null
           status?: string | null
+          team?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -4070,6 +4076,24 @@ export type Database = {
       }
     }
     Views: {
+      me: {
+        Row: {
+          role: string | null
+          team: string | null
+          user_id: string | null
+        }
+        Insert: {
+          role?: never
+          team?: string | null
+          user_id?: never
+        }
+        Update: {
+          role?: never
+          team?: string | null
+          user_id?: never
+        }
+        Relationships: []
+      }
       sales_analytics: {
         Row: {
           expenses: number | null
