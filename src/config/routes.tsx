@@ -13,6 +13,7 @@ const Products = lazy(() => import('@/pages/Products'));
 const Analysis = lazy(() => import('@/pages/Analysis'));
 const Config = lazy(() => import('@/pages/Config'));
 const Commercial = lazy(() => import('@/pages/Commercial'));
+const Orders = lazy(() => import('@/pages/Orders'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const Content = lazy(() => import('@/pages/Content'));
 const Campaigns = lazy(() => import('@/pages/Campaigns'));
@@ -67,6 +68,7 @@ export const routes: RouteConfig[] = [
   { path: '/analysis', element: Analysis },
   { path: '/config', element: Config },
   { path: '/commercial', element: Commercial },
+  { path: '/orders', element: Orders },
   { path: '/reports', element: Reports },
   { path: '/content', element: Content },
   { path: '/campaigns', element: Campaigns },
