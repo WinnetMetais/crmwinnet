@@ -206,20 +206,11 @@ export const SalesGoalsControl = () => {
   };
 
   const handleCreateGoal = async () => {
-    if (!newGoal.salesperson || !newGoal.period || newGoal.goal <= 0) {
+    if (!newGoal.salesperson || newGoal.goal <= 0) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos da meta.",
         variant: "destructive"
-      });
-      return;
-    }
-
-    if (!/^\w+\s\d{4}$/.test(newGoal.period)) {
-      toast({
-        title: "Formato inválido",
-        description: "Período deve ser no formato 'Mês Ano' (ex: Janeiro 2024).",
-        variant: "destructive",
       });
       return;
     }
@@ -229,22 +220,26 @@ export const SalesGoalsControl = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const [month, year] = newGoal.period.split(' ');
-      const monthNames = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-      ];
-      const monthIndex = monthNames.indexOf(month);
+      // Calcular datas baseado no tipo de período
+      let periodStart: Date, periodEnd: Date;
       
-      const periodStart = new Date(parseInt(year), monthIndex, 1);
-      const periodEnd = new Date(parseInt(year), monthIndex + 1, 0);
+      if (newGoal.periodType === 'daily') {
+        periodStart = new Date(newGoal.year, newGoal.month - 1, 1);
+        periodEnd = new Date(newGoal.year, newGoal.month - 1, 1);
+      } else if (newGoal.periodType === 'monthly') {
+        periodStart = new Date(newGoal.year, newGoal.month - 1, 1);
+        periodEnd = new Date(newGoal.year, newGoal.month, 0);
+      } else { // yearly
+        periodStart = new Date(newGoal.year, 0, 1);
+        periodEnd = new Date(newGoal.year, 11, 31);
+      }
 
       const { error } = await supabase
         .from('sales_goals')
         .insert({
           user_id: user.id,
           salesperson: newGoal.salesperson,
-          period_type: month,
+          period_type: newGoal.periodType,
           period_start: periodStart.toISOString().split('T')[0],
           period_end: periodEnd.toISOString().split('T')[0],
           goal_amount: newGoal.goal,
@@ -260,8 +255,10 @@ export const SalesGoalsControl = () => {
       
       setNewGoal({
         salesperson: '',
-        period: '',
-        goal: 0
+        periodType: 'monthly',
+        goal: 0,
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() + 1
       });
       
       await fetchGoals();
