@@ -13,7 +13,7 @@ import { DataValidationTool } from "@/components/financial/DataValidationTool";
 import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
 import { WinnetSpreadsheetImporter } from "@/components/financial/WinnetSpreadsheetImporter";
 import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOperations";
-import { FinancialTrashManager } from "@/components/financial/FinancialTrashManager";
+import TransactionTrashManager from "@/components/financial/TransactionTrashManager";
 import { FinancialPermissionsManager } from "@/components/financial/FinancialPermissionsManager";
 import { TransactionsList } from "@/components/financial/TransactionsList";
 import { CreateSampleData } from "@/components/financial/CreateSampleData";
@@ -131,7 +131,7 @@ const Financial = () => {
               </TabsContent>
 
               <TabsContent value="trash" className="space-y-4">
-                <FinancialTrashManager />
+                <TransactionTrashManager />
               </TabsContent>
 
               <TabsContent value="permissions" className="space-y-4">

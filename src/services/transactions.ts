@@ -82,9 +82,14 @@ export const transactionService = {
 
   // Soft delete - marca como deletada (vai para lixeira)
   async deleteTransaction(id: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    
     const { error } = await supabase
       .from('transactions')
-      .delete()
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: user?.id || null
+      })
       .eq('id', id);
     
     if (error) throw error;

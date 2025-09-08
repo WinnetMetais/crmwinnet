@@ -15,14 +15,11 @@ interface NewUserModalProps {
 }
 
 const availablePermissions = [
-  { id: 'vendas', label: 'Vendas' },
-  { id: 'clientes', label: 'Clientes' },
-  { id: 'relatórios', label: 'Relatórios' },
-  { id: 'estoque', label: 'Estoque' },
-  { id: 'financeiro', label: 'Financeiro' },
-  { id: 'configurações', label: 'Configurações' },
-  { id: 'marketing', label: 'Marketing' },
   { id: 'admin', label: 'Administrador' },
+  { id: 'manager', label: 'Gerente Financeiro' },
+  { id: 'finance', label: 'Financeiro' },
+  { id: 'sales', label: 'Vendas' },
+  { id: 'read_only', label: 'Somente Leitura' },
 ];
 
 const availableRoles = [
@@ -41,26 +38,36 @@ export function NewUserModal({ open, onOpenChange }: NewUserModalProps) {
     email: '',
     password: '',
     full_name: '',
-    department: '',
+    display_name: '',
+    department_id: '',
     role: '',
+    status: 'active',
     phone: '',
-    permissions: ['vendas', 'clientes'], // Permissões padrão
+    permissions: ['read_only'], // Permissão padrão
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const success = await createUser(formData);
+    // Auto-gerar display_name se não preenchido
+    const submitData = {
+      ...formData,
+      display_name: formData.display_name || formData.full_name.split(' ')[0]
+    };
+    
+    const success = await createUser(submitData);
     if (success) {
       // Reset form
       setFormData({
         email: '',
         password: '',
         full_name: '',
-        department: '',
+        display_name: '',
+        department_id: '',
         role: '',
+        status: 'active',
         phone: '',
-        permissions: ['vendas', 'clientes'],
+        permissions: ['read_only'],
       });
       onOpenChange(false);
     }
@@ -150,13 +157,13 @@ export function NewUserModal({ open, onOpenChange }: NewUserModalProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="department">Departamento *</Label>
-              <Select value={formData.department} onValueChange={(value) => setFormData(prev => ({ ...prev, department: value }))}>
+              <Select value={formData.department_id} onValueChange={(value) => setFormData(prev => ({ ...prev, department_id: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o departamento" />
                 </SelectTrigger>
                 <SelectContent>
                   {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.name}>{dept.name}</SelectItem>
+                    <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -183,7 +190,7 @@ export function NewUserModal({ open, onOpenChange }: NewUserModalProps) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading || !formData.email || !formData.password || !formData.full_name || !formData.role || !formData.department}>
+            <Button type="submit" disabled={loading || !formData.email || !formData.password || !formData.full_name || !formData.role || !formData.department_id}>
               {loading ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />

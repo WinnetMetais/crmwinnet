@@ -23,8 +23,10 @@ export interface NewUserData {
   email: string;
   password: string;
   full_name: string;
-  department: string;
+  display_name: string;
+  department_id?: string;
   role: string;
+  status: string;
   phone?: string;
   permissions: string[];
 }
@@ -40,10 +42,16 @@ export function useProfiles() {
       setLoading(true);
       setError(null);
 
-      // Buscar perfis
+      // Buscar perfis com departamentos
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          departments (
+            id,
+            name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -54,13 +62,14 @@ export function useProfiles() {
       if (profilesData) {
         for (const profile of profilesData) {
           const { data: permissionsData } = await supabase
-            .from('user_permissions_new')
-            .select('permission')
-            .eq('user_id', profile.user_id);
+            .from('financial_permissions')
+            .select('permission_type')
+            .eq('user_id', profile.user_id)
+            .eq('active', true);
 
           profilesWithPermissions.push({
             ...profile,
-            permissions: permissionsData?.map((p: any) => p.permission) || []
+            permissions: permissionsData?.map((p: any) => p.permission_type) || []
           });
         }
       }
@@ -91,7 +100,7 @@ export function useProfiles() {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: userData.full_name,
-            display_name: userData.full_name.split(' ')[0],
+            display_name: userData.display_name,
           }
         }
       });
@@ -99,16 +108,18 @@ export function useProfiles() {
       if (authError) throw authError;
 
       if (authData.user) {
-        // 2. Atualizar perfil com dados adicionais
+        // 2. Criar ou atualizar perfil
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({
+          .upsert({
+            user_id: authData.user.id,
             full_name: userData.full_name,
-            department: userData.department,
+            display_name: userData.display_name,
             role: userData.role,
+            status: userData.status,
+            department_id: userData.department_id,
             phone: userData.phone,
-          })
-          .eq('user_id', authData.user.id);
+          });
 
         if (profileError) throw profileError;
 
@@ -116,11 +127,13 @@ export function useProfiles() {
         if (userData.permissions.length > 0) {
           const permissionsData = userData.permissions.map(permission => ({
             user_id: authData.user!.id,
-            permission: permission as any
+            permission_type: permission,
+            module: 'all',
+            active: true
           }));
 
           const { error: permissionsError } = await supabase
-            .from('user_permissions_new')
+            .from('financial_permissions')
             .insert(permissionsData);
 
           if (permissionsError) throw permissionsError;
@@ -179,7 +192,7 @@ export function useProfiles() {
     try {
       // Remover permissões existentes
       const { error: deleteError } = await supabase
-        .from('user_permissions_new')
+        .from('financial_permissions')
         .delete()
         .eq('user_id', userId);
 
@@ -189,11 +202,13 @@ export function useProfiles() {
       if (permissions.length > 0) {
         const permissionsData = permissions.map(permission => ({
           user_id: userId,
-          permission: permission as any
+          permission_type: permission,
+          module: 'all',
+          active: true
         }));
 
         const { error: insertError } = await supabase
-          .from('user_permissions_new')
+          .from('financial_permissions')
           .insert(permissionsData);
 
         if (insertError) throw insertError;
