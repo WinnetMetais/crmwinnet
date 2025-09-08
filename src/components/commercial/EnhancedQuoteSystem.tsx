@@ -41,8 +41,8 @@ interface Quote {
   status: string;
   created_at: string;
   valid_until: string;
-  discount_percentage: number;
-  observations: string;
+  discount_percentage?: number;
+  observations?: string;
   items: QuoteItem[];
 }
 
@@ -52,7 +52,7 @@ interface QuoteItem {
   description: string;
   quantity: number;
   unit_price: number;
-  discount: number;
+  discount?: number;
   total: number;
 }
 
@@ -130,11 +130,27 @@ export const EnhancedQuoteSystem = () => {
 
       if (error) throw error;
       
-      const formattedQuotes = data?.map(quote => ({
-        ...quote,
-        items: quote.quote_items || [],
-        discount_percentage: quote.discount_percentage || 0,
-        observations: quote.observations || ''
+      const formattedQuotes: Quote[] = data?.map(quote => ({
+        id: quote.id,
+        quote_number: quote.quote_number || `ORC-${quote.id.slice(0, 8)}`,
+        customer_name: quote.customer_name || 'Cliente não informado',
+        customer_email: quote.customer_email || '',
+        customer_phone: quote.customer_phone || '',
+        total: quote.total || 0,
+        status: quote.status || 'pending',
+        created_at: quote.created_at,
+        valid_until: quote.valid_until || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        discount_percentage: 0, // Default value since it's not in the database
+        observations: '', // Field doesn't exist in database, using default
+        items: quote.quote_items?.map((item: any) => ({
+          id: item.id,
+          product_name: item.description || 'Produto sem nome', // Map description to product_name
+          description: item.description || '',
+          quantity: item.quantity || 0,
+          unit_price: item.unit_price || 0,
+          discount: 0, // Default since it's not in database structure
+          total: item.total || 0
+        })) || []
       })) || [];
       
       setQuotes(formattedQuotes);
