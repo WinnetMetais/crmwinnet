@@ -26,8 +26,10 @@ export const SalesGoalsControl = () => {
   const [loading, setLoading] = useState(false);
   const [newGoal, setNewGoal] = useState({
     salesperson: '',
-    period: '',
-    goal: 0
+    periodType: 'monthly',
+    goal: 0,
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1
   });
 
   // Carregar metas do Supabase
@@ -74,7 +76,7 @@ export const SalesGoalsControl = () => {
   };
 
   const createGoal = async () => {
-    if (!newGoal.salesperson || !newGoal.period || newGoal.goal <= 0) {
+    if (!newGoal.salesperson || newGoal.goal <= 0) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos corretamente",
@@ -85,22 +87,44 @@ export const SalesGoalsControl = () => {
 
     try {
       setLoading(true);
-      const [startDate, endDate] = newGoal.period.split(' - ');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Calcular datas baseado no tipo de período
+      let periodStart: Date, periodEnd: Date;
+      
+      if (newGoal.periodType === 'daily') {
+        periodStart = new Date(newGoal.year, newGoal.month - 1, 1);
+        periodEnd = new Date(newGoal.year, newGoal.month - 1, 1);
+      } else if (newGoal.periodType === 'monthly') {
+        periodStart = new Date(newGoal.year, newGoal.month - 1, 1);
+        periodEnd = new Date(newGoal.year, newGoal.month, 0);
+      } else { // yearly
+        periodStart = new Date(newGoal.year, 0, 1);
+        periodEnd = new Date(newGoal.year, 11, 31);
+      }
       
       const { error } = await supabase
         .from('sales_goals')
         .insert({
           salesperson: newGoal.salesperson,
-          period_start: startDate,
-          period_end: endDate,
-          period_type: 'monthly',
+          period_start: periodStart.toISOString().split('T')[0],
+          period_end: periodEnd.toISOString().split('T')[0],
+          period_type: newGoal.periodType,
           goal_amount: newGoal.goal,
-          user_id: (await supabase.auth.getUser()).data.user?.id
+          current_amount: 0,
+          user_id: user.id
         });
 
       if (error) throw error;
 
-      setNewGoal({ salesperson: '', period: '', goal: 0 });
+      setNewGoal({ 
+        salesperson: '', 
+        periodType: 'monthly', 
+        goal: 0,
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() + 1
+      });
       loadGoals();
       
       toast({
@@ -386,13 +410,46 @@ export const SalesGoalsControl = () => {
             </div>
 
             <div>
-              <Label htmlFor="period">Período</Label>
-              <Input
-                id="period"
-                placeholder="Ex: Fevereiro 2024"
-                value={newGoal.period}
-                onChange={(e) => setNewGoal({...newGoal, period: e.target.value})}
-              />
+              <Label htmlFor="periodType">Tipo de Meta</Label>
+              <select 
+                id="periodType"
+                className="w-full p-2 border rounded-md"
+                value={newGoal.periodType}
+                onChange={(e) => setNewGoal({...newGoal, periodType: e.target.value})}
+              >
+                <option value="daily">Diária</option>
+                <option value="monthly">Mensal</option>
+                <option value="yearly">Anual</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="year">Ano</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  value={newGoal.year}
+                  onChange={(e) => setNewGoal({...newGoal, year: Number(e.target.value)})}
+                />
+              </div>
+              {(newGoal.periodType === 'monthly' || newGoal.periodType === 'daily') && (
+                <div>
+                  <Label htmlFor="month">Mês</Label>
+                  <select 
+                    id="month"
+                    className="w-full p-2 border rounded-md"
+                    value={newGoal.month}
+                    onChange={(e) => setNewGoal({...newGoal, month: Number(e.target.value)})}
+                  >
+                    {Array.from({length: 12}, (_, i) => (
+                      <option key={i+1} value={i+1}>
+                        {new Date(0, i).toLocaleDateString('pt-BR', {month: 'long'})}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div>
@@ -406,7 +463,7 @@ export const SalesGoalsControl = () => {
               />
             </div>
 
-            <Button onClick={handleCreateGoal} className="w-full" disabled={loading}>
+            <Button onClick={createGoal} className="w-full" disabled={loading}>
               <Plus className="h-4 w-4 mr-2" />
               {loading ? 'Criando...' : 'Definir Meta'}
             </Button>
