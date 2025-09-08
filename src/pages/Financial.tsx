@@ -13,6 +13,8 @@ import { DataValidationTool } from "@/components/financial/DataValidationTool";
 import { WinnetDataImporter } from "@/components/financial/WinnetDataImporter";
 import { WinnetSpreadsheetImporter } from "@/components/financial/WinnetSpreadsheetImporter";
 import { FinancialBulkOperations } from "@/components/financial/FinancialBulkOperations";
+import { FinancialTrashManager } from "@/components/financial/FinancialTrashManager";
+import { FinancialPermissionsManager } from "@/components/financial/FinancialPermissionsManager";
 import { TransactionsList } from "@/components/financial/TransactionsList";
 import { CreateSampleData } from "@/components/financial/CreateSampleData";
 import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
@@ -78,7 +80,7 @@ const Financial = () => {
             </div>
 
             <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-6 lg:grid-cols-9 w-full">
+            <TabsList className="grid grid-cols-6 lg:grid-cols-11 w-full">
               <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
               <TabsTrigger value="realtime" className="text-sm">Tempo Real</TabsTrigger>
               <TabsTrigger value="transactions" className="text-sm">Transações</TabsTrigger>
@@ -88,6 +90,8 @@ const Financial = () => {
               <TabsTrigger value="revenue" className="text-sm">Receitas</TabsTrigger>
               <TabsTrigger value="channels" className="text-sm">Canais</TabsTrigger>
               <TabsTrigger value="bulk" className="text-sm">Operações</TabsTrigger>
+              <TabsTrigger value="trash" className="text-sm">Lixeira</TabsTrigger>
+              <TabsTrigger value="permissions" className="text-sm">Permissões</TabsTrigger>
             </TabsList>
 
               <TabsContent value="dashboard" className="space-y-4">
@@ -124,6 +128,14 @@ const Financial = () => {
 
               <TabsContent value="bulk" className="space-y-4">
                 <FinancialBulkOperations />
+              </TabsContent>
+
+              <TabsContent value="trash" className="space-y-4">
+                <FinancialTrashManager />
+              </TabsContent>
+
+              <TabsContent value="permissions" className="space-y-4">
+                <FinancialPermissionsManager />
               </TabsContent>
             </Tabs>
           </div>

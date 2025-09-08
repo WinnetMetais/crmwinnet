@@ -1549,6 +1549,39 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_permissions: {
+        Row: {
+          active: boolean | null
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          module: string
+          permission_type: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          module: string
+          permission_type: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          module?: string
+          permission_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       financial_reports: {
         Row: {
           cash_flow: number | null
@@ -3781,10 +3814,13 @@ export type Database = {
           data_quality_score: number | null
           date: string
           deal_id: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           due_date: string | null
           id: string
           invoice_number: string | null
+          last_modified_by: string | null
           last_validated_at: string | null
           opportunity_id: string | null
           payment_method: string | null
@@ -3809,10 +3845,13 @@ export type Database = {
           data_quality_score?: number | null
           date: string
           deal_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
           invoice_number?: string | null
+          last_modified_by?: string | null
           last_validated_at?: string | null
           opportunity_id?: string | null
           payment_method?: string | null
@@ -3837,10 +3876,13 @@ export type Database = {
           data_quality_score?: number | null
           date?: string
           deal_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
           invoice_number?: string | null
+          last_modified_by?: string | null
           last_validated_at?: string | null
           opportunity_id?: string | null
           payment_method?: string | null
@@ -4076,6 +4118,124 @@ export type Database = {
       }
     }
     Views: {
+      active_transactions: {
+        Row: {
+          amount: number | null
+          category: string | null
+          channel: string | null
+          client_name: string | null
+          created_at: string | null
+          data_quality_score: number | null
+          date: string | null
+          deal_id: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string | null
+          invoice_number: string | null
+          last_modified_by: string | null
+          last_validated_at: string | null
+          opportunity_id: string | null
+          payment_method: string | null
+          quote_id: string | null
+          recurring: boolean | null
+          recurring_period: string | null
+          status: string | null
+          subcategory: string | null
+          tags: string[] | null
+          title: string | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+          validation_errors: Json | null
+        }
+        Insert: {
+          amount?: number | null
+          category?: string | null
+          channel?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          data_quality_score?: number | null
+          date?: string | null
+          deal_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string | null
+          invoice_number?: string | null
+          last_modified_by?: string | null
+          last_validated_at?: string | null
+          opportunity_id?: string | null
+          payment_method?: string | null
+          quote_id?: string | null
+          recurring?: boolean | null
+          recurring_period?: string | null
+          status?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          validation_errors?: Json | null
+        }
+        Update: {
+          amount?: number | null
+          category?: string | null
+          channel?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          data_quality_score?: number | null
+          date?: string | null
+          deal_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string | null
+          invoice_number?: string | null
+          last_modified_by?: string | null
+          last_validated_at?: string | null
+          opportunity_id?: string | null
+          payment_method?: string | null
+          quote_id?: string | null
+          recurring?: boolean | null
+          recurring_period?: string | null
+          status?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          validation_errors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       me: {
         Row: {
           role: string | null
@@ -4166,6 +4326,10 @@ export type Database = {
           size_mb: number
           tablename: string
         }[]
+      }
+      has_financial_permission: {
+        Args: { _module?: string; _permission_type: string }
+        Returns: boolean
       }
       is_admin: {
         Args: Record<PropertyKey, never>

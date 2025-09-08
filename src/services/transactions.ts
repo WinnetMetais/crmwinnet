@@ -7,12 +7,24 @@ export type TransactionInsert = TablesInsert<'transactions'>;
 export type TransactionUpdate = TablesUpdate<'transactions'>;
 
 export const transactionService = {
-  // Buscar todas as transações do usuário
+  // Buscar todas as transações ativas (não deletadas)
   async getTransactions() {
+    const { data, error } = await supabase
+      .from('active_transactions')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Buscar transações deletadas (lixeira)
+  async getDeletedTransactions() {
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
-      .order('date', { ascending: false });
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
     
     if (error) throw error;
     return data;
@@ -68,7 +80,7 @@ export const transactionService = {
     return data;
   },
 
-  // Deletar transação
+  // Soft delete - marca como deletada (vai para lixeira)
   async deleteTransaction(id: string) {
     const { error } = await supabase
       .from('transactions')
@@ -76,6 +88,58 @@ export const transactionService = {
       .eq('id', id);
     
     if (error) throw error;
+  },
+
+  // Restaurar transação da lixeira
+  async restoreTransaction(id: string) {
+    const { data, error } = await supabase
+      .from('transactions')
+      .update({
+        deleted_at: null,
+        deleted_by: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Exclusão definitiva (força exclusão física)
+  async hardDeleteTransaction(id: string) {
+    // Primeiro desabilita o trigger temporariamente executando uma operação direta
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;  
+    return true;
+  },
+
+  // Verificar permissões financeiras
+  async checkFinancialPermissions(permissionType: string, module = 'all') {
+    const { data, error } = await supabase
+      .rpc('has_financial_permission', { 
+        _permission_type: permissionType,
+        _module: module 
+      });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Obter permissões do usuário atual
+  async getMyPermissions() {
+    const { data, error } = await supabase
+      .from('financial_permissions')
+      .select('*')
+      .eq('active', true);
+    
+    if (error) throw error;
+    return data;
   },
 
   // Buscar resumo financeiro
