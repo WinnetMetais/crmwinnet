@@ -27,7 +27,7 @@ const UserManagement = () => {
   const filteredUsers = profiles.filter(profile => {
     const matchesSearch = (profile.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          profile.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (profile.department || '').toLowerCase().includes(searchTerm.toLowerCase());
+                         (profile.department?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === 'all' || profile.role === filterRole;
     return matchesSearch && matchesRole;
   });
@@ -207,7 +207,7 @@ const UserManagement = () => {
                                 {profile.role}
                               </Badge>
                             </TableCell>
-                            <TableCell>{profile.department || 'Não definido'}</TableCell>
+                            <TableCell>{profile.department?.name || 'Não definido'}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className={getStatusColor(profile.status === 'active' ? 'Ativo' : 'Inativo')}>
                                 {profile.status === 'active' ? 'Ativo' : 'Inativo'}

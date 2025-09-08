@@ -3326,6 +3326,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           department: string | null
+          department_id: string | null
           display_name: string | null
           full_name: string | null
           id: string
@@ -3342,6 +3343,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           department?: string | null
+          department_id?: string | null
           display_name?: string | null
           full_name?: string | null
           id?: string
@@ -3358,6 +3360,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           department?: string | null
+          department_id?: string | null
           display_name?: string | null
           full_name?: string | null
           id?: string
@@ -3369,7 +3372,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_profiles_department"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       qualification_status: {
         Row: {

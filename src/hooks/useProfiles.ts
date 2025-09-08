@@ -8,7 +8,8 @@ export interface Profile {
   user_id: string;
   full_name?: string;
   display_name?: string;
-  department?: string;
+  department_id?: string;
+  department?: { id: string; name: string };
   role: string;
   status: string;
   phone?: string;
@@ -163,9 +164,11 @@ export function useProfiles() {
 
   const updateProfile = async (profileId: string, updates: Partial<Profile>) => {
     try {
+      // Filter only the fields that exist in the database table
+      const { department, permissions, ...dbUpdates } = updates;
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', profileId);
 
       if (error) throw error;
