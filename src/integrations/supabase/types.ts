@@ -110,6 +110,81 @@ export type Database = {
         }
         Relationships: []
       }
+      approval_hierarchy: {
+        Row: {
+          active: boolean | null
+          amount_limit: number | null
+          approver_id: string
+          created_at: string | null
+          id: string
+          module: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          amount_limit?: number | null
+          approver_id: string
+          created_at?: string | null
+          id?: string
+          module: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          amount_limit?: number | null
+          approver_id?: string
+          created_at?: string | null
+          id?: string
+          module?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      approval_requests: {
+        Row: {
+          amount: number | null
+          approved_at: string | null
+          approver_id: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          notes: string | null
+          reason: string | null
+          request_data: Json
+          request_type: string
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          amount?: number | null
+          approved_at?: string | null
+          approver_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          request_data: Json
+          request_type: string
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number | null
+          approved_at?: string | null
+          approver_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          request_data?: Json
+          request_type?: string
+          requester_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       atividades: {
         Row: {
           assunto: string | null
@@ -194,6 +269,92 @@ export type Database = {
           table_name?: string
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      automation_logs: {
+        Row: {
+          error_message: string | null
+          executed_at: string | null
+          execution_data: Json | null
+          execution_status: string
+          execution_time_ms: number | null
+          id: string
+          records_created: number | null
+          records_processed: number | null
+          records_updated: number | null
+          rule_id: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          executed_at?: string | null
+          execution_data?: Json | null
+          execution_status: string
+          execution_time_ms?: number | null
+          id?: string
+          records_created?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          rule_id?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          executed_at?: string | null
+          execution_data?: Json | null
+          execution_status?: string
+          execution_time_ms?: number | null
+          id?: string
+          records_created?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          rule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          active: boolean | null
+          conditions: Json
+          created_at: string | null
+          created_by: string | null
+          execution_count: number | null
+          id: string
+          last_executed: string | null
+          rule_name: string
+          rule_type: string
+        }
+        Insert: {
+          actions?: Json
+          active?: boolean | null
+          conditions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          execution_count?: number | null
+          id?: string
+          last_executed?: string | null
+          rule_name: string
+          rule_type: string
+        }
+        Update: {
+          actions?: Json
+          active?: boolean | null
+          conditions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          execution_count?: number | null
+          id?: string
+          last_executed?: string | null
+          rule_name?: string
+          rule_type?: string
         }
         Relationships: []
       }
@@ -395,6 +556,48 @@ export type Database = {
           name?: string
           phone?: string | null
           price_per_kg?: number | null
+        }
+        Relationships: []
+      }
+      cash_flow_projections: {
+        Row: {
+          accumulated_flow: number | null
+          confidence_level: number | null
+          confirmed_expenses: number | null
+          confirmed_income: number | null
+          created_at: string | null
+          id: string
+          net_flow: number | null
+          projected_expenses: number | null
+          projected_income: number | null
+          projection_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          accumulated_flow?: number | null
+          confidence_level?: number | null
+          confirmed_expenses?: number | null
+          confirmed_income?: number | null
+          created_at?: string | null
+          id?: string
+          net_flow?: number | null
+          projected_expenses?: number | null
+          projected_income?: number | null
+          projection_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          accumulated_flow?: number | null
+          confidence_level?: number | null
+          confirmed_expenses?: number | null
+          confirmed_income?: number | null
+          created_at?: string | null
+          id?: string
+          net_flow?: number | null
+          projected_expenses?: number | null
+          projected_income?: number | null
+          projection_date?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -3728,6 +3931,54 @@ export type Database = {
         }
         Relationships: []
       }
+      system_users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          created_by: string | null
+          department: string | null
+          email: string
+          full_name: string
+          id: string
+          last_login: string | null
+          phone: string | null
+          role: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          email: string
+          full_name: string
+          id?: string
+          last_login?: string | null
+          phone?: string | null
+          role?: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          last_login?: string | null
+          phone?: string | null
+          role?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           assigned_to: string | null
@@ -4299,9 +4550,26 @@ export type Database = {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined
       }
+      auto_approve_if_allowed: {
+        Args: { _amount?: number; _request_type: string; _user_id: string }
+        Returns: boolean
+      }
+      calculate_cash_flow_projections: {
+        Args: { _end_date?: string; _start_date?: string }
+        Returns: undefined
+      }
       calculate_customer_data_quality: {
         Args: { customer_id: string }
         Returns: number
+      }
+      can_approve_request: {
+        Args: {
+          _amount?: number
+          _approver_id: string
+          _module?: string
+          _requester_id: string
+        }
+        Returns: boolean
       }
       check_failed_auth_attempts: {
         Args: Record<PropertyKey, never>
@@ -4310,6 +4578,10 @@ export type Database = {
           last_attempt: string
           user_email: string
         }[]
+      }
+      check_overdue_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_advanced_statistics: {
         Args: { end_date?: string; start_date?: string }
