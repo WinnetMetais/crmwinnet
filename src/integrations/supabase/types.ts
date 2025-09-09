@@ -4500,21 +4500,30 @@ export type Database = {
       }
       me: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          department: string | null
+          department_id: string | null
+          department_name: string | null
+          display_name: string | null
+          full_name: string | null
+          id: string | null
+          phone: string | null
           role: string | null
-          team: string | null
+          status: string | null
+          updated_at: string | null
           user_id: string | null
         }
-        Insert: {
-          role?: never
-          team?: string | null
-          user_id?: never
-        }
-        Update: {
-          role?: never
-          team?: string | null
-          user_id?: never
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_profiles_department"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales_analytics: {
         Row: {
