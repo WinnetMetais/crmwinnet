@@ -4525,19 +4525,6 @@ export type Database = {
           },
         ]
       }
-      sales_analytics: {
-        Row: {
-          expenses: number | null
-          month: string | null
-          revenue: number | null
-          total_deals: number | null
-          total_opportunities: number | null
-          total_quotes: number | null
-          won_deals: number | null
-          won_value: number | null
-        }
-        Relationships: []
-      }
       vw_index_roles: {
         Row: {
           covers_fk: boolean | null
@@ -4600,6 +4587,10 @@ export type Database = {
         }[]
       }
       check_overdue_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_old_logs: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
