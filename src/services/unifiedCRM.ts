@@ -162,74 +162,80 @@ class UnifiedCRMService {
   }
 
   /**
-   * Get comprehensive sales analytics from materialized view
+   * Get comprehensive sales analytics from existing tables
    */
   async getSalesAnalytics(): Promise<SalesAnalytics> {
-    const { data: analyticsData, error } = await supabase
-      .from('sales_analytics')
-      .select('*')
-      .order('month', { ascending: true });
+    // Get all data in parallel
+    const [
+      { count: totalCustomers },
+      { data: deals },
+      { data: opportunities },
+      { data: quotes },
+      { data: transactions }
+    ] = await Promise.all([
+      supabase.from('customers').select('*', { count: 'exact', head: true }),
+      supabase.from('deals').select('*'),
+      supabase.from('opportunities').select('*'),
+      supabase.from('quotes').select('*'),
+      supabase.from('transactions').select('*').eq('type', 'receita')
+    ]);
 
-    if (error) {
-      console.error('Error fetching analytics:', error);
-      throw error;
+    // Calculate metrics
+    const totalDeals = deals?.length || 0;
+    const wonDeals = deals?.filter(d => d.status === 'won' || d.status === 'fechado')?.length || 0;
+    const wonValue = deals?.filter(d => d.status === 'won' || d.status === 'fechado')
+      .reduce((sum, deal) => sum + (deal.value || 0), 0) || 0;
+    const totalOpportunities = opportunities?.length || 0;
+    const totalQuotes = quotes?.length || 0;
+    const totalRevenue = transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+    const totalExpenses = 0; // Placeholder for expense calculation
+
+    const conversionRate = totalDeals > 0 ? (wonDeals / totalDeals) * 100 : 0;
+    const averageDealValue = wonDeals > 0 ? wonValue / wonDeals : 0;
+
+    // Generate monthly data for last 6 months
+    const monthlyData = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+      const monthDeals = deals?.filter(d => {
+        const dealDate = new Date(d.created_at);
+        return dealDate >= monthStart && dealDate <= monthEnd;
+      })?.length || 0;
+
+      const monthRevenue = transactions?.filter(t => {
+        const transDate = new Date(t.date);
+        return transDate >= monthStart && transDate <= monthEnd;
+      })?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+
+      const monthOpportunities = opportunities?.filter(o => {
+        const oppDate = new Date(o.created_at);
+        return oppDate >= monthStart && oppDate <= monthEnd;
+      })?.length || 0;
+
+      monthlyData.push({
+        month: date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'short' }),
+        deals: monthDeals,
+        revenue: monthRevenue,
+        opportunities: monthOpportunities
+      });
     }
-
-    // Calculate totals and metrics
-    const totals = analyticsData?.reduce((acc, month) => ({
-      totalDeals: acc.totalDeals + (month.total_deals || 0),
-      wonDeals: acc.wonDeals + (month.won_deals || 0),
-      wonValue: acc.wonValue + (month.won_value || 0),
-      totalOpportunities: acc.totalOpportunities + (month.total_opportunities || 0),
-      totalQuotes: acc.totalQuotes + (month.total_quotes || 0),
-      revenue: acc.revenue + (month.revenue || 0),
-      expenses: acc.expenses + (month.expenses || 0)
-    }), {
-      totalDeals: 0,
-      wonDeals: 0,
-      wonValue: 0,
-      totalOpportunities: 0,
-      totalQuotes: 0,
-      revenue: 0,
-      expenses: 0
-    }) || {
-      totalDeals: 0,
-      wonDeals: 0,
-      wonValue: 0,
-      totalOpportunities: 0,
-      totalQuotes: 0,
-      revenue: 0,
-      expenses: 0
-    };
-
-    // Get customer count
-    const { count: totalCustomers } = await supabase
-      .from('customers')
-      .select('*', { count: 'exact', head: true });
-
-    const conversionRate = totals.totalDeals > 0 ? (totals.wonDeals / totals.totalDeals) * 100 : 0;
-    const averageDealValue = totals.wonDeals > 0 ? totals.wonValue / totals.wonDeals : 0;
 
     return {
       totalCustomers: totalCustomers || 0,
-      totalDeals: totals.totalDeals,
-      wonDeals: totals.wonDeals,
-      wonValue: totals.wonValue,
-      totalOpportunities: totals.totalOpportunities,
-      totalQuotes: totals.totalQuotes,
-      totalRevenue: totals.revenue,
-      totalExpenses: totals.expenses,
+      totalDeals,
+      wonDeals,
+      wonValue,
+      totalOpportunities,
+      totalQuotes,
+      totalRevenue,
+      totalExpenses,
       conversionRate,
       averageDealValue,
-      monthlyData: analyticsData?.map(month => ({
-        month: new Date(month.month).toLocaleDateString('pt-BR', { 
-          year: 'numeric', 
-          month: 'short' 
-        }),
-        deals: month.total_deals || 0,
-        revenue: month.revenue || 0,
-        opportunities: month.total_opportunities || 0
-      })) || []
+      monthlyData
     };
   }
 
