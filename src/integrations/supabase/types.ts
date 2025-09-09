@@ -4594,6 +4594,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_advanced_statistics: {
         Args: { end_date?: string; start_date?: string }
         Returns: Json
