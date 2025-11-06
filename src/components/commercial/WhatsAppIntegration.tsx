@@ -11,22 +11,9 @@ import { MessageCircle, Send, Users, FileText, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-interface WhatsAppMessage {
-  id: string;
-  contact: string;
-  contact_name?: string;
-  message: string;
-  timestamp: string;
-  message_type: string;
-  direction: string;
-  status: string;
-  customer_id?: string;
-  phone_number?: string;
-  whatsapp_message_id?: string;
-  is_read?: boolean;
-  received_at?: string;
-  created_at: string;
-}
+import type { Database } from '@/integrations/supabase/types';
+
+type WhatsAppMessage = Database['public']['Tables']['whatsapp_messages']['Row'];
 
 interface Customer {
   id: string;
@@ -94,25 +81,7 @@ export const WhatsAppIntegration = () => {
         .limit(50);
 
       if (error) throw error;
-      const formattedMessages = data?.map((msg: any) => ({
-        id: msg.id,
-        contact: msg.contact_name || 'Contato não identificado',
-        message: msg.message,
-        timestamp: new Date(msg.received_at || msg.created_at).toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        message_type: msg.message_type || 'text',
-        direction: msg.direction || 'received',
-        status: msg.status,
-        customer_id: msg.customer_id,
-        phone_number: msg.phone_number,
-        whatsapp_message_id: msg.whatsapp_message_id,
-        is_read: msg.is_read,
-        received_at: msg.received_at,
-        created_at: msg.created_at
-      })) || [];
-      setMessages(formattedMessages);
+      setMessages(data || []);
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
     }
@@ -155,17 +124,15 @@ export const WhatsAppIntegration = () => {
       }
 
       // Salvar mensagem no banco
-      const { data: { user } } = await supabase.auth.getUser();
       const { error: dbError } = await supabase
         .from('whatsapp_messages')
         .insert({
-          user_id: user?.id || '',
           customer_id: selectedCustomer,
           contact_name: customer.name,
+          phone_number: customer.phone,
           message: messageContent,
-          message_type: 'text',
-          direction: 'sent',
-          status: 'pending'
+          direction: 'outbound',
+          status: 'sent'
         });
 
       if (dbError) throw dbError;
@@ -344,7 +311,7 @@ export const WhatsAppIntegration = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <span className="font-medium">{message.contact_name}</span>
                           {getStatusBadge(message.status)}
-                          <Badge variant="outline">{message.message_type}</Badge>
+                          <Badge variant="outline">{message.direction}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
                           {message.message}

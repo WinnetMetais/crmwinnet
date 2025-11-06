@@ -8,39 +8,23 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DollarSign, TrendingUp, Users, Calculator, Plus } from "lucide-react";
+import type { Database } from '@/integrations/supabase/types';
 
-interface Commission {
-  id: string;
-  salesperson: string;
-  base_amount: number;
-  commission_rate: number;
-  commission_amount: number;
-  status: string;
-  created_at: string;
-}
-
-interface CommissionRule {
-  id: string;
-  name: string;
-  min_sales: number;
-  max_sales: number;
-  rate: number;
-  active: boolean;
-}
+type Commission = Database['public']['Tables']['commissions']['Row'];
+type CommissionRule = Database['public']['Tables']['commission_rules']['Row'];
 
 export const CommissionSystem = () => {
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [rules, setRules] = useState<CommissionRule[]>([]);
   const [newRule, setNewRule] = useState({
     name: '',
-    min_sales: 0,
-    max_sales: 0,
-    rate: 0,
+    min_value: 0,
+    max_value: 0,
+    percentage: 0,
   });
   const [calcSales, setCalcSales] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Carregar dados do Supabase
   useEffect(() => {
     loadCommissions();
     loadRules();
@@ -66,7 +50,7 @@ export const CommissionSystem = () => {
         .from('commission_rules')
         .select('*')
         .eq('active', true)
-        .order('min_sales', { ascending: true });
+        .order('min_value', { ascending: true });
       
       if (error) throw error;
       setRules(data || []);
@@ -75,63 +59,8 @@ export const CommissionSystem = () => {
     }
   };
 
-  const createRule = async () => {
-    if (!newRule.name || newRule.min_sales >= newRule.max_sales || newRule.rate <= 0) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos corretamente",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('commission_rules')
-        .insert({
-          ...newRule,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        });
-
-      if (error) throw error;
-
-      setNewRule({ name: '', min_sales: 0, max_sales: 0, rate: 0 });
-      loadRules();
-      
-      toast({
-        title: "Sucesso",
-        description: "Regra de comissão criada com sucesso!",
-      });
-    } catch (error) {
-      console.error('Erro ao criar regra:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar regra de comissão",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  const [calcRate, setCalcRate] = useState(0);
-  const [calcResult, setCalcResult] = useState(0);
-
-  const totalCommissions = commissions.reduce((sum, comm) => sum + comm.commission_amount, 0);
-  const pendingCommissions = commissions.filter(c => c.status === 'pending').length;
-  const avgCommissionRate = commissions.length ? commissions.reduce((sum, comm) => sum + comm.commission_rate, 0) / commissions.length : 0;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'approved': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const handleCreateRule = async () => {
-    if (!newRule.name || newRule.rate <= 0 || newRule.min_sales >= newRule.max_sales) {
+    if (!newRule.name || newRule.percentage <= 0 || newRule.min_value >= newRule.max_value) {
       toast({
         title: "Campos inválidos",
         description: "Preencha todos os campos corretamente e verifique as faixas de vendas.",
@@ -142,9 +71,10 @@ export const CommissionSystem = () => {
 
     const hasOverlap = rules.some(
       rule =>
-        (newRule.min_sales >= rule.min_sales && newRule.min_sales <= rule.max_sales) ||
-        (newRule.max_sales >= rule.min_sales && newRule.max_sales <= rule.max_sales)
+        (newRule.min_value >= (rule.min_value || 0) && newRule.min_value <= (rule.max_value || 0)) ||
+        (newRule.max_value >= (rule.min_value || 0) && newRule.max_value <= (rule.max_value || 0))
     );
+    
     if (hasOverlap) {
       toast({
         title: "Conflito de faixa",
@@ -159,277 +89,233 @@ export const CommissionSystem = () => {
       if (!user) throw new Error('User not authenticated');
 
       const { error } = await supabase.from('commission_rules').insert({
-        ...newRule,
+        name: newRule.name,
+        min_value: newRule.min_value,
+        max_value: newRule.max_value,
+        percentage: newRule.percentage,
         user_id: user.id,
         active: true,
       });
+
       if (error) throw error;
+
+      setNewRule({ name: '', min_value: 0, max_value: 0, percentage: 0 });
+      loadRules();
       
       toast({
-        title: "Regra criada",
-        description: "Nova regra de comissão foi criada com sucesso!",
+        title: "Sucesso",
+        description: "Regra de comissão criada com sucesso!",
       });
-      setNewRule({ name: '', min_sales: 0, max_sales: 0, rate: 0 });
-      loadRules();
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Erro ao criar regra:', error);
       toast({
         title: "Erro",
-        description: error.message || "Falha ao criar regra",
+        description: "Erro ao criar regra de comissão",
         variant: "destructive",
       });
     }
   };
 
+  const [calcRate, setCalcRate] = useState(0);
+  const [calcResult, setCalcResult] = useState(0);
+
+  const totalCommissions = commissions.reduce((sum, comm) => sum + (comm.amount || 0), 0);
+  const pendingCommissions = commissions.filter(c => c.status === 'pendente').length;
+  const avgCommissionRate = commissions.length ? 
+    commissions.reduce((sum, comm) => sum + (comm.percentage || 0), 0) / commissions.length : 0;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pago': return 'bg-green-100 text-green-800';
+      case 'aprovado': return 'bg-blue-100 text-blue-800';
+      case 'pendente': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const handleCalculateCommission = () => {
-    const commission = calcSales * (calcRate / 100);
-    setCalcResult(commission);
-    toast({
-      title: "Cálculo realizado",
-      description: `Comissão calculada: R$ ${commission.toLocaleString()}`,
-    });
+    const result = calcSales * (calcRate / 100);
+    setCalcResult(result);
   };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Comissões</p>
-                <p className="text-3xl font-bold">R$ {totalCommissions.toLocaleString()}</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-green-600" aria-hidden="true" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total de Comissões</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              R$ {totalCommissions.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
-                <p className="text-3xl font-bold">{pendingCommissions}</p>
-              </div>
-              <Calculator className="h-8 w-8 text-orange-600" aria-hidden="true" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Comissões Pendentes</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingCommissions}</div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Taxa Média</p>
-                <p className="text-3xl font-bold">{avgCommissionRate.toFixed(1)}%</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-blue-600" aria-hidden="true" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Vendedores</p>
-                <p className="text-3xl font-bold">{commissions.length}</p>
-              </div>
-              <Users className="h-8 w-8 text-purple-600" aria-hidden="true" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Taxa Média</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{avgCommissionRate.toFixed(2)}%</div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="commissions" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="commissions">Comissões</TabsTrigger>
+      <Tabs defaultValue="history" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="rules">Regras</TabsTrigger>
           <TabsTrigger value="calculator">Calculadora</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="commissions">
+        <TabsContent value="history" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Comissões por Vendedor</CardTitle>
+              <CardTitle>Histórico de Comissões</CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-8">Carregando comissões...</div>
-              ) : (
-                <div className="overflow-x-auto" role="grid">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b" role="row">
-                        <th className="text-left p-3" role="columnheader">Vendedor</th>
-                        <th className="text-right p-3" role="columnheader">Valor Base</th>
-                        <th className="text-right p-3" role="columnheader">Taxa</th>
-                        <th className="text-right p-3" role="columnheader">Comissão</th>
-                        <th className="text-right p-3" role="columnheader">Status</th>
-                        <th className="text-right p-3" role="columnheader">Data</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {commissions.map((commission) => (
-                        <tr key={commission.id} className="border-b hover:bg-muted/50" role="row">
-                          <td className="p-3 font-medium">{commission.salesperson}</td>
-                          <td className="p-3 text-right">R$ {commission.base_amount.toLocaleString()}</td>
-                          <td className="p-3 text-right">{commission.commission_rate}%</td>
-                          <td className="p-3 text-right font-bold text-green-600">
-                            R$ {commission.commission_amount.toLocaleString()}
-                          </td>
-                          <td className="p-3 text-right">
-                            <Badge className={getStatusColor(commission.status)} aria-label={`Status: ${commission.status}`}>
-                              {commission.status}
-                            </Badge>
-                          </td>
-                          <td className="p-3 text-right">{new Date(commission.created_at).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <div className="space-y-4">
+                {commissions.map((commission) => (
+                  <div key={commission.id} className="flex items-center justify-between border-b pb-4">
+                    <div>
+                      <p className="font-medium">Deal: {commission.deal_id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        R$ {(commission.amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} 
+                        {commission.percentage && ` (${commission.percentage}%)`}
+                      </p>
+                    </div>
+                    <Badge className={getStatusColor(commission.status || 'pendente')}>
+                      {commission.status || 'pendente'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="rules">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Regras de Comissão</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {rules.map((rule) => (
-                    <div key={rule.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">{rule.name}</h4>
-                        <Badge variant={rule.active ? "default" : "secondary"} aria-label={`Regra ${rule.active ? 'Ativa' : 'Inativa'}`}>
-                          {rule.active ? "Ativa" : "Inativa"}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        <p>Vendas: R$ {rule.min_sales.toLocaleString()} - R$ {rule.max_sales.toLocaleString()}</p>
-                        <p>Taxa: {rule.rate}%</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Nova Regra de Comissão</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="ruleName">Nome da Regra</Label>
-                  <Input
-                    id="ruleName"
-                    placeholder="Ex: Nível Premium"
-                    value={newRule.name}
-                    onChange={(e) => setNewRule({...newRule, name: e.target.value})}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="minSales">Vendas Mínimas (R$)</Label>
-                    <Input
-                      id="minSales"
-                      type="number"
-                      value={newRule.min_sales}
-                      onChange={(e) => setNewRule({...newRule, min_sales: Number(e.target.value)})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxSales">Vendas Máximas (R$)</Label>
-                    <Input
-                      id="maxSales"
-                      type="number"
-                      value={newRule.max_sales}
-                      onChange={(e) => setNewRule({...newRule, max_sales: Number(e.target.value)})}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="rate">Taxa de Comissão (%)</Label>
-                  <Input
-                    id="rate"
-                    type="number"
-                    step="0.1"
-                    value={newRule.rate}
-                    onChange={(e) => setNewRule({...newRule, rate: Number(e.target.value)})}
-                  />
-                </div>
-
-                <Button onClick={handleCreateRule} className="w-full" disabled={loading}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Regra
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="calculator">
+        <TabsContent value="rules" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Calculadora de Comissão</CardTitle>
+              <CardTitle>Criar Nova Regra</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="calcSales">Valor de Vendas (R$)</Label>
-                    <Input
-                      id="calcSales"
-                      type="number"
-                      placeholder="Ex: 150000"
-                      value={calcSales}
-                      onChange={(e) => setCalcSales(Number(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="calcRate">Taxa de Comissão (%)</Label>
-                    <Input
-                      id="calcRate"
-                      type="number"
-                      step="0.1"
-                      placeholder="Ex: 3.5"
-                      value={calcRate}
-                      onChange={(e) => setCalcRate(Number(e.target.value))}
-                    />
-                  </div>
-                  <Button onClick={handleCalculateCommission} className="w-full">
-                    <Calculator className="h-4 w-4 mr-2" />
-                    Calcular
-                  </Button>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Nome da Regra</Label>
+                <Input
+                  value={newRule.name}
+                  onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
+                  placeholder="Ex: Bronze"
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <Label>Vendas Mín (R$)</Label>
+                  <Input
+                    type="number"
+                    value={newRule.min_value}
+                    onChange={(e) => setNewRule({ ...newRule, min_value: parseFloat(e.target.value) })}
+                  />
                 </div>
-                <div className="md:col-span-2">
-                  <div className="bg-muted p-6 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-4">Resultado</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Valor de Vendas:</span>
-                        <span className="font-medium">R$ {calcSales.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Taxa de Comissão:</span>
-                        <span className="font-medium">{calcRate.toFixed(1)}%</span>
-                      </div>
-                      <div className="border-t pt-2 flex justify-between text-lg font-bold">
-                        <span>Comissão Total:</span>
-                        <span className="text-green-600">R$ {calcResult.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <Label>Vendas Máx (R$)</Label>
+                  <Input
+                    type="number"
+                    value={newRule.max_value}
+                    onChange={(e) => setNewRule({ ...newRule, max_value: parseFloat(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label>Taxa (%)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={newRule.percentage}
+                    onChange={(e) => setNewRule({ ...newRule, percentage: parseFloat(e.target.value) })}
+                  />
                 </div>
               </div>
+              <Button onClick={handleCreateRule} disabled={loading}>
+                <Plus className="mr-2 h-4 w-4" />
+                Criar Regra
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Regras Ativas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {rules.map((rule) => (
+                  <div key={rule.id} className="flex items-center justify-between border p-3 rounded">
+                    <div>
+                      <p className="font-medium">{rule.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        R$ {(rule.min_value || 0).toLocaleString('pt-BR')} - R$ {(rule.max_value || 0).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                    <Badge variant="secondary">{rule.percentage}%</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="calculator" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Calculator className="mr-2 h-5 w-5" />
+                Calculadora de Comissões
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Valor da Venda (R$)</Label>
+                <Input
+                  type="number"
+                  value={calcSales}
+                  onChange={(e) => setCalcSales(parseFloat(e.target.value))}
+                  placeholder="Ex: 50000"
+                />
+              </div>
+              <div>
+                <Label>Taxa de Comissão (%)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={calcRate}
+                  onChange={(e) => setCalcRate(parseFloat(e.target.value))}
+                  placeholder="Ex: 3.5"
+                />
+              </div>
+              <Button onClick={handleCalculateCommission} className="w-full">
+                Calcular
+              </Button>
+              {calcResult > 0 && (
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Comissão Estimada:</p>
+                  <p className="text-2xl font-bold text-green-700">
+                    R$ {calcResult.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

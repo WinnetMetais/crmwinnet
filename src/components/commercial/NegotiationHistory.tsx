@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,17 +11,9 @@ import { History, Plus, Calendar, User, FileText } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
-interface NegotiationEntry {
-  id: string;
-  deal_id: string;
-  activity_type: string;
-  title: string;
-  description: string;
-  status: string;
-  created_by: string;
-  created_at: string;
-}
+type NegotiationEntry = Database['public']['Tables']['pipeline_activities']['Row'];
 
 export const NegotiationHistory = () => {
   const [selectedDeal, setSelectedDeal] = useState('');
@@ -30,8 +21,6 @@ export const NegotiationHistory = () => {
   const [negotiationData, setNegotiationData] = useState({
     type: '',
     description: '',
-    outcome: '',
-    next_action: '',
   });
   const [history, setHistory] = useState<NegotiationEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +34,6 @@ export const NegotiationHistory = () => {
         .from('pipeline_activities')
         .select('*')
         .eq('deal_id', dealId)
-        .eq('activity_type', 'negotiation')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -76,16 +64,16 @@ export const NegotiationHistory = () => {
 
     setIsLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { error } = await supabase
         .from('pipeline_activities')
         .insert({
           deal_id: selectedDeal,
-          activity_type: 'negotiation',
-          title: negotiationData.type,
+          type: negotiationData.type,
           description: negotiationData.description,
-          status: 'completed',
-          created_by: 'Usuário Atual',
-          completed_date: new Date().toISOString(),
+          created_by: user.id
         });
 
       if (error) throw error;
@@ -98,8 +86,6 @@ export const NegotiationHistory = () => {
       setNegotiationData({
         type: '',
         description: '',
-        outcome: '',
-        next_action: '',
       });
       setShowNewEntry(false);
       loadNegotiationHistory(selectedDeal);
@@ -116,11 +102,15 @@ export const NegotiationHistory = () => {
   };
 
   const getTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'reunião': return 'bg-blue-100 text-blue-800';
-      case 'proposta': return 'bg-green-100 text-green-800';
-      case 'negociação': return 'bg-yellow-100 text-yellow-800';
-      case 'fechamento': return 'bg-purple-100 text-purple-800';
+    switch (type?.toLowerCase()) {
+      case 'reunião':
+      case 'meeting': return 'bg-blue-100 text-blue-800';
+      case 'proposta':
+      case 'proposal': return 'bg-green-100 text-green-800';
+      case 'negociação':
+      case 'negotiation': return 'bg-yellow-100 text-yellow-800';
+      case 'fechamento':
+      case 'closing': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -177,10 +167,11 @@ export const NegotiationHistory = () => {
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="reunião">Reunião</SelectItem>
-                          <SelectItem value="proposta">Proposta</SelectItem>
-                          <SelectItem value="negociação">Negociação</SelectItem>
-                          <SelectItem value="fechamento">Fechamento</SelectItem>
+                          <SelectItem value="meeting">Reunião</SelectItem>
+                          <SelectItem value="proposal">Proposta</SelectItem>
+                          <SelectItem value="negotiation">Negociação</SelectItem>
+                          <SelectItem value="closing">Fechamento</SelectItem>
+                          <SelectItem value="follow_up">Follow-up</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -232,8 +223,7 @@ export const NegotiationHistory = () => {
                     <TableHead>Data</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Descrição</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Criado por</TableHead>
+                    <TableHead>Estágio</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -246,21 +236,21 @@ export const NegotiationHistory = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getTypeColor(entry.title)}>
-                          {entry.title}
+                        <Badge className={getTypeColor(entry.type)}>
+                          {entry.type || 'N/A'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {entry.description}
+                      <TableCell className="max-w-xs">
+                        {entry.description || 'Sem descrição'}
                       </TableCell>
                       <TableCell>
-                        {entry.status === 'completed' ? 'Concluído' : 'Pendente'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <User className="mr-2 h-4 w-4" />
-                          {entry.created_by}
-                        </div>
+                        {entry.new_stage ? (
+                          <Badge variant="outline">
+                            {entry.previous_stage || 'Início'} → {entry.new_stage}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">-</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

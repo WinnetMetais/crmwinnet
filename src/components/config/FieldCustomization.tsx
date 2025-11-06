@@ -83,7 +83,7 @@ export const FieldCustomization = () => {
       ...data,
       user_id: '00000000-0000-0000-0000-000000000000', // Será substituído pela autenticação real
       field_order: getCurrentFields().length + 1,
-    });
+    } as any);
   };
 
   const handleEditField = (data: any) => {

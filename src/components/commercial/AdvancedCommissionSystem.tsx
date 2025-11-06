@@ -21,31 +21,10 @@ import {
   CheckCircle,
   AlertCircle
 } from "lucide-react";
+import type { Database } from '@/integrations/supabase/types';
 
-interface Commission {
-  id: string;
-  salesperson: string;
-  base_amount: number;
-  commission_rate: number;
-  commission_amount: number;
-  status: string;
-  created_at: string;
-  deal_id?: string;
-  quote_id?: string;
-  payment_date?: string;
-  bonus_amount?: number;
-}
-
-interface CommissionRule {
-  id: string;
-  name: string;
-  min_sales: number;
-  max_sales: number;
-  rate: number;
-  active: boolean;
-  bonus_threshold?: number;
-  bonus_rate?: number;
-}
+type Commission = Database['public']['Tables']['commissions']['Row'];
+type CommissionRule = Database['public']['Tables']['commission_rules']['Row'];
 
 interface SalesTarget {
   salesperson: string;
@@ -85,16 +64,12 @@ export const AdvancedCommissionSystem = () => {
 
   const loadCommissions = async () => {
     try {
-      let query = supabase
-        .from('commissions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      let query = supabase.from('commissions').select('*');
+      
       if (selectedSalesperson !== 'all') {
-        query = query.eq('salesperson', selectedSalesperson);
+        query = query.eq('user_id', selectedSalesperson);
       }
-
-      // Filter by period
+      
       if (selectedPeriod === 'current-month') {
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -115,7 +90,7 @@ export const AdvancedCommissionSystem = () => {
         .from('commission_rules')
         .select('*')
         .eq('active', true)
-        .order('min_sales', { ascending: true });
+        .order('min_value', { ascending: true });
       
       if (error) throw error;
       setRules(data || []);
@@ -126,7 +101,6 @@ export const AdvancedCommissionSystem = () => {
 
   const loadSalesTargets = async () => {
     try {
-      // Fetch deals data to calculate targets
       const { data: deals, error } = await supabase
         .from('deals')
         .select('assigned_to, value, status, created_at')
@@ -134,13 +108,12 @@ export const AdvancedCommissionSystem = () => {
 
       if (error) throw error;
 
-      // Group by salesperson and calculate metrics
       const targetsByPerson = deals?.reduce((acc, deal) => {
         const salesperson = deal.assigned_to || 'Não atribuído';
         if (!acc[salesperson]) {
           acc[salesperson] = {
             salesperson,
-            monthly_target: 100000, // Default target
+            monthly_target: 100000,
             current_sales: 0,
             commission_earned: 0,
             deals_closed: 0,
@@ -154,10 +127,9 @@ export const AdvancedCommissionSystem = () => {
         return acc;
       }, {} as Record<string, SalesTarget>) || {};
 
-      // Calculate commission earned and achievement percentage
       Object.values(targetsByPerson).forEach(target => {
-        const personCommissions = commissions.filter(c => c.salesperson === target.salesperson);
-        target.commission_earned = personCommissions.reduce((sum, c) => sum + c.commission_amount, 0);
+        const personCommissions = commissions.filter(c => c.user_id === target.salesperson);
+        target.commission_earned = personCommissions.reduce((sum, c) => sum + (c.amount || 0), 0);
         target.achievement_percentage = (target.current_sales / target.monthly_target) * 100;
       });
 
@@ -171,7 +143,7 @@ export const AdvancedCommissionSystem = () => {
     try {
       const { error } = await supabase
         .from('commissions')
-        .update({ status: 'approved' })
+        .update({ status: 'aprovado' })
         .eq('id', commissionId);
 
       if (error) throw error;
@@ -193,57 +165,54 @@ export const AdvancedCommissionSystem = () => {
 
   const calculateCommissionByRule = (salesAmount: number): { rate: number; amount: number; rule?: CommissionRule } => {
     const applicableRule = rules.find(rule => 
-      salesAmount >= rule.min_sales && salesAmount <= rule.max_sales
+      salesAmount >= (rule.min_value || 0) && salesAmount <= (rule.max_value || 0)
     );
 
     if (applicableRule) {
-      const amount = salesAmount * (applicableRule.rate / 100);
+      const amount = salesAmount * ((applicableRule.percentage || 0) / 100);
       return { 
-        rate: applicableRule.rate, 
+        rate: applicableRule.percentage || 0, 
         amount,
         rule: applicableRule 
       };
     }
 
-    // Default commission rate if no rule applies
     return { rate: 3, amount: salesAmount * 0.03 };
   };
 
-  const totalCommissions = commissions.reduce((sum, comm) => sum + comm.commission_amount, 0);
-  const pendingCommissions = commissions.filter(c => c.status === 'pending').length;
-  const approvedCommissions = commissions.filter(c => c.status === 'approved').length;
+  const totalCommissions = commissions.reduce((sum, comm) => sum + (comm.amount || 0), 0);
+  const pendingCommissions = commissions.filter(c => c.status === 'pendente').length;
+  const approvedCommissions = commissions.filter(c => c.status === 'aprovado').length;
   const avgCommissionRate = commissions.length ? 
-    commissions.reduce((sum, comm) => sum + comm.commission_rate, 0) / commissions.length : 0;
+    commissions.reduce((sum, comm) => sum + (comm.percentage || 0), 0) / commissions.length : 0;
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'approved': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'pago': return 'bg-green-100 text-green-800';
+      case 'aprovado': return 'bg-blue-100 text-blue-800';
+      case 'pendente': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getAchievementColor = (percentage: number) => {
     if (percentage >= 100) return 'text-green-600';
-    if (percentage >= 80) return 'text-yellow-600';
+    if (percentage >= 75) return 'text-blue-600';
+    if (percentage >= 50) return 'text-yellow-600';
     return 'text-red-600';
   };
 
   return (
     <div className="space-y-6">
-      {/* Filter Controls */}
       <div className="flex gap-4">
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Período" />
+            <SelectValue placeholder="Selecione o período" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="current-month">Mês Atual</SelectItem>
             <SelectItem value="last-month">Mês Anterior</SelectItem>
-            <SelectItem value="quarter">Trimestre</SelectItem>
-            <SelectItem value="year">Ano</SelectItem>
+            <SelectItem value="all-time">Todo o Período</SelectItem>
           </SelectContent>
         </Select>
 
@@ -252,250 +221,202 @@ export const AdvancedCommissionSystem = () => {
             <SelectValue placeholder="Vendedor" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos os Vendedores</SelectItem>
-            <SelectItem value="João Silva">João Silva</SelectItem>
-            <SelectItem value="Maria Santos">Maria Santos</SelectItem>
-            <SelectItem value="Pedro Costa">Pedro Costa</SelectItem>
-            <SelectItem value="Ana Lima">Ana Lima</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Comissões</p>
-                <p className="text-3xl font-bold">R$ {totalCommissions.toLocaleString()}</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total de Comissões</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              R$ {totalCommissions.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
-                <p className="text-3xl font-bold">{pendingCommissions}</p>
-              </div>
-              <Clock className="h-8 w-8 text-orange-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingCommissions}</div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Aprovadas</p>
-                <p className="text-3xl font-bold">{approvedCommissions}</p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-blue-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Aprovadas</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{approvedCommissions}</div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Taxa Média</p>
-                <p className="text-3xl font-bold">{avgCommissionRate.toFixed(1)}%</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-purple-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Taxa Média</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{avgCommissionRate.toFixed(2)}%</div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="commissions" className="space-y-6">
-        <TabsList>
+      <Tabs defaultValue="commissions" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="commissions">Comissões</TabsTrigger>
-          <TabsTrigger value="targets">Metas de Vendas</TabsTrigger>
+          <TabsTrigger value="targets">Metas</TabsTrigger>
           <TabsTrigger value="rules">Regras</TabsTrigger>
           <TabsTrigger value="calculator">Calculadora</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="commissions">
+        <TabsContent value="commissions" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Histórico de Comissões</CardTitle>
+              <CardTitle>Comissões Registradas</CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-8">Carregando...</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3">Vendedor</th>
-                        <th className="text-right p-3">Valor Base</th>
-                        <th className="text-right p-3">Taxa</th>
-                        <th className="text-right p-3">Comissão</th>
-                        <th className="text-right p-3">Status</th>
-                        <th className="text-right p-3">Data</th>
-                        <th className="text-right p-3">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {commissions.map((commission) => (
-                        <tr key={commission.id} className="border-b hover:bg-muted/50">
-                          <td className="p-3 font-medium">{commission.salesperson}</td>
-                          <td className="p-3 text-right">R$ {commission.base_amount.toLocaleString()}</td>
-                          <td className="p-3 text-right">{commission.commission_rate}%</td>
-                          <td className="p-3 text-right font-bold text-green-600">
-                            R$ {commission.commission_amount.toLocaleString()}
-                          </td>
-                          <td className="p-3 text-right">
-                            <Badge className={getStatusColor(commission.status)}>
-                              {commission.status === 'pending' ? 'Pendente' : 
-                               commission.status === 'approved' ? 'Aprovada' :
-                               commission.status === 'paid' ? 'Paga' : commission.status}
-                            </Badge>
-                          </td>
-                          <td className="p-3 text-right">
-                            {new Date(commission.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="p-3 text-right">
-                            {commission.status === 'pending' && (
-                              <Button 
-                                size="sm" 
-                                onClick={() => approveCommission(commission.id)}
-                              >
-                                Aprovar
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <div className="space-y-4">
+                {commissions.map((commission) => (
+                  <div key={commission.id} className="flex items-center justify-between border-b pb-4">
+                    <div className="flex-1">
+                      <p className="font-medium">Deal: {commission.deal_id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        R$ {(commission.amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {commission.percentage && ` (${commission.percentage}%)`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(commission.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={getStatusColor(commission.status || 'pendente')}>
+                        {commission.status || 'pendente'}
+                      </Badge>
+                      {commission.status === 'pendente' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => approveCommission(commission.id)}
+                        >
+                          Aprovar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {commissions.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nenhuma comissão registrada no período selecionado
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="targets">
+        <TabsContent value="targets" className="space-y-4">
+          {salesTargets.map((target) => (
+            <Card key={target.salesperson}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{target.salesperson}</span>
+                  <Badge variant="outline">{target.deals_closed} negócios</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>Meta: R$ {target.monthly_target.toLocaleString('pt-BR')}</span>
+                    <span className={getAchievementColor(target.achievement_percentage)}>
+                      {target.achievement_percentage.toFixed(0)}%
+                    </span>
+                  </div>
+                  <Progress value={Math.min(target.achievement_percentage, 100)} />
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Vendas Atuais</p>
+                    <p className="font-bold">R$ {target.current_sales.toLocaleString('pt-BR')}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Comissão Acumulada</p>
+                    <p className="font-bold text-green-600">
+                      R$ {target.commission_earned.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="rules" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Desempenho das Metas</CardTitle>
+              <CardTitle>Regras de Comissão Ativas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {salesTargets.map((target) => (
-                  <Card key={target.salesperson}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-semibold text-lg">{target.salesperson}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {target.deals_closed} deals fechados
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`text-2xl font-bold ${getAchievementColor(target.achievement_percentage)}`}>
-                            {target.achievement_percentage.toFixed(1)}%
-                          </p>
-                          <p className="text-sm text-muted-foreground">da meta</p>
-                        </div>
-                      </div>
-                      
-                      <Progress 
-                        value={Math.min(target.achievement_percentage, 100)} 
-                        className="mb-4" 
-                      />
-                      
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Vendas Realizadas</p>
-                          <p className="font-semibold">R$ {target.current_sales.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Meta Mensal</p>
-                          <p className="font-semibold">R$ {target.monthly_target.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Comissão Ganha</p>
-                          <p className="font-semibold text-green-600">
-                            R$ {target.commission_earned.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+              <div className="space-y-2">
+                {rules.map((rule) => (
+                  <div key={rule.id} className="flex items-center justify-between border p-3 rounded">
+                    <div>
+                      <p className="font-medium">{rule.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        R$ {(rule.min_value || 0).toLocaleString('pt-BR')} - 
+                        R$ {(rule.max_value || 0).toLocaleString('pt-BR')}
+                      </p>
+                      {rule.product_category && (
+                        <p className="text-xs text-muted-foreground">Categoria: {rule.product_category}</p>
+                      )}
+                    </div>
+                    <Badge variant="secondary">{rule.percentage}%</Badge>
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="rules">
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Seção de regras de comissão</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="calculator">
+        <TabsContent value="calculator" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Calculadora Avançada de Comissão</CardTitle>
+              <CardTitle className="flex items-center">
+                <Calculator className="mr-2 h-5 w-5" />
+                Simulador de Comissões
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Valor de Vendas (R$)</Label>
-                      <Input type="number" placeholder="Ex: 150000" />
-                    </div>
-                    <div>
-                      <Label>Vendedor</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o vendedor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="joao">João Silva</SelectItem>
-                          <SelectItem value="maria">Maria Santos</SelectItem>
-                          <SelectItem value="pedro">Pedro Costa</SelectItem>
-                          <SelectItem value="ana">Ana Lima</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button className="w-full">
-                      <Calculator className="h-4 w-4 mr-2" />
-                      Calcular Comissão
-                    </Button>
-                  </div>
-                  
-                  <div className="bg-muted p-6 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-4">Resultado da Simulação</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>Regra Aplicada:</span>
-                        <span className="font-medium">Padrão (3%)</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Comissão Base:</span>
-                        <span className="font-medium">R$ 4.500</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Bônus por Meta:</span>
-                        <span className="font-medium text-green-600">R$ 500</span>
-                      </div>
-                      <div className="border-t pt-2 flex justify-between text-lg font-bold">
-                        <span>Total Final:</span>
-                        <span className="text-green-600">R$ 5.000</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Valor da Venda (R$)</Label>
+                <Input
+                  type="number"
+                  placeholder="Ex: 50000"
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    const result = calculateCommissionByRule(value);
+                    const calcResult = document.getElementById('calc-result');
+                    if (calcResult) {
+                      calcResult.innerHTML = `
+                        <p class="text-sm text-muted-foreground">Taxa: ${result.rate}%</p>
+                        <p class="text-2xl font-bold text-green-700">
+                          R$ ${result.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                        ${result.rule ? `<p class="text-xs text-muted-foreground">Regra: ${result.rule.name}</p>` : ''}
+                      `;
+                    }
+                  }}
+                />
+              </div>
+              <div id="calc-result" className="p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Digite um valor para calcular</p>
               </div>
             </CardContent>
           </Card>

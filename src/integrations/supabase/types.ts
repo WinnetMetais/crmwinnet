@@ -94,6 +94,36 @@ export type Database = {
           },
         ]
       }
+      customer_segments: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          criteria: Json | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -359,6 +389,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pipeline_stages: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          order_position: number
+          pipeline_type: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          order_position: number
+          pipeline_type?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          order_position?: number
+          pipeline_type?: string | null
+        }
+        Relationships: []
       }
       quote_items: {
         Row: {
@@ -721,6 +784,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          contact_name: string | null
+          created_at: string | null
+          customer_id: string | null
+          direction: string
+          id: string
+          is_read: boolean | null
+          message: string
+          phone_number: string
+          received_at: string | null
+          status: string | null
+          whatsapp_message_id: string | null
+        }
+        Insert: {
+          contact_name?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          direction?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          phone_number: string
+          received_at?: string | null
+          status?: string | null
+          whatsapp_message_id?: string | null
+        }
+        Update: {
+          contact_name?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          direction?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          phone_number?: string
+          received_at?: string | null
+          status?: string | null
+          whatsapp_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
