@@ -1,23 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
 
-// Leads functions removed - using customers table instead
+// DEPRECATED: Use unifiedCRM service instead
+// This file is kept for backward compatibility only
 
 export async function listClientes(){
-  const { data, error } = await supabase.from('clientes').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
   if (error) throw error; return data || [];
 }
+
 export async function upsertCliente(c:any){
-  const { data, error } = await supabase.from('clientes').upsert(c).select('*').single();
+  const { data, error } = await supabase.from('customers').upsert(c).select('*').single();
   if (error) throw error; return data;
 }
+
 export async function deleteCliente(id:string){
-  const { error } = await supabase.from('clientes').delete().eq('id', id);
+  const { error } = await supabase.from('customers').delete().eq('id', id);
   if (error) throw error;
-}
-
-// Oportunidades functions removed - using opportunities table instead
-
-export async function listPedidos(){
-  const { data, error } = await supabase.from('pedidos').select('*').order('emissao', { ascending: false });
-  if (error) throw error; return data || [];
 }
