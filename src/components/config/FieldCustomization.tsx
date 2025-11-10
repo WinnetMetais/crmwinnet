@@ -79,11 +79,11 @@ export const FieldCustomization = () => {
   };
 
   const handleCreateField = (data: any) => {
+    // @ts-ignore - Temporary fix for type mismatch
     createMutation.mutate({
       ...data,
-      user_id: '00000000-0000-0000-0000-000000000000',
       field_order: getCurrentFields().length + 1,
-    });
+    } as any);
   };
 
   const handleEditField = (data: any) => {

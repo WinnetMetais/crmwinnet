@@ -97,12 +97,12 @@ export const SalesPipeline = () => {
   });
 
   const filteredDeals = searchTerm
-    ? deals.filter((deal: Deal) => 
+    ? (deals as unknown as Deal[]).filter((deal: Deal) => 
         deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (deal.customers?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (deal.customers?.company || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : deals;
+    : (deals as unknown as Deal[]);
 
   const moveOpportunity = (dealId: string, targetStageId: string) => {
     updateStageMutation.mutate({ dealId, stageId: targetStageId });

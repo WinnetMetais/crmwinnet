@@ -4,22 +4,16 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
+import type { Database } from '@/integrations/supabase/types';
 
-type Notification = {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  created_at: string;
-  read: boolean;
-};
+type Notification = Database['public']['Tables']['notifications']['Row'];
 
 export const NotificationBanner = () => {
   const { unreadNotifications, markAsRead } = useNotifications();
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
 
   // Mostra apenas a notificação mais recente que não foi dispensada
-  const latestNotification = (unreadNotifications as Notification[])
+  const latestNotification = unreadNotifications
     .filter(n => !dismissedIds.includes(n.id))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 

@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, X, Package } from 'lucide-react';
-import { getProducts, Product } from '@/services/products';
+import { getProducts } from '@/services/products';
+import type { Database } from '@/integrations/supabase/types';
+
+type Product = Database['public']['Tables']['products']['Row'];
 
 interface ProductSelectorProps {
   onSelect: (product: Product, margin: number) => void;
@@ -20,7 +23,7 @@ export const ProductSelector = ({ onSelect, onClose }: ProductSelectorProps) => 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: getProducts,
-  }) as { data: Product[]; isLoading: boolean };
+  });
 
   const filteredProducts = products.filter(product =>
     product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,7 +86,7 @@ export const ProductSelector = ({ onSelect, onClose }: ProductSelectorProps) => 
                 Nenhum produto encontrado
               </div>
             ) : (
-              filteredProducts.map((product) => {
+              filteredProducts.map((product: Product) => {
                 const marginPrice = product.cost_price ? product.cost_price / (1 - selectedMargin / 100) : 0;
                 
                 return (

@@ -2,6 +2,9 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { toast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+type Notification = Database['public']['Tables']['notifications']['Row'];
 
 const NotificationContext = createContext<{
   unreadCount: number;
@@ -26,7 +29,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   // Mostrar toast para novas notificações
   useEffect(() => {
     if (unreadNotifications.length > 0) {
-      const latestNotification = unreadNotifications[0];
+      const latestNotification = unreadNotifications[0] as Notification;
       
       // Verifica se é uma notificação realmente nova (criada nos últimos 10 segundos)
       const isNew = new Date().getTime() - new Date(latestNotification.created_at).getTime() < 10000;

@@ -283,6 +283,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
           closed_at: string | null
@@ -420,6 +456,57 @@ export type Database = {
           name?: string
           order_position?: number
           pipeline_type?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          active: boolean | null
+          category: string | null
+          cost_price: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          inventory_count: number | null
+          min_stock: number | null
+          name: string
+          sale_price: number | null
+          sku: string | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          inventory_count?: number | null
+          min_stock?: number | null
+          name: string
+          sale_price?: number | null
+          sku?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          inventory_count?: number | null
+          min_stock?: number | null
+          name?: string
+          sale_price?: number | null
+          sku?: string | null
+          unit?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

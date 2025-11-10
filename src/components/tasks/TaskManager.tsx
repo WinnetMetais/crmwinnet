@@ -61,7 +61,6 @@ export const TaskManager = () => {
 
       await createTaskMutation.mutateAsync({
         ...newTask,
-        user_id: user.user.id,
         status: 'pending',
         due_date: newTask.due_date || null,
       });
@@ -105,7 +104,7 @@ export const TaskManager = () => {
     }
   };
 
-  const filteredTasks = tasks.filter((task: Task) => {
+  const filteredTasks = (tasks as unknown as Task[]).filter((task: Task) => {
     if (filter === 'all') return true;
     if (filter === 'pending') return task.status === 'pending';
     if (filter === 'completed') return task.status === 'completed';

@@ -10,7 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2, Download, Send, Calculator, FileText, Package2 } from "lucide-react";
 import { QuoteFormData, QuoteItem } from "@/types/quote";
-import { Product } from "@/services/products";
 import { ProductSelector } from "@/components/products/ProductSelector";
 import { CustomerSelector } from "@/components/quotes/CustomerSelector";
 import { CustomerQuote } from "@/services/customersQuotes";
@@ -18,6 +17,10 @@ import { toast } from "@/hooks/use-toast";
 import { quoteService, QuoteItemInsert, QuoteInsert } from "@/services/quotes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
+import type { Database } from '@/integrations/supabase/types';
+
+type Product = Database['public']['Tables']['products']['Row'];
+
 interface QuoteFormProps {
   onClose: () => void;
   initialData?: Partial<QuoteFormData>;
@@ -187,7 +190,8 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     const header: Omit<QuoteInsert, 'user_id'> = {
       quote_number: formData.quoteNumber,
-      date: formData.date,
+      title: formData.quoteNumber,
+      customer_id: formData.customerId || '',
       valid_until: formData.validUntil,
       customer_name: formData.customerName,
       customer_email: formData.customerEmail || null,
@@ -195,17 +199,15 @@ const handleSubmit = async (e: React.FormEvent) => {
       customer_address: formData.customerAddress || null,
       customer_cnpj: formData.customerCnpj || null,
       contact_person: formData.contactPerson || null,
-      requested_by: formData.requestedBy || null,
       subtotal: formData.subtotal,
       discount: formData.discount,
       total: formData.total,
       payment_terms: formData.paymentTerms || null,
-      delivery_terms: formData.deliveryTerms || null,
+      delivery_time: formData.deliveryTerms || null,
       warranty: formData.warranty || null,
       notes: formData.notes || null,
       internal_notes: formData.internalNotes || null,
       status: formData.status,
-      // user_id is set in the service
     };
 
     const quote = await quoteService.createQuote(header as unknown as QuoteInsert);
@@ -215,7 +217,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         formData.items.map((it) => {
           const item: QuoteItemInsert = {
             quote_id: quote.id,
-            code: it.code,
+            product_code: it.code,
             description: it.description,
             quantity: it.quantity,
             unit: it.unit,

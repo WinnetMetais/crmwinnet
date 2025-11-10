@@ -9,6 +9,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { Database } from '@/integrations/supabase/types';
+
+type Notification = Database['public']['Tables']['notifications']['Row'];
 
 export const NotificationCenter = () => {
   const { 
@@ -84,7 +87,7 @@ export const NotificationCenter = () => {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  {unreadNotifications.map((notification) => (
+                  {unreadNotifications.map((notification: Notification) => (
                     <div 
                       key={notification.id} 
                       className={`p-3 border-l-4 hover:bg-gray-50 ${getNotificationColor(notification.type)}`}

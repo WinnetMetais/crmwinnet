@@ -10,7 +10,6 @@ import { ProductSelector } from "@/components/products/ProductSelector";
 import { QuoteForm } from "@/components/sales/QuoteForm";
 import { CustomerFormData } from "@/types/customer";
 import { Customer, createCustomer } from "@/services/customers";
-import { Product } from "@/services/products";
 import { ClientTab } from "@/components/sales/opportunity/ClientTab";
 import { OpportunityTab } from "@/components/sales/opportunity/OpportunityTab";
 import { ProductsTab } from "@/components/sales/opportunity/ProductsTab";
@@ -19,6 +18,9 @@ import { toast } from "@/hooks/use-toast";
 import { useCreateOpportunity } from "@/hooks/useOpportunities";
 import { createOpportunityItem } from "@/services/opportunities";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Database } from '@/integrations/supabase/types';
+
+type Product = Database['public']['Tables']['products']['Row'];
 
 interface OpportunityItem {
   id: string;
