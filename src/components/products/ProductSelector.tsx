@@ -20,10 +20,10 @@ export const ProductSelector = ({ onSelect, onClose }: ProductSelectorProps) => 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: getProducts,
-  });
+  }) as { data: Product[]; isLoading: boolean };
 
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 

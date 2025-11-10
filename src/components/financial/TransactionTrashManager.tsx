@@ -31,8 +31,7 @@ interface DeletedTransaction {
   type: string;
   category: string;
   date: string;
-  deleted_at: string;
-  deleted_by: string;
+  deleted_at: string | null;
 }
 
 const TransactionTrashManager: React.FC = () => {

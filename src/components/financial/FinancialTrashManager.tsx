@@ -21,11 +21,10 @@ interface DeletedTransaction {
   id: string;
   title: string;
   amount: number;
-  type: string; // Permitir string genérico
+  type: string;
   date: string;
-  deleted_at: string;
-  deleted_by: string;
-  client_name: string;
+  deleted_at: string | null;
+  client_name: string | null;
   category: string;
 }
 

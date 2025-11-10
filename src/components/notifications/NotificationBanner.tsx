@@ -5,12 +5,21 @@ import { Button } from '@/components/ui/button';
 import { X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 
+type Notification = {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  created_at: string;
+  read: boolean;
+};
+
 export const NotificationBanner = () => {
   const { unreadNotifications, markAsRead } = useNotifications();
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
 
   // Mostra apenas a notificação mais recente que não foi dispensada
-  const latestNotification = unreadNotifications
+  const latestNotification = (unreadNotifications as Notification[])
     .filter(n => !dismissedIds.includes(n.id))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 

@@ -8,13 +8,15 @@ import { useTransactions, useDeleteTransaction } from "@/hooks/useTransactions";
 import { NewTransactionForm } from "./NewTransactionForm";
 import { toast } from "@/hooks/use-toast";
 import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
-import type { Transaction } from "@/services/transactions";
+import type { Database } from "@/integrations/supabase/types";
+
+type Transaction = Database['public']['Tables']['transactions']['Row'];
 
 export const TransactionsList = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
-  const { data: transactions = [], isLoading } = useTransactions();
+  const { data: transactions = [], isLoading } = useTransactions() as { data: Transaction[]; isLoading: boolean };
   const deleteTransaction = useDeleteTransaction();
 
   const handleDelete = async (id: string) => {
