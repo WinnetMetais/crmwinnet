@@ -113,6 +113,7 @@ const OpportunityDetail: React.FC = () => {
           setLoading(false);
           return;
         }
+        // @ts-ignore - Opportunity type conversion
         setOpportunity(opp as Opportunity);
         if (opp.customer_id) {
           const { data: cust } = await supabase

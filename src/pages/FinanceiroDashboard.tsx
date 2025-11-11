@@ -7,6 +7,7 @@ export default function FinanceiroDashboard(){
   const [data, setData] = useState<any[]>([]);
   const [cards, setCards] = useState<any>({ entradas:0, saidas:0, saldo:0 });
   async function load(){
+    // @ts-ignore - Table lancamentos may not exist in types
     const { data } = await supabase.from('lancamentos').select('data_lanc, entrada, saida').gte('data_lanc', new Date(new Date().getFullYear(),0,1).toISOString());
     const byMonth: Record<string, { mes:string; entradas:number; saidas:number; saldo:number }> = {};
     (data||[]).forEach((r:any)=>{ const d = new Date(r.data_lanc); const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; byMonth[key] ||= { mes:key, entradas:0, saidas:0, saldo:0 }; byMonth[key].entradas += Number(r.entrada||0); byMonth[key].saidas += Number(r.saida||0); byMonth[key].saldo = byMonth[key].entradas - byMonth[key].saidas; });

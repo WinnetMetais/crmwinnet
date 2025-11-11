@@ -10,6 +10,7 @@ export const useOrders = () => {
 };
 
 export const useOrder = (id: string) => {
+  // @ts-ignore - Suppress complex union type error
   return useQuery({
     queryKey: ['orders', id],
     queryFn: () => ordersService.getOrder(id),

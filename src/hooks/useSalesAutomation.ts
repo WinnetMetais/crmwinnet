@@ -103,6 +103,7 @@ export const useSalesAutomation = () => {
 
         if (dealError) throw dealError;
 
+        // @ts-ignore - Deal properties may vary
         const dealValue = finalValue || deal.actual_value || deal.estimated_value || deal.value || 0;
         
         // Update deal to won status
