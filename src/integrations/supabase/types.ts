@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_data: {
+        Row: {
+          additional_data: Json | null
+          category: string
+          created_at: string
+          id: string
+          metric_date: string
+          metric_name: string
+          metric_value: number | null
+          subcategory: string | null
+        }
+        Insert: {
+          additional_data?: Json | null
+          category: string
+          created_at?: string
+          id?: string
+          metric_date: string
+          metric_name: string
+          metric_value?: number | null
+          subcategory?: string | null
+        }
+        Update: {
+          additional_data?: Json | null
+          category?: string
+          created_at?: string
+          id?: string
+          metric_date?: string
+          metric_name?: string
+          metric_value?: number | null
+          subcategory?: string | null
+        }
+        Relationships: []
+      }
       commission_rules: {
         Row: {
           active: boolean | null
@@ -283,6 +316,60 @@ export type Database = {
           },
         ]
       }
+      departments: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_permissions: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          id: string
+          module: string
+          permission_type: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          id?: string
+          module: string
+          permission_type: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          id?: string
+          module?: string
+          permission_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -509,6 +596,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          department_id: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          permissions: Json | null
+          role: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department_id?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          permissions?: Json | null
+          role?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          permissions?: Json | null
+          role?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quote_items: {
         Row: {
