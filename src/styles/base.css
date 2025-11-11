@@ -5,34 +5,44 @@
 
 @layer base {
   :root {
+    /* Cores Winnet - baseadas no site oficial */
     --background: 255 255 255;
-    --foreground: 15 23 42;
+    --foreground: 0 61 122; /* Azul escuro Winnet #003D7A */
     --card: 255 255 255;
-    --card-foreground: 15 23 42;
+    --card-foreground: 0 61 122;
     --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
-    --primary: 37 99 235;
+    --popover-foreground: 0 61 122;
+    
+    /* Azul ciano principal Winnet #0B9AD8 */
+    --primary: 11 154 216;
     --primary-foreground: 255 255 255;
-    --secondary: 248 250 252;
-    --secondary-foreground: 51 65 85;
+    
+    /* Laranja coral Winnet #FF6B3D */
+    --secondary: 255 107 61;
+    --secondary-foreground: 255 255 255;
+    
+    /* Amarelo Winnet #F7A800 */
+    --accent: 247 168 0;
+    --accent-foreground: 255 255 255;
+    
     --muted: 241 245 249;
     --muted-foreground: 71 85 105;
-    --accent: 239 246 255;
-    --accent-foreground: 37 99 235;
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
     --border: 226 232 240;
     --input: 226 232 240;
-    --ring: 37 99 235;
+    --ring: 11 154 216;
     --radius: 0.5rem;
+    
+    /* Sidebar com cores Winnet */
     --sidebar-background: 255 255 255;
-    --sidebar-foreground: 51 65 85;
-    --sidebar-primary: 37 99 235;
+    --sidebar-foreground: 0 61 122;
+    --sidebar-primary: 11 154 216;
     --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 239 246 255;
-    --sidebar-accent-foreground: 37 99 235;
+    --sidebar-accent: 240 249 255;
+    --sidebar-accent-foreground: 11 154 216;
     --sidebar-border: 226 232 240;
-    --sidebar-ring: 37 99 235;
+    --sidebar-ring: 11 154 216;
   }
 }
 

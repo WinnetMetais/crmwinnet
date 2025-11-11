@@ -34,6 +34,7 @@ const DataQuality = lazy(() => import('@/pages/DataQuality'));
 const ProductionSetup = lazy(() => import('@/pages/ProductionSetup'));
 const Quotes = lazy(() => import('@/pages/Quotes'));
 const OpportunityDetail = lazy(() => import('@/pages/OpportunityDetail'));
+const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
 
 // Content sub-pages
 const ContentPlan = lazy(() => import('@/pages/content/ContentPlan'));
@@ -88,6 +89,7 @@ export const routes: RouteConfig[] = [
   { path: '/data-quality', element: DataQuality },
   { path: '/production-setup', element: ProductionSetup },
   { path: '/quotes', element: Quotes },
+  { path: '/admin', element: AdminDashboard },
   // New PT routes
   { path: '/clientes', element: Customers },
   

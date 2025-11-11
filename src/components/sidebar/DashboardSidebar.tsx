@@ -27,13 +27,13 @@ const DashboardSidebar = () => {
   return (
     <Sidebar variant="inset" className="border-r border-slate-200 bg-white shadow-lg" style={{backgroundColor: 'white'}}>
       <SidebarHeader className="bg-white" style={{backgroundColor: 'white'}}>
-        <div className="flex h-16 items-center justify-center px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg mx-3 mt-3 shadow-md border border-blue-500">
+        <div className="flex h-16 items-center justify-center px-4 bg-gradient-to-r from-primary to-[hsl(191,93%,50%)] text-white rounded-lg mx-3 mt-3 shadow-md">
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="h-5 w-5 text-white" />
               <span className="font-bold text-lg text-white">Winnet Metais</span>
             </div>
-            <span className="text-xs opacity-90 font-medium text-blue-100">CRM & Gestão Comercial</span>
+            <span className="text-xs opacity-90 font-medium text-white/90">CRM & Gestão Comercial</span>
           </div>
         </div>
       </SidebarHeader>

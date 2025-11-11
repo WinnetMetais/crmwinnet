@@ -1,74 +1,97 @@
 
 /* Layout com fundo branco forçado e cores contrastantes */
-@layer utilities {
-  .page-wrapper {
-    @apply min-h-screen;
-    background: white !important;
-    background-color: white !important;
-  }
-  
-  .header-clean {
-    @apply border-b px-6 py-5 shadow-sm;
-    background: white !important;
-    background-color: white !important;
-    border-color: rgb(226, 232, 240) !important;
-  }
-  
-  .content-area {
-    @apply p-6 min-h-screen;
-    background: white !important;
-    background-color: white !important;
-  }
-  
-  .section-spacing {
-    @apply space-y-8;
-  }
-  
-  .card-clean {
-    @apply rounded-xl border shadow-sm hover:shadow-lg transition-all duration-300;
-    background: white !important;
-    background-color: white !important;
-    border-color: rgb(226, 232, 240) !important;
-  }
-  
-  .card-header-clean {
-    @apply p-6 border-b;
-    background: rgb(248, 250, 252) !important;
-    background-color: rgb(248, 250, 252) !important;
-    border-color: rgb(241, 245, 249) !important;
-  }
-  
-  .card-content-clean {
-    @apply p-6;
-    background: white !important;
-    background-color: white !important;
-  }
-  
-  .metric-container {
-    @apply p-6 rounded-xl border hover:border-blue-300 hover:shadow-lg transition-all duration-300;
-    background: white !important;
-    background-color: white !important;
-    border-color: rgb(226, 232, 240) !important;
-  }
-  
-  .metric-container:hover {
-    border-color: rgb(147, 197, 253) !important;
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1), 0 4px 6px -2px rgba(37, 99, 235, 0.05) !important;
-  }
-  
-  .icon-wrapper {
-    @apply w-12 h-12 rounded-xl flex items-center justify-center shadow-sm;
-  }
-  
-  /* Elementos com destaque azul */
-  .row-highlight {
-    background: rgb(239, 246, 255) !important;
-    border-left: 3px solid rgb(37, 99, 235) !important;
-    transition: all 0.2s ease-in-out !important;
-  }
-  
-  .row-highlight:hover {
-    background: rgb(219, 234, 254) !important;
-    border-left-width: 4px !important;
-  }
+.page-wrapper {
+  min-height: 100vh;
+  background: white !important;
+  background-color: white !important;
+}
+
+.header-clean {
+  border-bottom-width: 1px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background: white !important;
+  background-color: white !important;
+  border-color: rgb(226, 232, 240) !important;
+}
+
+.content-area {
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: white !important;
+  background-color: white !important;
+}
+
+.section-spacing {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.card-clean {
+  border-radius: 0.75rem;
+  border-width: 1px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  background: white !important;
+  background-color: white !important;
+  border-color: rgb(226, 232, 240) !important;
+}
+
+.card-clean:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header-clean {
+  padding: 1.5rem;
+  border-bottom-width: 1px;
+  background: rgb(248, 250, 252) !important;
+  background-color: rgb(248, 250, 252) !important;
+  border-color: rgb(241, 245, 249) !important;
+}
+
+.card-content-clean {
+  padding: 1.5rem;
+  background: white !important;
+  background-color: white !important;
+}
+
+.metric-container {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border-width: 1px;
+  transition: all 0.3s;
+  background: white !important;
+  background-color: white !important;
+  border-color: rgb(226, 232, 240) !important;
+}
+
+.metric-container:hover {
+  border-color: rgb(147, 197, 253) !important;
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1), 0 4px 6px -2px rgba(37, 99, 235, 0.05) !important;
+}
+
+.icon-wrapper {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Elementos com destaque azul */
+.row-highlight {
+  background: hsl(197, 94%, 95%) !important;
+  border-left: 3px solid hsl(197, 94%, 45%) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.row-highlight:hover {
+  background: hsl(197, 94%, 90%) !important;
+  border-left-width: 4px !important;
 }

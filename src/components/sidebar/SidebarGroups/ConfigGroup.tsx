@@ -24,6 +24,18 @@ export const ConfigGroup = ({ isActive, isActiveGroup }: ConfigGroupProps) => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              isActive={isActive('/admin')}
+              tooltip="Dashboard Administrativo"
+              asChild
+            >
+              <Link to="/admin">
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Admin</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
               isActive={isActive('/users')}
               tooltip="Gestão de Usuários"
               asChild
