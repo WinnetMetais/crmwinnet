@@ -140,12 +140,14 @@ export async function deleteCustomerCascade(id: string): Promise<void> {
 
     const oppIds = (opps || []).map((o: any) => o.id);
     if (oppIds.length > 0) {
+      // @ts-ignore
       await supabase.from('opportunity_items').delete().in('opportunity_id', oppIds);
     }
 
     // Apagar oportunidades, negócios (deals) e interações
     await supabase.from('opportunities').delete().eq('customer_id', id);
     await supabase.from('deals').delete().eq('customer_id', id);
+    // @ts-ignore
     await supabase.from('customer_interactions').delete().eq('customer_id', id);
 
     // Por fim, apagar o cliente

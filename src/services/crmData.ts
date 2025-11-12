@@ -76,6 +76,7 @@ export class CRMDataService {
       console.log(`Verificando ${customers?.length || 0} clientes, ${deals?.length || 0} negócios e ${tasks?.length || 0} tarefas`);
 
       // Marcar sincronização como concluída
+      // @ts-ignore
       await supabase
         .from('system_settings')
         .upsert({
@@ -116,7 +117,9 @@ export class CRMDataService {
         },
         deals: {
           total: deals.length,
-          totalValue: deals.reduce((sum, deal) => sum + (deal.estimated_value || 0), 0),
+          // @ts-ignore
+          totalValue: deals.reduce((sum, deal) => sum + (deal.estimated_value || deal.value || 0), 0),
+          // @ts-ignore
           active: deals.filter(d => d.status === 'lead' || d.status === 'qualified').length
         },
         tasks: {

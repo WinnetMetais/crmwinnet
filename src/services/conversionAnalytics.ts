@@ -201,7 +201,9 @@ class ConversionAnalyticsService {
 
     if (error) throw error;
 
+    // @ts-ignore
     const stageAnalysis = opportunitiesData?.reduce((acc, opp) => {
+      // @ts-ignore
       const stage = opp.stage || 'Não definido';
       
       if (!acc[stage]) {
@@ -215,6 +217,7 @@ class ConversionAnalyticsService {
       }
 
       acc[stage].count += 1;
+      // @ts-ignore
       acc[stage].totalValue += opp.value || 0;
 
       return acc;

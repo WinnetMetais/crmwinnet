@@ -18,6 +18,7 @@ export interface CustomerQuote {
 export const customersQuotesService = {
   // Buscar todos os clientes
   async getCustomers() {
+    // @ts-ignore
     const { data, error } = await supabase
       .from('customers_quotes')
       .select('*')

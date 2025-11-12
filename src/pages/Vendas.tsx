@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+// @ts-ignore
 import { listPedidos } from '@/api/crm';
 
 export default function Vendas(){

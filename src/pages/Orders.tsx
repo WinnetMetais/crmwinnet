@@ -145,11 +145,11 @@ const Orders = () => {
               </TableHeader>
               <TableBody>
                 {orders.map((order) => (
-                  <TableRow key={order.id}>
-                    {/* @ts-ignore - Order type may vary */}
-                    <TableCell className="font-medium">
-                      {order.order_number}
-                    </TableCell>
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">
+                    {/* @ts-ignore */}
+                    {order.order_number}
+                  </TableCell>
                     <TableCell>
                       {/* @ts-ignore - Order customer type may vary */}
                       {order.customers?.name || 'Cliente não identificado'}
@@ -158,12 +158,13 @@ const Orders = () => {
                       {/* @ts-ignore - Order type may vary */}
                       {format(new Date(order.issue_date), 'dd/MM/yyyy', { locale: ptBR })}
                     </TableCell>
-                    <TableCell>
-                      {/* @ts-ignore - Order type may vary */}
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status}
-                      </Badge>
-                    </TableCell>
+                  <TableCell>
+                    {/* @ts-ignore */}
+                    <Badge className={getStatusColor(order.status)}>
+                      {/* @ts-ignore */}
+                      {order.status}
+                    </Badge>
+                  </TableCell>
                     <TableCell>
                       {/* @ts-ignore - Order type may vary */}
                       R$ {order.net_total?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}

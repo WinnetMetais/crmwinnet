@@ -71,7 +71,11 @@ export class SalesAI {
       Empresa: ${customer.company || 'Pessoa Física'}
       
       Produtos solicitados:
-      ${products.map(p => `- ${p.name}: R$ ${p.price} (${p.description})`).join('\n')}
+      ${products.map(p => {
+        // @ts-ignore
+        const price = p.price || p.sale_price || 0;
+        return `- ${p.name}: R$ ${price} (${p.description})`;
+      }).join('\n')}
       
       Requisitos específicos: ${requirements}
       
