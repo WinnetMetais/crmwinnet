@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* Cores Winnet - baseadas no site oficial */
+    /* Cores Winnet - baseadas no site oficial winnetmetais.com.br */
     --background: 255 255 255;
     --foreground: 0 61 122; /* Azul escuro Winnet #003D7A */
     --card: 255 255 255;
@@ -21,8 +21,8 @@
     --secondary: 255 107 61;
     --secondary-foreground: 255 255 255;
     
-    /* Cinza escuro */
-    --accent: 55 65 81;
+    /* Cinza escuro para accent (removido amarelo) */
+    --accent: 71 85 105;
     --accent-foreground: 255 255 255;
     
     --muted: 241 245 249;
@@ -43,13 +43,20 @@
     --sidebar-accent-foreground: 11 154 216;
     --sidebar-border: 226 232 240;
     --sidebar-ring: 11 154 216;
+    
+    /* Cores adicionais para melhor contraste */
+    --success: 22 163 74;
+    --success-foreground: 255 255 255;
+    --warning: 234 88 12;
+    --warning-foreground: 255 255 255;
+    --info: 11 154 216;
+    --info-foreground: 255 255 255;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
-    background: inherit !important;
   }
 
   html {
@@ -58,24 +65,40 @@
   }
 
   body {
-    @apply bg-white text-slate-900 font-sans antialiased;
+    @apply bg-white text-foreground font-sans antialiased;
     background: white !important;
     background-color: white !important;
-    color: rgb(15, 23, 42) !important;
   }
 
   #root {
     background: white !important;
     background-color: white !important;
-    color: rgb(15, 23, 42) !important;
   }
 }
 
-/* Força texto legível em todos os elementos */
+/* Tipografia melhorada para legibilidade */
 h1, h2, h3, h4, h5, h6 {
-  color: rgb(15, 23, 42) !important;
+  @apply text-foreground font-semibold;
+  line-height: 1.3;
 }
 
-p, span, div, label, button {
-  color: rgb(51, 65, 85) !important;
+h1 { @apply text-3xl; }
+h2 { @apply text-2xl; }
+h3 { @apply text-xl; }
+h4 { @apply text-lg; }
+
+p, span, div, label {
+  @apply text-foreground/90;
+  line-height: 1.6;
+}
+
+button {
+  @apply text-foreground;
+  font-weight: 500;
+}
+
+/* Links com melhor contraste */
+a {
+  @apply text-primary hover:text-primary/80;
+  transition: color 0.2s ease;
 }

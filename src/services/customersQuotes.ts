@@ -18,7 +18,7 @@ export interface CustomerQuote {
 export const customersQuotesService = {
   // Buscar todos os clientes
   async getCustomers() {
-    // @ts-ignore
+    // @ts-ignore - customers_quotes table exists but types not yet regenerated
     const { data, error } = await supabase
       .from('customers_quotes')
       .select('*')
@@ -30,11 +30,12 @@ export const customersQuotesService = {
 
   // Buscar cliente por ID
   async getCustomerById(id: string) {
-    const { data, error } = await supabase
-      .from('customers_quotes')
-      .select('*')
-      .eq('id', id)
-      .single();
+  // @ts-ignore - customers_quotes table exists but types not yet regenerated
+  const { data, error } = await supabase
+    .from('customers_quotes')
+    .select('*')
+    .eq('id', id)
+    .single();
     
     if (error) throw error;
     return data as CustomerQuote;
@@ -42,6 +43,7 @@ export const customersQuotesService = {
 
   // Buscar clientes por termo
   async searchCustomers(searchTerm: string) {
+    // @ts-ignore - customers_quotes table exists but types not yet regenerated
     const { data, error } = await supabase
       .from('customers_quotes')
       .select('*')
@@ -55,6 +57,7 @@ export const customersQuotesService = {
 
   // Criar novo cliente
   async createCustomer(customer: Omit<CustomerQuote, 'id' | 'created_at' | 'created_by'>) {
+    // @ts-ignore - customers_quotes table exists but types not yet regenerated
     const { data, error } = await supabase
       .from('customers_quotes')
       .insert({
@@ -70,6 +73,7 @@ export const customersQuotesService = {
 
   // Atualizar cliente
   async updateCustomer(id: string, updates: Partial<CustomerQuote>) {
+    // @ts-ignore - customers_quotes table exists but types not yet regenerated
     const { data, error } = await supabase
       .from('customers_quotes')
       .update(updates)
@@ -83,10 +87,11 @@ export const customersQuotesService = {
 
   // Deletar cliente
   async deleteCustomer(id: string) {
-    const { error } = await supabase
-      .from('customers_quotes')
-      .delete()
-      .eq('id', id);
+  // @ts-ignore - customers_quotes table exists but types not yet regenerated
+  const { error } = await supabase
+    .from('customers_quotes')
+    .delete()
+    .eq('id', id);
     
     if (error) throw error;
   }

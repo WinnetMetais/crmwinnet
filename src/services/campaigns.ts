@@ -20,10 +20,11 @@ export interface Campaign {
 export async function getCampaigns() {
   try {
     // @ts-ignore
-    const { data, error } = await supabase
-      .from('campaigns')
-      .select('*')
-      .order('created_at', { ascending: false });
+  // @ts-ignore - campaigns table exists but types not yet regenerated
+  const { data, error } = await supabase
+    .from('campaigns')
+    .select('*')
+    .order('created_at', { ascending: false });
       
     if (error) throw error;
     
