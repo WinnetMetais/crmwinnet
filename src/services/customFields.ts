@@ -13,11 +13,13 @@ export const customFieldService = {
   // Buscar campos customizados por módulo
   async getCustomFieldsByModule(module: string) {
     // @ts-ignore
-    const { data, error } = await supabase
-      .from('custom_fields')
-      .select('*')
-      .eq('module', module)
-      .order('field_order', { ascending: true });
+  // @ts-ignore - custom_fields table exists but types not yet regenerated
+  // @ts-ignore - custom_fields table exists but types not yet regenerated
+  const { data, error } = await supabase
+    .from('custom_fields')
+    .select('*')
+    .eq('module', module)
+    .order('field_order', { ascending: true });
     
     if (error) throw error;
     return data;

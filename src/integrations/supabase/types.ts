@@ -47,6 +47,87 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_reports: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          period_end: string | null
+          period_start: string | null
+          report_name: string
+          report_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          report_name: string
+          report_type: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          report_name?: string
+          report_type?: string
+        }
+        Relationships: []
+      }
+      campaigns: {
+        Row: {
+          budget: number | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          platform: string
+          results: Json | null
+          start_date: string | null
+          status: string | null
+          target_audience: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          budget?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          platform: string
+          results?: Json | null
+          start_date?: string | null
+          status?: string | null
+          target_audience?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          platform?: string
+          results?: Json | null
+          start_date?: string | null
+          status?: string | null
+          target_audience?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       commission_rules: {
         Row: {
           active: boolean | null
@@ -123,6 +204,86 @@ export type Database = {
             columns: ["deal_id"]
             isOneToOne: false
             referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          created_at: string | null
+          field_label: string | null
+          field_name: string
+          field_order: number | null
+          field_type: string
+          id: string
+          module: string
+          options: Json | null
+          required: boolean | null
+          updated_at: string | null
+          visible: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          field_label?: string | null
+          field_name: string
+          field_order?: number | null
+          field_type: string
+          id?: string
+          module: string
+          options?: Json | null
+          required?: boolean | null
+          updated_at?: string | null
+          visible?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          field_label?: string | null
+          field_name?: string
+          field_order?: number | null
+          field_type?: string
+          id?: string
+          module?: string
+          options?: Json | null
+          required?: boolean | null
+          updated_at?: string | null
+          visible?: boolean | null
+        }
+        Relationships: []
+      }
+      customer_interactions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          interaction_date: string | null
+          interaction_type: string
+          notes: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          interaction_date?: string | null
+          interaction_type: string
+          notes?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          interaction_date?: string | null
+          interaction_type?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_interactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
@@ -244,6 +405,93 @@ export type Database = {
           website?: string | null
           whatsapp?: string | null
           zip_code?: string | null
+        }
+        Relationships: []
+      }
+      customers_quotes: {
+        Row: {
+          address: string | null
+          city: string | null
+          cnpj_cpf: string | null
+          contact_person: string | null
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          state: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          cnpj_cpf?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          state?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          cnpj_cpf?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          state?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      data_validation_logs: {
+        Row: {
+          created_at: string | null
+          errors: Json | null
+          id: string
+          module_name: string
+          record_id: string
+          suggestions: Json | null
+          table_name: string
+          validated_at: string | null
+          validated_by: string | null
+          validation_status: string
+          validation_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          errors?: Json | null
+          id?: string
+          module_name: string
+          record_id: string
+          suggestions?: Json | null
+          table_name: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_status: string
+          validation_type: string
+        }
+        Update: {
+          created_at?: string | null
+          errors?: Json | null
+          id?: string
+          module_name?: string
+          record_id?: string
+          suggestions?: Json | null
+          table_name?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_status?: string
+          validation_type?: string
         }
         Relationships: []
       }
@@ -458,6 +706,54 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_items: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          opportunity_id: string | null
+          product_id: string | null
+          quantity: number
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          opportunity_id?: string | null
+          product_id?: string | null
+          quantity?: number
+          total?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          opportunity_id?: string | null
+          product_id?: string | null
+          quantity?: number
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_items_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunity_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -819,6 +1115,33 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           assigned_to: string | null
@@ -1061,12 +1384,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_customer_data_quality: {
+        Args: { customer_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      validate_transaction_data: {
+        Args: { transaction_id: string }
+        Returns: Json
       }
     }
     Enums: {

@@ -297,12 +297,12 @@ export const dataValidationService = {
     }
 
     // Data de fechamento
-    if (deal.close_date) {
-      const closeDate = new Date(deal.close_date);
+    if (deal.closed_at) {
+      const closeDate = new Date(deal.closed_at);
       const now = new Date();
       
       if (closeDate < now && deal.status !== 'fechado') {
-        warnings.push({ field: 'close_date', message: 'Data de fechamento passou e deal não foi fechado', severity: 'warning' });
+        warnings.push({ field: 'closed_at', message: 'Data de fechamento passou e deal não foi fechado', severity: 'warning' });
       }
       score += 10;
     } else {
