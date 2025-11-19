@@ -157,7 +157,7 @@ export const SimpleWhatsAppSetup = () => {
                       <CheckCircle className="h-6 w-6" />
                       <span className="font-semibold">Conexão Simulada!</span>
                     </div>
-                    <Badge variant="default" className="bg-green-500">
+                    <Badge variant="success">
                       Demo Ativo
                     </Badge>
                     <Button variant="outline" onClick={disconnect}>

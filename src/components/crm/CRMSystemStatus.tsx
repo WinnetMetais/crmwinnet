@@ -28,8 +28,8 @@ export const CRMSystemStatus = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'ok': return <Badge className="bg-green-100 text-green-800">OK</Badge>;
-      case 'warning': return <Badge className="bg-yellow-100 text-yellow-800">Atenção</Badge>;
+      case 'ok': return <Badge variant="success">OK</Badge>;
+      case 'warning': return <Badge variant="warning">Atenção</Badge>;
       case 'error': return <Badge variant="destructive">Erro</Badge>;
       default: return <Badge variant="outline">Desconhecido</Badge>;
     }

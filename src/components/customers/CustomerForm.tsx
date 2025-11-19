@@ -73,24 +73,25 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
             {/* Primeira linha - Nome e Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome *</Label>
+                <Label htmlFor="name" className="label-readable">Nome *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
                   placeholder="Digite o nome completo"
                   required
-                  className="border-warning focus:border-warning"
+                  className="input-readable"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="label-readable">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
                   placeholder="Digite o email"
+                  className="input-readable"
                 />
               </div>
             </div>
@@ -98,120 +99,130 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
             {/* Segunda linha - Telefone e Empresa */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Telefone</Label>
+                <Label htmlFor="phone" className="label-readable">Telefone</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => handleChange('phone', e.target.value)}
                   placeholder="Digite o telefone"
+                  className="input-readable"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="company">Empresa</Label>
+                <Label htmlFor="company" className="label-readable">Empresa</Label>
                 <Input
                   id="company"
                   value={formData.company}
                   onChange={(e) => handleChange('company', e.target.value)}
                   placeholder="Digite o nome da empresa"
+                  className="input-readable"
                 />
               </div>
             </div>
 
             {/* Terceira linha - Endereço completo */}
             <div className="space-y-2">
-              <Label htmlFor="address">Endereço</Label>
+              <Label htmlFor="address" className="label-readable">Endereço</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Digite o endereço completo"
+                className="input-readable"
               />
             </div>
 
             {/* Quarta linha - Cidade, Estado e CEP */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">Cidade</Label>
+                <Label htmlFor="city" className="label-readable">Cidade</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
                   placeholder="Digite a cidade"
+                  className="input-readable"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="state">Estado</Label>
+                <Label htmlFor="state" className="label-readable">Estado</Label>
                 <Input
                   id="state"
                   value={formData.state}
                   onChange={(e) => handleChange('state', e.target.value)}
                   placeholder="UF"
                   maxLength={2}
+                  className="input-readable"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="zip_code">CEP</Label>
+                <Label htmlFor="zip_code" className="label-readable">CEP</Label>
                 <Input
                   id="zip_code"
                   value={formData.zip_code}
                   onChange={(e) => handleChange('zip_code', e.target.value)}
                   placeholder="00000-000"
+                  className="input-readable"
                 />
               </div>
             </div>
 
             {/* Campos adicionais em collapse */}
             <details className="border rounded-lg p-4">
-              <summary className="cursor-pointer font-medium text-sm">
+              <summary className="cursor-pointer font-medium text-sm text-readable">
                 Informações Adicionais (Clique para expandir)
               </summary>
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="cnpj">CNPJ/CPF</Label>
+                    <Label htmlFor="cnpj" className="label-readable">CNPJ/CPF</Label>
                     <Input
                       id="cnpj"
                       value={formData.cnpj}
                       onChange={(e) => handleChange('cnpj', e.target.value)}
                       placeholder="XX.XXX.XXX/XXXX-XX"
+                      className="input-readable"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
+                    <Label htmlFor="website" className="label-readable">Website</Label>
                     <Input
                       id="website"
                       value={formData.website}
                       onChange={(e) => handleChange('website', e.target.value)}
                       placeholder="www.empresa.com"
+                      className="input-readable"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="contact_person">Pessoa de Contato</Label>
+                    <Label htmlFor="contact_person" className="label-readable">Pessoa de Contato</Label>
                     <Input
                       id="contact_person"
                       value={formData.contact_person}
                       onChange={(e) => handleChange('contact_person', e.target.value)}
                       placeholder="Nome do responsável"
+                      className="input-readable"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lead_source">Origem do Lead</Label>
+                    <Label htmlFor="lead_source" className="label-readable">Origem do Lead</Label>
                     <Input
                       id="lead_source"
                       value={formData.lead_source}
                       onChange={(e) => handleChange('lead_source', e.target.value)}
                       placeholder="Como nos conheceu?"
+                      className="input-readable"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status *</Label>
+                  <Label htmlFor="status" className="label-readable">Status *</Label>
                   <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'prospect' | 'qualified' | 'customer') => handleChange('status', value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="input-readable">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

@@ -25,9 +25,9 @@ export const CategorySection = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="category">Categoria *</Label>
+        <Label htmlFor="category" className="label-readable">Categoria *</Label>
         <Select value={category} onValueChange={onCategoryChange}>
-          <SelectTrigger>
+          <SelectTrigger className="input-readable">
             <SelectValue placeholder="Selecione a categoria" />
           </SelectTrigger>
           <SelectContent>
@@ -42,9 +42,9 @@ export const CategorySection = ({
       
       {subcategories.length > 0 && (
         <div className="space-y-2">
-          <Label htmlFor="subcategory">Subcategoria</Label>
+          <Label htmlFor="subcategory" className="label-readable">Subcategoria</Label>
           <Select value={subcategory} onValueChange={onSubcategoryChange}>
-            <SelectTrigger>
+            <SelectTrigger className="input-readable">
               <SelectValue placeholder="Selecione a subcategoria" />
             </SelectTrigger>
             <SelectContent>

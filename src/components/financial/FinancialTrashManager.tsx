@@ -102,11 +102,11 @@ export const FinancialTrashManager = () => {
 
   const getTypeBadge = (type: string) => {
     return type === 'receita' ? (
-      <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+      <Badge variant="success">
         Receita
       </Badge>
     ) : (
-      <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100">
+      <Badge variant="destructive">
         Despesa
       </Badge>
     );
