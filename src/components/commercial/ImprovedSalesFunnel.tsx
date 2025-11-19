@@ -49,7 +49,7 @@ const mockFunnelData: FunnelStage[] = [
     name: 'Qualificados',
     count: 28,
     value: 95000,
-    color: 'bg-yellow-500',
+    color: 'bg-warning',
     conversion: 62,
     deals: [
       { id: '3', title: 'Tubos de Aço Inox', customer: 'Metalúrgica Solar', value: 35000, daysInStage: 8, probability: 60 },
