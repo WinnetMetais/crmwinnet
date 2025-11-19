@@ -1,0 +1,84 @@
+/* Utilitários para substituir amarelo por laranja warning */
+
+/* Classes de substituição para amarelo */
+.text-yellow-600,
+.text-yellow-500,
+.text-yellow-800 {
+  color: hsl(var(--warning)) !important;
+}
+
+.bg-yellow-100 {
+  background: hsl(var(--warning) / 0.15) !important;
+}
+
+.bg-yellow-500,
+.bg-yellow-600 {
+  background: hsl(var(--warning)) !important;
+}
+
+.bg-yellow-50 {
+  background: hsl(var(--warning) / 0.1) !important;
+}
+
+.border-yellow-200 {
+  border-color: hsl(var(--warning) / 0.3) !important;
+}
+
+.border-yellow-400,
+.border-yellow-500 {
+  border-color: hsl(var(--warning)) !important;
+}
+
+/* Focus states */
+.focus\:border-yellow-500:focus {
+  border-color: hsl(var(--warning)) !important;
+}
+
+/* Melhorias de legibilidade */
+.text-readable {
+  color: hsl(var(--foreground)) !important;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.text-readable-muted {
+  color: hsl(var(--muted-foreground)) !important;
+  line-height: 1.6;
+}
+
+/* Cards com melhor contraste */
+.card-high-contrast {
+  background: white !important;
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Labels legíveis */
+.label-readable {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Inputs com melhor visibilidade */
+.input-readable {
+  color: hsl(var(--foreground)) !important;
+  background: white !important;
+  border: 1px solid hsl(var(--border));
+  font-size: 0.9375rem;
+}
+
+.input-readable::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.6;
+}
+
+/* Badges legíveis */
+.badge-readable {
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+}

@@ -80,7 +80,7 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                   onChange={(e) => handleChange('name', e.target.value)}
                   placeholder="Digite o nome completo"
                   required
-                  className="border-yellow-400 focus:border-yellow-500"
+                  className="border-warning focus:border-warning"
                 />
               </div>
               <div className="space-y-2">
@@ -235,7 +235,7 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                 onChange={(e) => handleChange('notes', e.target.value)}
                 placeholder="Informações adicionais sobre o cliente..."
                 rows={4}
-                className="border-yellow-400 focus:border-yellow-500"
+                className="border-warning focus:border-warning"
               />
             </div>
 

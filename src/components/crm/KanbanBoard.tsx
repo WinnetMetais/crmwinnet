@@ -27,9 +27,9 @@ const fases = [
   { 
     id: 'contato' as const, 
     titulo: 'Primeiro Contato', 
-    cor: 'bg-yellow-500',
-    bgColor: 'bg-yellow-50',
-    borderColor: 'border-yellow-200'
+    cor: 'bg-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/30'
   },
   { 
     id: 'proposta' as const, 
