@@ -244,9 +244,9 @@ export const CRMAnalysisReport = () => {
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case 'high': return <Badge variant="destructive">Crítico</Badge>;
-      case 'medium': return <Badge className="bg-yellow-100 text-yellow-800">Médio</Badge>;
+      case 'medium': return <Badge variant="warning">Médio</Badge>;
       case 'low': return <Badge variant="secondary">Baixo</Badge>;
-      case 'info': return <Badge className="bg-green-100 text-green-800">Info</Badge>;
+      case 'info': return <Badge variant="success">Info</Badge>;
       default: return <Badge variant="outline">Desconhecido</Badge>;
     }
   };

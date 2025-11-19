@@ -59,7 +59,7 @@ export const AutomationStatusCard = () => {
                     <div className="text-xs text-muted-foreground">{step.description}</div>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                <Badge variant="success">
                   Ativo
                 </Badge>
               </div>

@@ -120,7 +120,7 @@ export const FieldCustomization = () => {
                   {fieldTypes.find(ft => ft.value === field.field_type)?.label}
                 </Badge>
                 {field.required && (
-                  <Badge className="bg-red-100 text-red-800 text-xs">
+                  <Badge variant="destructive" className="text-xs">
                     Obrigatório
                   </Badge>
                 )}

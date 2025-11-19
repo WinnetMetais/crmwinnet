@@ -127,11 +127,11 @@ export const GoogleAuthSection: React.FC<GoogleAuthSectionProps> = ({
 
   const renderStatusBadge = (status: "success" | "error" | "pending" | null | undefined) => {
     if (status === "success") {
-      return <Badge className="ml-2 bg-green-500"><Check className="h-3 w-3 mr-1" /> Conectado</Badge>;
+      return <Badge variant="success" className="ml-2"><Check className="h-3 w-3 mr-1" /> Conectado</Badge>;
     } else if (status === "error") {
-      return <Badge className="ml-2 bg-red-500"><AlertTriangle className="h-3 w-3 mr-1" /> Erro</Badge>;
+      return <Badge variant="destructive" className="ml-2"><AlertTriangle className="h-3 w-3 mr-1" /> Erro</Badge>;
     } else if (status === "pending") {
-      return <Badge className="ml-2 bg-yellow-500"><Loader className="h-3 w-3 mr-1 animate-spin" /> Testando</Badge>;
+      return <Badge variant="warning" className="ml-2"><Loader className="h-3 w-3 mr-1 animate-spin" /> Testando</Badge>;
     }
     return null;
   };

@@ -208,8 +208,8 @@ export const TaxConfigurationFunctional = () => {
 
   const getStatusBadge = (active: boolean) => {
     return active 
-      ? <Badge className="bg-green-100 text-green-800">Ativo</Badge>
-      : <Badge className="bg-red-100 text-red-800">Inativo</Badge>;
+      ? <Badge variant="success">Ativo</Badge>
+      : <Badge variant="destructive">Inativo</Badge>;
   };
 
   return (

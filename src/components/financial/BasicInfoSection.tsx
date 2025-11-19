@@ -14,17 +14,18 @@ export const BasicInfoSection = ({ title, amount, onTitleChange, onAmountChange 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="title">Título da Transação *</Label>
+        <Label htmlFor="title" className="label-readable">Título da Transação *</Label>
         <Input
           id="title"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="Ex: Venda de produto, Pagamento de fornecedor..."
           required
+          className="input-readable"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="amount">Valor (R$) *</Label>
+        <Label htmlFor="amount" className="label-readable">Valor (R$) *</Label>
         <Input
           id="amount"
           type="number"
@@ -34,6 +35,7 @@ export const BasicInfoSection = ({ title, amount, onTitleChange, onAmountChange 
           step="0.01"
           min="0"
           required
+          className="input-readable"
         />
       </div>
     </div>

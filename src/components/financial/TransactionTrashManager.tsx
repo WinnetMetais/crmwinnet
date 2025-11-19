@@ -116,11 +116,11 @@ const TransactionTrashManager: React.FC = () => {
 
   const getTypeBadge = (type: string) => {
     return type === 'receita' ? (
-      <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+      <Badge variant="success">
         Receita
       </Badge>
     ) : (
-      <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
+      <Badge variant="destructive">
         Despesa
       </Badge>
     );

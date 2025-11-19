@@ -23,12 +23,12 @@ export const OpportunityTab = ({ formData, onUpdateData }: OpportunityTabProps) 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-4">Informações da Oportunidade</h3>
+        <h3 className="text-lg font-semibold mb-4 text-readable">Informações da Oportunidade</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="title">Título da Oportunidade *</Label>
+            <Label htmlFor="title" className="label-readable">Título da Oportunidade *</Label>
             <Select value={formData.opportunityTitle} onValueChange={(value) => onUpdateData({ opportunityTitle: value })}>
-              <SelectTrigger>
+              <SelectTrigger className="input-readable">
                 <SelectValue placeholder="Selecione o tipo de oportunidade" />
               </SelectTrigger>
               <SelectContent>
@@ -41,13 +41,14 @@ export const OpportunityTab = ({ formData, onUpdateData }: OpportunityTabProps) 
             </Select>
           </div>
           <div>
-            <Label htmlFor="estimatedValue">Valor Estimado (R$)</Label>
+            <Label htmlFor="estimatedValue" className="label-readable">Valor Estimado (R$)</Label>
             <Input
               id="estimatedValue"
               type="number"
               step="0.01"
               value={formData.estimatedValue}
               readOnly
+              className="input-readable"
             />
           </div>
         </div>
@@ -55,9 +56,9 @@ export const OpportunityTab = ({ formData, onUpdateData }: OpportunityTabProps) 
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <Label htmlFor="stage">Estágio</Label>
+          <Label htmlFor="stage" className="label-readable">Estágio</Label>
           <Select value={formData.stage} onValueChange={(value) => onUpdateData({ stage: value })}>
-            <SelectTrigger>
+            <SelectTrigger className="input-readable">
               <SelectValue placeholder="Selecione o estágio" />
             </SelectTrigger>
             <SelectContent>
@@ -70,7 +71,7 @@ export const OpportunityTab = ({ formData, onUpdateData }: OpportunityTabProps) 
           </Select>
         </div>
         <div>
-          <Label htmlFor="probability">Probabilidade (%)</Label>
+          <Label htmlFor="probability" className="label-readable">Probabilidade (%)</Label>
           <Input
             id="probability"
             type="number"
@@ -78,6 +79,7 @@ export const OpportunityTab = ({ formData, onUpdateData }: OpportunityTabProps) 
             max="100"
             value={formData.probability}
             onChange={(e) => onUpdateData({ probability: parseInt(e.target.value) || 0 })}
+            className="input-readable"
           />
         </div>
         <div>

@@ -142,7 +142,7 @@ export const BlingIntegration: React.FC = () => {
                 </p>
               </div>
             </div>
-            <Badge variant={isConnected ? "default" : "secondary"} className={isConnected ? "bg-green-100 text-green-800" : ""}>
+            <Badge variant={isConnected ? "success" : "secondary"}>
               {isConnected ? (
                 <>
                   <Check className="h-3 w-3 mr-1" />

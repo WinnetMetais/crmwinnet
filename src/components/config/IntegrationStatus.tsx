@@ -43,9 +43,9 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({
   };
 
   const getStatusBadge = (status: string | null | undefined) => {
-    if (status === 'success') return <Badge className="bg-green-100 text-green-800">Conectado</Badge>;
+    if (status === 'success') return <Badge variant="success">Conectado</Badge>;
     if (status === 'error') return <Badge variant="destructive">Erro</Badge>;
-    if (status === 'pending') return <Badge className="bg-yellow-100 text-yellow-800">Conectando</Badge>;
+    if (status === 'pending') return <Badge variant="warning">Conectando</Badge>;
     return <Badge variant="outline">Desconectado</Badge>;
   };
 
@@ -106,7 +106,7 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-sm">Status da sincronização</span>
             {integrationsSynced ? (
-              <Badge className="bg-green-100 text-green-800">
+              <Badge variant="success">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Sincronizado
               </Badge>
