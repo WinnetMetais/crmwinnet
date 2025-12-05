@@ -164,11 +164,11 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <AspectRatio ratio={16/9} className="bg-secondary/30 rounded-md flex items-center justify-center">
+                  <AspectRatio ratio={16/9} className="bg-primary/10 rounded-md flex items-center justify-center">
                     <div className="text-center p-8">
-                      <BarChart3 className="h-16 w-16 mx-auto text-muted-foreground/50 mb-2" />
+                      <BarChart3 className="h-16 w-16 mx-auto text-primary/50 mb-2" />
                       <p className="text-muted-foreground">Gráfico de análise de vendas</p>
-                      <Button variant="secondary" size="sm" asChild className="mt-3">
+                      <Button variant="default" size="sm" asChild className="mt-3">
                         <Link to="/sales">Ver Dashboard de Vendas</Link>
                       </Button>
                     </div>
@@ -206,24 +206,24 @@ const Index = () => {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">Conteúdo</CardTitle>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
+                    <Button variant="ghost" size="sm" className="h-8 text-xs text-primary" asChild>
                       <Link to="/content">Ver Todos</Link>
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Posts programados</div>
-                      <div className="font-medium">0</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Posts programados</div>
+                      <div className="font-medium text-foreground">0</div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Campanhas ativas</div>
-                      <div className="font-medium">0</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Campanhas ativas</div>
+                      <div className="font-medium text-foreground">0</div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Anúncios ativos</div>
-                      <div className="font-medium">0</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Anúncios ativos</div>
+                      <div className="font-medium text-foreground">0</div>
                     </div>
                   </div>
                 </CardContent>
@@ -233,24 +233,24 @@ const Index = () => {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">Clientes</CardTitle>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
+                    <Button variant="ghost" size="sm" className="h-8 text-xs text-primary" asChild>
                       <Link to="/customers">Ver Todos</Link>
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Total de clientes</div>
-                      <div className="font-medium">0</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Total de clientes</div>
+                      <div className="font-medium text-foreground">0</div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Novos este mês</div>
-                      <div className="font-medium">0</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Novos este mês</div>
+                      <div className="font-medium text-foreground">0</div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Taxa de retenção</div>
-                      <div className="font-medium">-</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Taxa de retenção</div>
+                      <div className="font-medium text-foreground">-</div>
                     </div>
                   </div>
                 </CardContent>
@@ -260,24 +260,24 @@ const Index = () => {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">Produtos</CardTitle>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
+                    <Button variant="ghost" size="sm" className="h-8 text-xs text-primary" asChild>
                       <Link to="/products">Ver Todos</Link>
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Total produtos</div>
-                      <div className="font-medium">0</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Total produtos</div>
+                      <div className="font-medium text-foreground">0</div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Baixo estoque</div>
-                      <div className="font-medium">0</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Baixo estoque</div>
+                      <div className="font-medium text-foreground">0</div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-secondary/30 rounded-md">
-                      <div className="text-sm">Mais vendidos</div>
-                      <div className="font-medium">-</div>
+                    <div className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="text-sm text-foreground">Mais vendidos</div>
+                      <div className="font-medium text-foreground">-</div>
                     </div>
                   </div>
                 </CardContent>

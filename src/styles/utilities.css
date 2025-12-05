@@ -1,13 +1,15 @@
-/* Utilitários para substituir amarelo por laranja warning */
+/* Utilitários para substituir classes amarelas */
 
-/* Classes de substituição para amarelo */
+/* Substituições de amarelo para warning (laranja) */
 .text-yellow-600,
 .text-yellow-500,
+.text-yellow-700,
 .text-yellow-800 {
   color: hsl(var(--warning)) !important;
 }
 
-.bg-yellow-100 {
+.bg-yellow-100,
+.bg-yellow-50 {
   background: hsl(var(--warning) / 0.15) !important;
 }
 
@@ -16,11 +18,8 @@
   background: hsl(var(--warning)) !important;
 }
 
-.bg-yellow-50 {
-  background: hsl(var(--warning) / 0.1) !important;
-}
-
-.border-yellow-200 {
+.border-yellow-200,
+.border-yellow-300 {
   border-color: hsl(var(--warning) / 0.3) !important;
 }
 
@@ -29,9 +28,29 @@
   border-color: hsl(var(--warning)) !important;
 }
 
-/* Focus states */
-.focus\:border-yellow-500:focus {
-  border-color: hsl(var(--warning)) !important;
+/* Classes de status pendente */
+.status-pending {
+  background: hsl(var(--warning) / 0.15) !important;
+  color: hsl(var(--warning)) !important;
+  border: 1px solid hsl(var(--warning) / 0.3) !important;
+}
+
+.status-success {
+  background: hsl(var(--success) / 0.15) !important;
+  color: hsl(var(--success)) !important;
+  border: 1px solid hsl(var(--success) / 0.3) !important;
+}
+
+.status-error {
+  background: hsl(var(--destructive) / 0.15) !important;
+  color: hsl(var(--destructive)) !important;
+  border: 1px solid hsl(var(--destructive) / 0.3) !important;
+}
+
+.status-info {
+  background: hsl(var(--info) / 0.15) !important;
+  color: hsl(var(--info)) !important;
+  border: 1px solid hsl(var(--info) / 0.3) !important;
 }
 
 /* Melhorias de legibilidade */
@@ -81,4 +100,11 @@
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.8125rem;
+}
+
+/* Fix para fundos transparentes que mostram amarelo */
+.bg-secondary\/30,
+.bg-secondary\/20,
+.bg-secondary\/10 {
+  background: hsl(var(--muted)) !important;
 }

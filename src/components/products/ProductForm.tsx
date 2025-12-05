@@ -170,48 +170,52 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Nome do Produto *</Label>
+              <Label htmlFor="name" className="label-readable">Nome do Produto *</Label>
               <Input
                 id="name"
                 {...form.register('name', { required: true })}
                 placeholder="Nome do produto"
+                className="input-readable"
               />
             </div>
 
             <div>
-              <Label htmlFor="sku">SKU</Label>
+              <Label htmlFor="sku" className="label-readable">SKU</Label>
               <Input
                 id="sku"
                 {...form.register('sku')}
                 placeholder="Código do produto"
+                className="input-readable"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description" className="label-readable">Descrição</Label>
             <Textarea
               id="description"
               {...form.register('description')}
               placeholder="Descrição do produto"
               rows={3}
+              className="input-readable"
             />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="category">Categoria</Label>
+              <Label htmlFor="category" className="label-readable">Categoria</Label>
               <Input
                 id="category"
                 {...form.register('category')}
                 placeholder="Categoria"
+                className="input-readable"
               />
             </div>
 
             <div>
-              <Label htmlFor="unit">Unidade</Label>
+              <Label htmlFor="unit" className="label-readable">Unidade</Label>
               <Select onValueChange={(value) => form.setValue('unit', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="input-readable">
                   <SelectValue placeholder="Unidade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -224,77 +228,84 @@ export const ProductForm = ({ open, onClose, onSubmit, initialData }: ProductFor
             </div>
 
             <div>
-              <Label htmlFor="supplier">Fornecedor</Label>
+              <Label htmlFor="supplier" className="label-readable">Fornecedor</Label>
               <Input
                 id="supplier"
                 {...form.register('supplier')}
                 placeholder="Fornecedor"
+                className="input-readable"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="cost_price">Preço de Custo</Label>
+              <Label htmlFor="cost_price" className="label-readable">Preço de Custo</Label>
               <Input
                 id="cost_price"
                 type="number"
                 step="0.01"
                 {...form.register('cost_price', { valueAsNumber: true })}
                 placeholder="0.00"
+                className="input-readable"
               />
             </div>
 
             <div>
-              <Label htmlFor="price">Preço de Venda</Label>
+              <Label htmlFor="price" className="label-readable">Preço de Venda</Label>
               <Input
                 id="price"
                 type="number"
                 step="0.01"
                 {...form.register('price', { valueAsNumber: true })}
                 placeholder="0.00"
+                className="input-readable"
               />
             </div>
 
             <div>
-              <Label htmlFor="inventory_count">Estoque Atual</Label>
+              <Label htmlFor="inventory_count" className="label-readable">Estoque Atual</Label>
               <Input
                 id="inventory_count"
                 type="number"
                 {...form.register('inventory_count', { valueAsNumber: true })}
                 placeholder="0"
+                className="input-readable"
               />
             </div>
 
             <div>
-              <Label htmlFor="min_stock">Estoque Mínimo</Label>
+              <Label htmlFor="min_stock" className="label-readable">Estoque Mínimo</Label>
               <Input
                 id="min_stock"
                 type="number"
                 {...form.register('min_stock', { valueAsNumber: true })}
                 placeholder="10"
+                className="input-readable"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="weight">Peso (kg)</Label>
+              <Label htmlFor="weight" className="label-readable">Peso (kg)</Label>
               <Input
                 id="weight"
                 type="number"
                 step="0.01"
                 {...form.register('weight', { valueAsNumber: true })}
                 placeholder="0.00"
+                className="input-readable"
               />
             </div>
 
             <div>
-              <Label htmlFor="dimensions">Dimensões</Label>
+              <Label htmlFor="dimensions" className="label-readable">Dimensões</Label>
               <Input
                 id="dimensions"
                 {...form.register('dimensions')}
                 placeholder="ex: 100x50x30 cm"
+                className="input-readable"
               />
             </div>
           </div>

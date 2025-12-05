@@ -119,20 +119,21 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Título da Oportunidade *</Label>
+              <Label htmlFor="title" className="label-readable">Título da Oportunidade *</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
                 placeholder="Ex: Fornecimento de aço inox"
                 required
+                className="input-readable"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="customer_id">Cliente *</Label>
+              <Label htmlFor="customer_id" className="label-readable">Cliente *</Label>
               <Select value={formData.customer_id} onValueChange={(value) => handleChange('customer_id', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="input-readable">
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
                 <SelectContent>
@@ -148,7 +149,7 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="estimated_value">Valor Estimado (R$)</Label>
+              <Label htmlFor="estimated_value" className="label-readable">Valor Estimado (R$)</Label>
               <Input
                 id="estimated_value"
                 type="number"
@@ -157,13 +158,14 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
                 value={formData.estimated_value}
                 onChange={(e) => handleChange('estimated_value', e.target.value)}
                 placeholder="0,00"
+                className="input-readable"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="pipeline_stage_id">Estágio</Label>
+              <Label htmlFor="pipeline_stage_id" className="label-readable">Estágio</Label>
               <Select value={formData.pipeline_stage_id} onValueChange={(value) => handleChange('pipeline_stage_id', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="input-readable">
                   <SelectValue placeholder="Selecione o estágio" />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,9 +181,9 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="priority_id">Prioridade</Label>
+              <Label htmlFor="priority_id" className="label-readable">Prioridade</Label>
               <Select value={formData.priority_id} onValueChange={(value) => handleChange('priority_id', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="input-readable">
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -195,9 +197,9 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="qualification_status_id">Status de Qualificação</Label>
+              <Label htmlFor="qualification_status_id" className="label-readable">Status de Qualificação</Label>
               <Select value={formData.qualification_status_id} onValueChange={(value) => handleChange('qualification_status_id', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="input-readable">
                   <SelectValue placeholder="Status de qualificação" />
                 </SelectTrigger>
                 <SelectContent>
@@ -213,9 +215,9 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="assigned_to">Responsável</Label>
+              <Label htmlFor="assigned_to" className="label-readable">Responsável</Label>
               <Select value={formData.assigned_to} onValueChange={(value) => handleChange('assigned_to', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="input-readable">
                   <SelectValue placeholder="Selecione o responsável" />
                 </SelectTrigger>
                 <SelectContent>
@@ -227,45 +229,49 @@ export const DealEditModal = ({ deal, open, onClose, onSave, mode }: DealEditMod
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="close_date">Data Prevista de Fechamento</Label>
+              <Label htmlFor="close_date" className="label-readable">Data Prevista de Fechamento</Label>
               <Input
                 id="close_date"
                 type="date"
                 value={formData.close_date}
                 onChange={(e) => handleChange('close_date', e.target.value)}
+                className="input-readable"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="follow_up_date">Próximo Follow-up</Label>
+            <Label htmlFor="follow_up_date" className="label-readable">Próximo Follow-up</Label>
             <Input
               id="follow_up_date"
               type="date"
               value={formData.follow_up_date}
               onChange={(e) => handleChange('follow_up_date', e.target.value)}
+              className="input-readable"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description" className="label-readable">Descrição</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
               placeholder="Descrição da oportunidade..."
               rows={3}
+              className="input-readable"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="observations">Observações</Label>
+            <Label htmlFor="observations" className="label-readable">Observações</Label>
             <Textarea
               id="observations"
               value={formData.observations}
               onChange={(e) => handleChange('observations', e.target.value)}
               placeholder="Observações adicionais..."
               rows={3}
+              className="input-readable"
             />
           </div>
 
