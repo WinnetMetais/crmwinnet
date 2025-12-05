@@ -498,16 +498,16 @@ export const WinnetSpreadsheetImporter = () => {
                     <div className="text-green-600">Importadas</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-bold text-red-700">{importResults.errors}</div>
-                    <div className="text-red-600">Erros</div>
+                    <div className="text-lg font-bold text-destructive">{importResults.errors}</div>
+                    <div className="text-destructive">Erros</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-bold text-yellow-700">{importResults.duplicates}</div>
-                    <div className="text-yellow-600">Duplicatas</div>
+                    <div className="text-lg font-bold text-warning">{importResults.duplicates}</div>
+                    <div className="text-warning">Duplicatas</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-bold text-blue-700">{importResults.total}</div>
-                    <div className="text-blue-600">Total</div>
+                    <div className="text-lg font-bold text-info">{importResults.total}</div>
+                    <div className="text-info">Total</div>
                   </div>
                 </div>
               </div>

@@ -36,10 +36,10 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({
   const connectionProgress = (connectedPlatforms / totalPlatforms) * 100;
 
   const getStatusIcon = (status: string | null | undefined) => {
-    if (status === 'success') return <CheckCircle className="h-4 w-4 text-green-600" />;
-    if (status === 'error') return <AlertCircle className="h-4 w-4 text-red-600" />;
-    if (status === 'pending') return <RefreshCw className="h-4 w-4 text-yellow-600 animate-spin" />;
-    return <AlertCircle className="h-4 w-4 text-gray-400" />;
+    if (status === 'success') return <CheckCircle className="h-4 w-4 text-success" />;
+    if (status === 'error') return <AlertCircle className="h-4 w-4 text-destructive" />;
+    if (status === 'pending') return <RefreshCw className="h-4 w-4 text-warning animate-spin" />;
+    return <AlertCircle className="h-4 w-4 text-muted-foreground" />;
   };
 
   const getStatusBadge = (status: string | null | undefined) => {

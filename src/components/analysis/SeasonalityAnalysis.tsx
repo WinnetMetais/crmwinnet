@@ -51,7 +51,7 @@ export const SeasonalityAnalysis = () => {
   const getSeasonIcon = (season: string) => {
     switch (season) {
       case 'Primavera': return <Leaf className="h-5 w-5 text-green-600" />;
-      case 'Verão': return <Sun className="h-5 w-5 text-yellow-600" />;
+      case 'Verão': return <Sun className="h-5 w-5 text-warning" />;
       case 'Outono': return <CloudRain className="h-5 w-5 text-orange-600" />;
       case 'Inverno': return <Snowflake className="h-5 w-5 text-blue-600" />;
       default: return <Calendar className="h-5 w-5" />;

@@ -89,23 +89,23 @@ export const ExpenseControl = () => {
         return 'bg-green-100 text-green-800';
       case 'Pendente':
       case 'pendente':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-warning/15 text-warning';
       case 'Atrasado':
       case 'vencido':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/15 text-destructive';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      'Fixa': 'bg-blue-100 text-blue-800',
-      'Variável': 'bg-orange-100 text-orange-800',
-      'Operacional': 'bg-purple-100 text-purple-800',
-      'Marketing': 'bg-green-100 text-green-800'
+      'Fixa': 'bg-info/15 text-info',
+      'Variável': 'bg-warning/15 text-warning',
+      'Operacional': 'bg-primary/15 text-primary',
+      'Marketing': 'bg-success/15 text-success'
     };
-    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[category as keyof typeof colors] || 'bg-muted text-muted-foreground';
   };
 
   const handleEdit = (expense: any) => {
@@ -197,10 +197,10 @@ export const ExpenseControl = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            <AlertTriangle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-2xl font-bold text-warning">
               R$ {processedData.pendingExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
             <div className="text-xs text-muted-foreground">

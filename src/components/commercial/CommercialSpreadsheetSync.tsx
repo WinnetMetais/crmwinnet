@@ -174,19 +174,19 @@ export const CommercialSpreadsheetSync = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       default:
-        return <RotateCw className="h-4 w-4 text-yellow-500" />;
+        return <RotateCw className="h-4 w-4 text-warning" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'bg-green-100 text-green-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-yellow-100 text-yellow-800';
+      case 'success': return 'bg-success/15 text-success';
+      case 'error': return 'bg-destructive/15 text-destructive';
+      default: return 'bg-warning/15 text-warning';
     }
   };
 

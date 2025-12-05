@@ -237,8 +237,8 @@ export const FinancialDashboard = ({ data }: FinancialDashboardProps) => {
             </div>
           </div>
           {!hasRealData && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
+            <div className="mt-4 p-4 bg-warning/10 border border-warning/30 rounded-lg">
+              <p className="text-sm text-warning">
                 <strong>Nenhuma transação encontrada.</strong> Comece criando sua primeira receita ou despesa na aba "Nova".
               </p>
             </div>

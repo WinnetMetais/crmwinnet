@@ -34,7 +34,7 @@ const ConversionAnalysisReport = () => {
 
   const getConversionColor = (rate: number) => {
     if (rate >= 20) return 'text-green-600';
-    if (rate >= 10) return 'text-yellow-600';
+    if (rate >= 10) return 'text-warning';
     return 'text-red-600';
   };
 

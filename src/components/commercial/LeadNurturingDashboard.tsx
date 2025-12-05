@@ -76,10 +76,10 @@ const LeadNurturingDashboard = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'alta': return 'bg-red-100 text-red-800';
-      case 'media': return 'bg-yellow-100 text-yellow-800';
-      case 'baixa': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'alta': return 'bg-destructive/15 text-destructive';
+      case 'media': return 'bg-warning/15 text-warning';
+      case 'baixa': return 'bg-success/15 text-success';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -94,10 +94,10 @@ const LeadNurturingDashboard = () => {
   };
 
   const getLeadScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
-    if (score >= 40) return 'text-orange-600 bg-orange-100';
-    return 'text-red-600 bg-red-100';
+    if (score >= 80) return 'text-success bg-success/15';
+    if (score >= 60) return 'text-warning bg-warning/15';
+    if (score >= 40) return 'text-warning bg-warning/15';
+    return 'text-destructive bg-destructive/15';
   };
 
   return (

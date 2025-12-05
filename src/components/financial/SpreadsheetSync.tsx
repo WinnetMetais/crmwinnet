@@ -678,15 +678,15 @@ export const SpreadsheetSync = () => {
                     <span>Total de registros processados:</span>
                     <span className="font-medium">{syncResults.total}</span>
                   </div>
-                  <div className="flex justify-between text-green-700">
+                  <div className="flex justify-between text-success">
                     <span>Importados com sucesso:</span>
                     <span className="font-medium">{syncResults.success}</span>
                   </div>
-                  <div className="flex justify-between text-yellow-700">
+                  <div className="flex justify-between text-warning">
                     <span>Duplicatas ignoradas:</span>
                     <span className="font-medium">{syncResults.duplicates}</span>
                   </div>
-                  <div className="flex justify-between text-red-700">
+                  <div className="flex justify-between text-destructive">
                     <span>Erros:</span>
                     <span className="font-medium">{syncResults.errors}</span>
                   </div>

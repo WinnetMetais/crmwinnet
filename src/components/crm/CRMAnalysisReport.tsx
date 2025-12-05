@@ -233,11 +233,11 @@ export const CRMAnalysisReport = () => {
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'high': return <XCircle className="h-4 w-4 text-red-600" />;
-      case 'medium': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'low': return <AlertTriangle className="h-4 w-4 text-blue-600" />;
-      case 'info': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      default: return <AlertTriangle className="h-4 w-4 text-gray-600" />;
+      case 'high': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'medium': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      case 'low': return <AlertTriangle className="h-4 w-4 text-info" />;
+      case 'info': return <CheckCircle className="h-4 w-4 text-success" />;
+      default: return <AlertTriangle className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -328,19 +328,19 @@ export const CRMAnalysisReport = () => {
             <h4 className="font-medium mb-2">Resumo da Análise</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <span className="text-red-600 font-medium">
+                <span className="text-destructive font-medium">
                   {results.filter(r => r.severity === 'high').length}
                 </span>
                 <div className="text-muted-foreground">Críticos</div>
               </div>
               <div>
-                <span className="text-yellow-600 font-medium">
+                <span className="text-warning font-medium">
                   {results.filter(r => r.severity === 'medium').length}
                 </span>
                 <div className="text-muted-foreground">Médios</div>
               </div>
               <div>
-                <span className="text-blue-600 font-medium">
+                <span className="text-info font-medium">
                   {results.filter(r => r.severity === 'low').length}
                 </span>
                 <div className="text-muted-foreground">Baixos</div>

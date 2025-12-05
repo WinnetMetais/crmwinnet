@@ -141,11 +141,11 @@ export const XMLProductImporter: React.FC = () => {
     switch (status) {
       case 'created':
       case 'updated':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'error':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
       case 'preview':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+        return <AlertTriangle className="w-4 h-4 text-warning" />;
       default:
         return null;
     }
@@ -154,9 +154,9 @@ export const XMLProductImporter: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'created':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success/15 text-success';
       case 'updated':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-info/15 text-info';
       case 'error':
         return 'bg-red-100 text-red-800';
       case 'preview':

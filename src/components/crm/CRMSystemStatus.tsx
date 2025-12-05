@@ -19,10 +19,10 @@ export const CRMSystemStatus = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'ok': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'error': return <XCircle className="h-4 w-4 text-red-600" />;
-      default: return <AlertTriangle className="h-4 w-4 text-gray-400" />;
+      case 'ok': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      case 'error': return <XCircle className="h-4 w-4 text-destructive" />;
+      default: return <AlertTriangle className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -37,10 +37,10 @@ export const CRMSystemStatus = () => {
 
   const getOverallStatusColor = () => {
     switch (overallStatus) {
-      case 'ok': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'ok': return 'text-success';
+      case 'warning': return 'text-warning';
+      case 'error': return 'text-destructive';
+      default: return 'text-muted-foreground';
     }
   };
 
