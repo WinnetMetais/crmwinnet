@@ -288,40 +288,43 @@ const handleSubmit = async (e: React.FormEvent) => {
         {/* Informações do Orçamento */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="date">Data</Label>
+            <Label htmlFor="date" className="label-readable">Data</Label>
             <Input
               id="date"
               type="date"
               value={formData.date}
               onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
               required
+              className="input-readable"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="validUntil">Válido até</Label>
+            <Label htmlFor="validUntil" className="label-readable">Válido até</Label>
             <Input
               id="validUntil"
               type="date"
               value={formData.validUntil}
               onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
               required
+              className="input-readable"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="requestedBy">Solicitado por</Label>
+            <Label htmlFor="requestedBy" className="label-readable">Solicitado por</Label>
             <Input
               id="requestedBy"
               value={formData.requestedBy}
               onChange={(e) => setFormData(prev => ({ ...prev, requestedBy: e.target.value }))}
               placeholder="Nome do solicitante"
+              className="input-readable"
             />
           </div>
         </div>
 
         {/* Dados do Cliente */}
-        <div className="border rounded-lg p-4 bg-gray-50">
+        <div className="border rounded-lg p-4 bg-muted/30">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium">CLIENTE</h3>
+            <h3 className="font-semibold text-foreground">CLIENTE</h3>
             <Button 
               type="button" 
               onClick={() => setShowCustomerSelector(true)} 
@@ -334,50 +337,55 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="customerName">Nome/Razão Social *</Label>
+              <Label htmlFor="customerName" className="label-readable">Nome/Razão Social *</Label>
               <Input
                 id="customerName"
                 value={formData.customerName}
                 onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
                 placeholder="Nome do cliente"
                 required
+                className="input-readable"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="customerCnpj">CNPJ/CPF</Label>
+              <Label htmlFor="customerCnpj" className="label-readable">CNPJ/CPF</Label>
               <Input
                 id="customerCnpj"
                 value={formData.customerCnpj}
                 onChange={(e) => setFormData(prev => ({ ...prev, customerCnpj: e.target.value }))}
                 placeholder="XX.XXX.XXX/XXXX-XX"
+                className="input-readable"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="customerEmail">E-mail</Label>
+              <Label htmlFor="customerEmail" className="label-readable">E-mail</Label>
               <Input
                 id="customerEmail"
                 type="email"
                 value={formData.customerEmail}
                 onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
                 placeholder="email@cliente.com"
+                className="input-readable"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="customerPhone">Telefone</Label>
+              <Label htmlFor="customerPhone" className="label-readable">Telefone</Label>
               <Input
                 id="customerPhone"
                 value={formData.customerPhone}
                 onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
                 placeholder="(11) 99999-9999"
+                className="input-readable"
               />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="customerAddress">Endereço</Label>
+              <Label htmlFor="customerAddress" className="label-readable">Endereço</Label>
               <Input
                 id="customerAddress"
                 value={formData.customerAddress}
                 onChange={(e) => setFormData(prev => ({ ...prev, customerAddress: e.target.value }))}
                 placeholder="Endereço completo"
+                className="input-readable"
               />
             </div>
           </div>
