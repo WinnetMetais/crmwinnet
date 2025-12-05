@@ -43,9 +43,9 @@ export const DataQualityDashboard = () => {
   } = useCRMData();
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBadgeVariant = (score: number) => {
@@ -229,11 +229,11 @@ export const DataQualityDashboard = () => {
               <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center gap-3">
                   {log.validation_status === 'passed' ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <CheckCircle className="h-5 w-5 text-success" />
                   ) : log.validation_status === 'warning' ? (
-                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                    <AlertTriangle className="h-5 w-5 text-warning" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-red-600" />
+                    <XCircle className="h-5 w-5 text-destructive" />
                   )}
                   <div>
                     <p className="font-medium">{log.table_name}</p>

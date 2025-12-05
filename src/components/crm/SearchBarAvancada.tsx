@@ -106,18 +106,18 @@ export const SearchBarAvancada: React.FC = () => {
   const getStatusColor = (status: string, type: 'cliente' | 'orcamento') => {
     if (type === 'cliente') {
       switch (status) {
-        case 'lead': return 'bg-blue-100 text-blue-800';
-        case 'contato': return 'bg-yellow-100 text-yellow-800';
-        case 'proposta': return 'bg-orange-100 text-orange-800';
-        case 'negociacao': return 'bg-purple-100 text-purple-800';
-        case 'fechado': return 'bg-green-100 text-green-800';
-        default: return 'bg-gray-100 text-gray-800';
+        case 'lead': return 'bg-info/15 text-info';
+        case 'contato': return 'bg-warning/15 text-warning';
+        case 'proposta': return 'bg-warning/15 text-warning';
+        case 'negociacao': return 'bg-primary/15 text-primary';
+        case 'fechado': return 'bg-success/15 text-success';
+        default: return 'bg-muted text-muted-foreground';
       }
     } else {
       switch (status) {
-        case 'rascunho': return 'bg-gray-100 text-gray-800';
-        case 'enviado': return 'bg-blue-100 text-blue-800';
-        case 'aprovado': return 'bg-green-100 text-green-800';
+        case 'rascunho': return 'bg-muted text-muted-foreground';
+        case 'enviado': return 'bg-info/15 text-info';
+        case 'aprovado': return 'bg-success/15 text-success';
         case 'rejeitado': return 'bg-red-100 text-red-800';
         default: return 'bg-gray-100 text-gray-800';
       }

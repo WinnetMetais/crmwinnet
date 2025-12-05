@@ -43,19 +43,19 @@ export const CRMDataValidator = () => {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'low': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'low': return 'bg-success/15 text-success';
+      case 'medium': return 'bg-warning/15 text-warning';
+      case 'high': return 'bg-destructive/15 text-destructive';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'low': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'medium': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'high': return <XCircle className="h-4 w-4 text-red-600" />;
-      default: return <AlertTriangle className="h-4 w-4 text-gray-600" />;
+      case 'low': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'medium': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      case 'high': return <XCircle className="h-4 w-4 text-destructive" />;
+      default: return <AlertTriangle className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -113,9 +113,9 @@ export const CRMDataValidator = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Médios</p>
-                <p className="text-3xl font-bold text-yellow-600">{stats.medium}</p>
+                <p className="text-3xl font-bold text-warning">{stats.medium}</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-600" />
+              <AlertTriangle className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>

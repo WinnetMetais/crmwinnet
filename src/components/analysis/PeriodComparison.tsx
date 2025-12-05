@@ -134,7 +134,7 @@ export const PeriodComparison = () => {
   const getVariationColor = (variation: number) => {
     if (variation > 10) return 'text-green-600';
     if (variation > 0) return 'text-green-500';
-    if (variation > -5) return 'text-yellow-600';
+    if (variation > -5) return 'text-warning';
     return 'text-red-600';
   };
 

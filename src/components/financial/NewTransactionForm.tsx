@@ -213,9 +213,10 @@ export const NewTransactionForm = ({ onClose, editingTransaction }: NewTransacti
             />
 
             <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
+              <Label htmlFor="description" className="label-readable">Descrição</Label>
               <Textarea
                 id="description"
+                className="input-readable"
                 value={formData.description}
                 onChange={(e) => updateFormData({ description: e.target.value })}
                 placeholder="Informações adicionais sobre a transação..."

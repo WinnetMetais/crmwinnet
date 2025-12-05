@@ -351,11 +351,11 @@ export const EnhancedQuoteSystem = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'expired': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'approved': return 'bg-success/15 text-success';
+      case 'pending': return 'bg-warning/15 text-warning';
+      case 'rejected': return 'bg-destructive/15 text-destructive';
+      case 'expired': return 'bg-muted text-muted-foreground';
+      default: return 'bg-info/15 text-info';
     }
   };
 
@@ -573,9 +573,9 @@ export const EnhancedQuoteSystem = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
-                <p className="text-2xl font-bold text-yellow-600">{metrics.pending_quotes}</p>
+                <p className="text-2xl font-bold text-warning">{metrics.pending_quotes}</p>
               </div>
-              <Clock className="h-8 w-8 text-yellow-600" />
+              <Clock className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>

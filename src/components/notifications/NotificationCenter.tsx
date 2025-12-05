@@ -25,12 +25,12 @@ export const NotificationCenter = () => {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'info':
       default:
-        return <Info className="h-4 w-4 text-blue-600" />;
+        return <Info className="h-4 w-4 text-info" />;
     }
   };
 

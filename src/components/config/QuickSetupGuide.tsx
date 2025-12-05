@@ -78,10 +78,10 @@ export const QuickSetupGuide: React.FC<QuickSetupGuideProps> = ({ onStartSetup }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Fácil': return 'bg-green-100 text-green-800';
-      case 'Médio': return 'bg-yellow-100 text-yellow-800';
-      case 'Avançado': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Fácil': return 'bg-success/15 text-success';
+      case 'Médio': return 'bg-warning/15 text-warning';
+      case 'Avançado': return 'bg-destructive/15 text-destructive';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 

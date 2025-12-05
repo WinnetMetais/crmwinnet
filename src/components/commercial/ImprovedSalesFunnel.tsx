@@ -101,15 +101,15 @@ export const ImprovedSalesFunnel = () => {
   const overallConversion = totalLeads > 0 ? (wonDeals / totalLeads) * 100 : 0;
 
   const getDaysColor = (days: number) => {
-    if (days <= 7) return 'text-green-600';
-    if (days <= 15) return 'text-yellow-600';
-    return 'text-red-600';
+    if (days <= 7) return 'text-success';
+    if (days <= 15) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getProbabilityColor = (probability: number) => {
-    if (probability >= 75) return 'bg-green-100 text-green-800';
-    if (probability >= 50) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (probability >= 75) return 'bg-success/15 text-success';
+    if (probability >= 50) return 'bg-warning/15 text-warning';
+    return 'bg-destructive/15 text-destructive';
   };
 
   return (

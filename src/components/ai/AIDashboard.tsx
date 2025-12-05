@@ -141,7 +141,7 @@ export const AIDashboard = () => {
                   <p className="text-sm font-medium text-muted-foreground">Tokens Usados</p>
                   <p className="text-2xl font-bold">{metrics?.tokensUsed.toLocaleString() || 0}</p>
                 </div>
-                <Zap className="h-8 w-8 text-yellow-600" />
+                <Zap className="h-8 w-8 text-warning" />
               </div>
             )}
             {!metricsLoading && metrics && (

@@ -186,9 +186,10 @@ export const ClienteFormAvancado: React.FC<ClienteFormAvancadoProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo *</Label>
+              <Label htmlFor="name" className="label-readable">Nome Completo *</Label>
               <Input
                 id="name"
+                className="input-readable"
                 value={formData.name}
                 onChange={(e) => updateFormData('name', e.target.value)}
                 placeholder="Ex: João Silva"
@@ -197,10 +198,11 @@ export const ClienteFormAvancado: React.FC<ClienteFormAvancadoProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="label-readable">Email *</Label>
               <Input
                 id="email"
                 type="email"
+                className="input-readable"
                 value={formData.email}
                 onChange={(e) => updateFormData('email', e.target.value)}
                 placeholder="joao@empresa.com"
@@ -209,9 +211,10 @@ export const ClienteFormAvancado: React.FC<ClienteFormAvancadoProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefone *</Label>
+              <Label htmlFor="phone" className="label-readable">Telefone *</Label>
               <Input
                 id="phone"
+                className="input-readable"
                 value={formData.phone}
                 onChange={(e) => updateFormData('phone', e.target.value)}
                 placeholder="(11) 99999-9999"
@@ -237,9 +240,10 @@ export const ClienteFormAvancado: React.FC<ClienteFormAvancadoProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="company">Nome da Empresa</Label>
+              <Label htmlFor="company" className="label-readable">Nome da Empresa</Label>
               <Input
                 id="company"
+                className="input-readable"
                 value={formData.company}
                 onChange={(e) => updateFormData('company', e.target.value)}
                 placeholder="Ex: Empresa LTDA"
@@ -247,9 +251,10 @@ export const ClienteFormAvancado: React.FC<ClienteFormAvancadoProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cnpj">CNPJ</Label>
+              <Label htmlFor="cnpj" className="label-readable">CNPJ</Label>
               <Input
                 id="cnpj"
+                className="input-readable"
                 value={formData.cnpj}
                 onChange={(e) => updateFormData('cnpj', e.target.value)}
                 placeholder="00.000.000/0000-00"
