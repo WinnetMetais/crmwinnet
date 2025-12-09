@@ -124,12 +124,12 @@ const Promotions = () => {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
-                    <Tag className="mr-2 h-4 w-4 text-green-500" />
+                    <Tag className="mr-2 h-4 w-4 text-success" />
                     Promoções Ativas
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-success">
                     {promotions.filter(p => p.status === 'Ativa').length}
                   </div>
                 </CardContent>
@@ -137,12 +137,12 @@ const Promotions = () => {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
-                    <CalendarIcon className="mr-2 h-4 w-4 text-blue-500" />
+                    <CalendarIcon className="mr-2 h-4 w-4 text-info" />
                     Promoções Agendadas
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-info">
                     {promotions.filter(p => p.status === 'Agendada').length}
                   </div>
                 </CardContent>
@@ -240,10 +240,10 @@ const Promotions = () => {
                             variant="outline"
                             className={cn(
                               promo.status === 'Ativa' 
-                                ? "bg-green-100 text-green-800 hover:bg-green-100" 
+                                ? "bg-success/15 text-success hover:bg-success/20" 
                                 : promo.status === 'Agendada'
-                                ? "bg-blue-100 text-blue-800 hover:bg-blue-100" 
-                                : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                                ? "bg-info/15 text-info hover:bg-info/20" 
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
                             )}
                           >
                             {promo.status}
@@ -254,7 +254,7 @@ const Promotions = () => {
                           <Button variant="ghost" size="sm">
                             Editar
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-red-500">
+                          <Button variant="ghost" size="sm" className="text-destructive">
                             Excluir
                           </Button>
                         </TableCell>

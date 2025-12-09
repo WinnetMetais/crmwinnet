@@ -122,7 +122,7 @@ export const CustomReportsGenerator = () => {
                 <p className="text-sm font-medium text-muted-foreground">Relatórios Salvos</p>
                 <p className="text-3xl font-bold">{savedReports.length}</p>
               </div>
-              <FileBarChart className="h-8 w-8 text-blue-600" />
+              <FileBarChart className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -134,7 +134,7 @@ export const CustomReportsGenerator = () => {
                 <p className="text-sm font-medium text-muted-foreground">Executados Hoje</p>
                 <p className="text-3xl font-bold">8</p>
               </div>
-              <Play className="h-8 w-8 text-green-600" />
+              <Play className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>

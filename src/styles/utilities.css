@@ -1,15 +1,21 @@
-/* Utilitários para substituir classes amarelas */
+/* Utilitários para substituir classes de cores hardcoded */
 
-/* Substituições de amarelo para warning (laranja) */
+/* ============================================
+   SUBSTITUIÇÕES DE AMARELO PARA WARNING
+   ============================================ */
 .text-yellow-600,
 .text-yellow-500,
 .text-yellow-700,
-.text-yellow-800 {
+.text-yellow-800,
+.text-amber-600,
+.text-amber-500 {
   color: hsl(var(--warning)) !important;
 }
 
 .bg-yellow-100,
-.bg-yellow-50 {
+.bg-yellow-50,
+.bg-amber-100,
+.bg-amber-50 {
   background: hsl(var(--warning) / 0.15) !important;
 }
 
@@ -19,7 +25,8 @@
 }
 
 .border-yellow-200,
-.border-yellow-300 {
+.border-yellow-300,
+.border-amber-200 {
   border-color: hsl(var(--warning) / 0.3) !important;
 }
 
@@ -28,7 +35,111 @@
   border-color: hsl(var(--warning)) !important;
 }
 
-/* Classes de status pendente */
+/* ============================================
+   SUBSTITUIÇÕES DE VERDE PARA SUCCESS
+   ============================================ */
+.text-green-600,
+.text-green-500,
+.text-green-700,
+.text-green-800,
+.text-emerald-600,
+.text-emerald-500 {
+  color: hsl(var(--success)) !important;
+}
+
+.bg-green-100,
+.bg-green-50,
+.bg-emerald-100,
+.bg-emerald-50 {
+  background: hsl(var(--success) / 0.15) !important;
+}
+
+.bg-green-500,
+.bg-green-600 {
+  background: hsl(var(--success)) !important;
+}
+
+.border-green-200,
+.border-green-300,
+.border-emerald-200 {
+  border-color: hsl(var(--success) / 0.3) !important;
+}
+
+/* ============================================
+   SUBSTITUIÇÕES DE VERMELHO PARA DESTRUCTIVE
+   ============================================ */
+.text-red-600,
+.text-red-500,
+.text-red-700,
+.text-red-800 {
+  color: hsl(var(--destructive)) !important;
+}
+
+.bg-red-100,
+.bg-red-50 {
+  background: hsl(var(--destructive) / 0.15) !important;
+}
+
+.bg-red-500,
+.bg-red-600 {
+  background: hsl(var(--destructive)) !important;
+}
+
+.border-red-200,
+.border-red-300 {
+  border-color: hsl(var(--destructive) / 0.3) !important;
+}
+
+/* ============================================
+   SUBSTITUIÇÕES DE AZUL PARA INFO/PRIMARY
+   ============================================ */
+.text-blue-600,
+.text-blue-500,
+.text-blue-700,
+.text-blue-800 {
+  color: hsl(var(--info)) !important;
+}
+
+.bg-blue-100,
+.bg-blue-50 {
+  background: hsl(var(--info) / 0.15) !important;
+}
+
+.bg-blue-500,
+.bg-blue-600 {
+  background: hsl(var(--primary)) !important;
+}
+
+.border-blue-200,
+.border-blue-300 {
+  border-color: hsl(var(--info) / 0.3) !important;
+}
+
+/* ============================================
+   SUBSTITUIÇÕES DE CINZA PARA MUTED
+   ============================================ */
+.text-gray-600,
+.text-gray-500,
+.text-slate-600,
+.text-slate-500 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.bg-gray-100,
+.bg-gray-50,
+.bg-slate-100,
+.bg-slate-50 {
+  background: hsl(var(--muted)) !important;
+}
+
+.text-gray-800,
+.text-slate-800 {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* ============================================
+   CLASSES DE STATUS SEMÂNTICAS
+   ============================================ */
 .status-pending {
   background: hsl(var(--warning) / 0.15) !important;
   color: hsl(var(--warning)) !important;
@@ -53,7 +164,9 @@
   border: 1px solid hsl(var(--info) / 0.3) !important;
 }
 
-/* Melhorias de legibilidade */
+/* ============================================
+   MELHORIAS DE LEGIBILIDADE
+   ============================================ */
 .text-readable {
   color: hsl(var(--foreground)) !important;
   line-height: 1.6;
@@ -67,9 +180,9 @@
 
 /* Cards com melhor contraste */
 .card-high-contrast {
-  background: white !important;
+  background: hsl(var(--card)) !important;
   border: 1px solid hsl(var(--border));
-  color: hsl(var(--foreground)) !important;
+  color: hsl(var(--card-foreground)) !important;
 }
 
 /* Labels legíveis */
@@ -84,7 +197,7 @@
 /* Inputs com melhor visibilidade */
 .input-readable {
   color: hsl(var(--foreground)) !important;
-  background: white !important;
+  background: hsl(var(--background)) !important;
   border: 1px solid hsl(var(--border));
   font-size: 0.9375rem;
 }
@@ -102,7 +215,7 @@
   font-size: 0.8125rem;
 }
 
-/* Fix para fundos transparentes que mostram amarelo */
+/* Fix para fundos transparentes */
 .bg-secondary\/30,
 .bg-secondary\/20,
 .bg-secondary\/10 {
