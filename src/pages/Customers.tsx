@@ -467,9 +467,9 @@ const confirmDelete = () => {
                             </TableCell>
                             <TableCell>
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                customer.status === "active" ? "bg-green-100 text-green-800" :
-                                customer.status === "inactive" ? "bg-gray-100 text-gray-800" :
-                                customer.status === "lead" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                                customer.status === "active" ? "bg-success/15 text-success" :
+                                customer.status === "inactive" ? "bg-muted text-muted-foreground" :
+                                customer.status === "lead" ? "bg-info/15 text-info" : "bg-muted text-muted-foreground"
                               }`}>
                                 {customer.status === "active" ? "Ativo" :
                                  customer.status === "inactive" ? "Inativo" :

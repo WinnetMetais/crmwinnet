@@ -85,28 +85,28 @@ const TasksNotifications = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "alta": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "média": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "baixa": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
+      case "alta": return "bg-destructive/15 text-destructive";
+      case "média": return "bg-warning/15 text-warning";
+      case "baixa": return "bg-success/15 text-success";
+      default: return "bg-muted text-muted-foreground";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "concluida": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "em-progresso": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "pendente": return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-      case "atrasada": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
+      case "concluida": return "bg-success/15 text-success";
+      case "em-progresso": return "bg-info/15 text-info";
+      case "pendente": return "bg-muted text-muted-foreground";
+      case "atrasada": return "bg-destructive/15 text-destructive";
+      default: return "bg-muted text-muted-foreground";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "concluida": return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case "em-progresso": return <Clock className="h-4 w-4 text-blue-600" />;
-      case "pendente": return <AlertTriangle className="h-4 w-4 text-gray-600" />;
+      case "concluida": return <CheckCircle className="h-4 w-4 text-success" />;
+      case "em-progresso": return <Clock className="h-4 w-4 text-info" />;
+      case "pendente": return <AlertTriangle className="h-4 w-4 text-muted-foreground" />;
       default: return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
