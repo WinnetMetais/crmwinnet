@@ -186,7 +186,7 @@ const Campaigns = () => {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center text-sm font-medium">
-                    <Zap className="mr-2 h-4 w-4 text-yellow-500" />
+                    <Zap className="mr-2 h-4 w-4 text-warning" />
                     Cliques
                   </CardTitle>
                 </CardHeader>

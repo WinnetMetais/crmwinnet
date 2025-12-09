@@ -88,8 +88,8 @@ const Templates = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'proposta': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'follow-up': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'boas-vindas': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'follow-up': return 'bg-warning/15 text-warning dark:bg-warning/20 dark:text-warning';
+      case 'boas-vindas': return 'bg-success/15 text-success dark:bg-success/20 dark:text-success';
       case 'confirmacao': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       case 'promocao': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';

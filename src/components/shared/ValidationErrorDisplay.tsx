@@ -320,7 +320,7 @@ export const ValidationErrorDisplay: React.FC<ValidationErrorDisplayProps> = ({
                   </div>
                   <Progress 
                     value={overallQuality} 
-                    className={`h-2 ${overallQuality >= 80 ? 'text-green-600' : overallQuality >= 60 ? 'text-yellow-600' : 'text-red-600'}`} 
+                    className={`h-2 ${overallQuality >= 80 ? 'text-success' : overallQuality >= 60 ? 'text-warning' : 'text-destructive'}`} 
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-center">
@@ -377,10 +377,10 @@ export const ValidationErrorDisplay: React.FC<ValidationErrorDisplayProps> = ({
                   variant={qualityPercentage >= 80 ? "default" : qualityPercentage >= 60 ? "secondary" : "destructive"}
                   className={
                     qualityPercentage >= 80 
-                      ? "bg-green-100 text-green-800" 
+                      ? "bg-success/15 text-success" 
                       : qualityPercentage >= 60 
-                        ? "bg-yellow-100 text-yellow-800" 
-                        : "bg-red-100 text-red-800"
+                        ? "bg-warning/15 text-warning" 
+                        : "bg-destructive/15 text-destructive"
                   }
                 >
                   {qualityPercentage >= 80 ? (

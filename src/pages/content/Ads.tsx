@@ -68,8 +68,8 @@ const Ads = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Ativa': return 'bg-green-100 text-green-800';
-      case 'Pausada': return 'bg-yellow-100 text-yellow-800';
+      case 'Ativa': return 'bg-success/15 text-success';
+      case 'Pausada': return 'bg-warning/15 text-warning';
       case 'Finalizada': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }

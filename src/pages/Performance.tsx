@@ -73,11 +73,11 @@ const Performance = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "excellent": return "text-green-600";
-      case "good": return "text-blue-600";
-      case "warning": return "text-yellow-600";
-      case "poor": return "text-red-600";
-      default: return "text-gray-600";
+      case "excellent": return "text-success";
+      case "good": return "text-info";
+      case "warning": return "text-warning";
+      case "poor": return "text-destructive";
+      default: return "text-muted-foreground";
     }
   };
 
@@ -290,7 +290,7 @@ const Performance = () => {
                         <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center space-x-4">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                              index === 0 ? 'bg-yellow-500' : 
+                              index === 0 ? 'bg-warning' : 
                               index === 1 ? 'bg-gray-400' : 
                               index === 2 ? 'bg-orange-600' : 'bg-blue-500'
                             }`}>
@@ -313,8 +313,8 @@ const Performance = () => {
                             </div>
                             <Badge variant="outline" className={
                               member.vendas >= member.meta ? 
-                              "bg-green-100 text-green-800" : 
-                              "bg-yellow-100 text-yellow-800"
+                              "bg-success/15 text-success" : 
+                              "bg-warning/15 text-warning"
                             }>
                               {member.vendas >= member.meta ? "Meta atingida" : "Abaixo da meta"}
                             </Badge>
