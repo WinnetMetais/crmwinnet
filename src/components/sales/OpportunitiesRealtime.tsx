@@ -48,7 +48,7 @@ export const OpportunitiesRealtime = () => {
   const getStageColor = (stage: string) => {
     switch (stage) {
       case 'prospecting': return 'bg-blue-100 text-blue-800';
-      case 'qualification': return 'bg-yellow-100 text-yellow-800';
+      case 'qualification': return 'bg-warning/15 text-warning';
       case 'proposal': return 'bg-orange-100 text-orange-800';
       case 'negotiation': return 'bg-purple-100 text-purple-800';
       case 'won': return 'bg-green-100 text-green-800';

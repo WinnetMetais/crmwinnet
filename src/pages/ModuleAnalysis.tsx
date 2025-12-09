@@ -103,19 +103,19 @@ const ModuleAnalysis = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "implementado": return "bg-green-100 text-green-800";
-      case "parcial": return "bg-yellow-100 text-yellow-800";
-      case "não implementado": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "implementado": return "bg-success/15 text-success";
+      case "parcial": return "bg-warning/15 text-warning";
+      case "não implementado": return "bg-destructive/15 text-destructive";
+      default: return "bg-muted text-muted-foreground";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "implementado": return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case "parcial": return <AlertCircle className="h-5 w-5 text-yellow-600" />;
-      case "não implementado": return <XCircle className="h-5 w-5 text-red-600" />;
-      default: return <AlertCircle className="h-5 w-5 text-gray-600" />;
+      case "implementado": return <CheckCircle className="h-5 w-5 text-success" />;
+      case "parcial": return <AlertCircle className="h-5 w-5 text-warning" />;
+      case "não implementado": return <XCircle className="h-5 w-5 text-destructive" />;
+      default: return <AlertCircle className="h-5 w-5 text-muted-foreground" />;
     }
   };
 

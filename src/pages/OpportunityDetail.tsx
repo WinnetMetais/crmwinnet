@@ -42,7 +42,7 @@ const stageClass = (s: string) => {
     case "prospecting":
       return "bg-primary/10 text-primary";
     case "qualification":
-      return "bg-yellow-500/10 text-yellow-600";
+      return "bg-warning/10 text-warning";
     case "proposal":
       return "bg-orange-500/10 text-orange-600";
     case "negotiation":
