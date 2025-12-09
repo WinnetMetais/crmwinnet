@@ -35,20 +35,14 @@ export function ThemeProvider({
     root.classList.remove("dark");
     root.classList.add("light");
     
-    // FORÇA FUNDO BRANCO AGRESSIVAMENTE
-    root.style.setProperty('background', 'white', 'important');
-    root.style.setProperty('background-color', 'white', 'important');
-    document.body.style.setProperty('background', 'white', 'important');
-    document.body.style.setProperty('background-color', 'white', 'important');
-    
-    // Remove qualquer variável CSS que possa estar causando o amarelo
+    // Limpa estilos inline que podem conflitar
+    root.style.removeProperty('background');
+    root.style.removeProperty('background-color');
+    root.style.removeProperty('--background');
+    root.style.removeProperty('--card');
+    root.style.removeProperty('--popover');
     root.style.removeProperty('--tw-bg-opacity');
     root.style.removeProperty('--tw-text-opacity');
-    
-    // Força as variáveis CSS para branco
-    root.style.setProperty('--background', '255 255 255');
-    root.style.setProperty('--card', '255 255 255');
-    root.style.setProperty('--popover', '255 255 255');
     
   }, [theme]);
 
@@ -61,9 +55,7 @@ export function ThemeProvider({
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
-      <div style={{backgroundColor: 'white'}}>
-        {children}
-      </div>
+      {children}
     </ThemeProviderContext.Provider>
   );
 }
