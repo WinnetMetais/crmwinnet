@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, Building2, Phone, Mail, MapPin, DollarSign, User, FileText } from "lucide-react";
+import { Building2, User, X } from "lucide-react";
 import { CustomerFormData } from "@/types/customer";
 import { toast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomerFormProps {
   onSubmit: (data: CustomerFormData) => void;
@@ -35,9 +35,33 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
     website: '',
     social_reason: '',
     status: 'prospect',
+    lifecycle_stage: 'lead',
     notes: '',
     contact_person: '',
+    contact_role: '',
+    whatsapp: '',
+    tags: [],
     ...initialData
+  });
+
+  const [tagInput, setTagInput] = useState('');
+
+  // Buscar fontes de lead
+  const { data: leadSources = [] } = useQuery({
+    queryKey: ['lead-sources'],
+    queryFn: async () => {
+      const { data } = await supabase.from('lead_sources').select('*').eq('active', true);
+      return data || [];
+    }
+  });
+
+  // Buscar tipos de cliente
+  const { data: customerTypes = [] } = useQuery({
+    queryKey: ['customer-types'],
+    queryFn: async () => {
+      const { data } = await supabase.from('customer_types').select('*').eq('active', true);
+      return data || [];
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,6 +78,23 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
     value: CustomerFormData[K]
   ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const addTag = () => {
+    if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...(prev.tags || []), tagInput.trim()]
+      }));
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: (prev.tags || []).filter(tag => tag !== tagToRemove)
+    }));
   };
 
   return (
@@ -168,12 +209,12 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
             </div>
 
             {/* Campos adicionais em collapse */}
-            <details className="border rounded-lg p-4">
+            <details className="border rounded-lg p-4" open>
               <summary className="cursor-pointer font-medium text-sm text-readable">
-                Informações Adicionais (Clique para expandir)
+                Informações Comerciais
               </summary>
               <div className="mt-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cnpj" className="label-readable">CNPJ/CPF</Label>
                     <Input
@@ -181,6 +222,16 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                       value={formData.cnpj}
                       onChange={(e) => handleChange('cnpj', e.target.value)}
                       placeholder="XX.XXX.XXX/XXXX-XX"
+                      className="input-readable"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp" className="label-readable">WhatsApp</Label>
+                    <Input
+                      id="whatsapp"
+                      value={formData.whatsapp || ''}
+                      onChange={(e) => handleChange('whatsapp', e.target.value)}
+                      placeholder="(00) 00000-0000"
                       className="input-readable"
                     />
                   </div>
@@ -208,31 +259,100 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' 
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lead_source" className="label-readable">Origem do Lead</Label>
+                    <Label htmlFor="contact_role" className="label-readable">Cargo do Contato</Label>
                     <Input
-                      id="lead_source"
-                      value={formData.lead_source}
-                      onChange={(e) => handleChange('lead_source', e.target.value)}
-                      placeholder="Como nos conheceu?"
+                      id="contact_role"
+                      value={formData.contact_role || ''}
+                      onChange={(e) => handleChange('contact_role', e.target.value)}
+                      placeholder="Ex: Gerente de Compras"
                       className="input-readable"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="status" className="label-readable">Status *</Label>
-                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'prospect' | 'qualified' | 'customer') => handleChange('status', value)}>
-                    <SelectTrigger className="input-readable">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="prospect">Prospecto</SelectItem>
-                      <SelectItem value="qualified">Qualificado</SelectItem>
-                      <SelectItem value="customer">Cliente</SelectItem>
-                      <SelectItem value="active">Ativo</SelectItem>
-                      <SelectItem value="inactive">Inativo</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lead_source" className="label-readable">Origem do Lead</Label>
+                    <Select value={formData.lead_source} onValueChange={(value) => handleChange('lead_source', value)}>
+                      <SelectTrigger className="input-readable">
+                        <SelectValue placeholder="Selecione a origem" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {leadSources.map((source: any) => (
+                          <SelectItem key={source.id} value={source.name}>{source.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customer_type_id" className="label-readable">Tipo de Cliente</Label>
+                    <Select value={formData.customer_type_id || ''} onValueChange={(value) => handleChange('customer_type_id', value)}>
+                      <SelectTrigger className="input-readable">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customerTypes.map((type: any) => (
+                          <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lifecycle_stage" className="label-readable">Estágio do Ciclo</Label>
+                    <Select value={formData.lifecycle_stage} onValueChange={(value: any) => handleChange('lifecycle_stage', value)}>
+                      <SelectTrigger className="input-readable">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="lead">Lead</SelectItem>
+                        <SelectItem value="prospect">Prospecto</SelectItem>
+                        <SelectItem value="qualified">Qualificado</SelectItem>
+                        <SelectItem value="customer">Cliente</SelectItem>
+                        <SelectItem value="churned">Perdido</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="status" className="label-readable">Status</Label>
+                    <Select value={formData.status} onValueChange={(value: any) => handleChange('status', value)}>
+                      <SelectTrigger className="input-readable">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="prospect">Prospecto</SelectItem>
+                        <SelectItem value="qualified">Qualificado</SelectItem>
+                        <SelectItem value="customer">Cliente</SelectItem>
+                        <SelectItem value="active">Ativo</SelectItem>
+                        <SelectItem value="inactive">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="label-readable">Tags</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        placeholder="Adicionar tag..."
+                        className="input-readable"
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                      />
+                      <Button type="button" variant="outline" onClick={addTag}>+</Button>
+                    </div>
+                    {formData.tags && formData.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {formData.tags.map((tag, idx) => (
+                          <Badge key={idx} variant="secondary" className="flex items-center gap-1">
+                            {tag}
+                            <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </details>
