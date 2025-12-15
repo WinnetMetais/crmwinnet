@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Download, Send, Calculator, FileText, Package2 } from "lucide-react";
+import { Plus, Trash2, Download, Send, Calculator, FileText, Package2, Printer } from "lucide-react";
 import { QuoteFormData, QuoteItem } from "@/types/quote";
 import { ProductSelector } from "@/components/products/ProductSelector";
 import { CustomerSelector } from "@/components/quotes/CustomerSelector";
@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { quoteService, QuoteItemInsert, QuoteInsert } from "@/services/quotes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUnifiedRealtimeSync } from '@/hooks/useUnifiedRealtimeSync';
+import { generateQuotePDF, downloadQuoteAsHTML, printQuote } from "@/services/quotePdf";
 import type { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -248,11 +249,66 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 };
 
-  const generatePDF = () => {
-    toast({
-      title: "PDF Gerado",
-      description: "O orçamento foi exportado para PDF com sucesso!",
-    });
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+
+  const generatePDF = async () => {
+    if (!formData.customerName || formData.items.length === 0) {
+      toast({
+        title: "Dados incompletos",
+        description: "Preencha o cliente e adicione pelo menos um item.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingPDF(true);
+    try {
+      const { html, filename } = await generateQuotePDF(formData);
+      downloadQuoteAsHTML(html, filename);
+      toast({
+        title: "PDF Gerado",
+        description: `Orçamento ${formData.quoteNumber} exportado com sucesso!`,
+      });
+    } catch (error: any) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: error.message || "Falha ao gerar o PDF do orçamento",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
+  const handlePrintQuote = async () => {
+    if (!formData.customerName || formData.items.length === 0) {
+      toast({
+        title: "Dados incompletos",
+        description: "Preencha o cliente e adicione pelo menos um item.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingPDF(true);
+    try {
+      const { html } = await generateQuotePDF(formData);
+      printQuote(html);
+      toast({
+        title: "Impressão",
+        description: "Janela de impressão aberta!",
+      });
+    } catch (error: any) {
+      console.error('Erro ao imprimir:', error);
+      toast({
+        title: "Erro ao imprimir",
+        description: error.message || "Falha ao preparar impressão",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPDF(false);
+    }
   };
 
   const sendQuote = () => {
@@ -574,20 +630,24 @@ const handleSubmit = async (e: React.FormEvent) => {
         </div>
 
         {/* Ações */}
-        <div className="flex gap-3 pt-2">
-<Button type="submit" className="flex-1" disabled={saving}>
-  <Calculator className="h-4 w-4 mr-2" />
-  {saving ? 'Salvando...' : 'Salvar Orçamento'}
-</Button>
-          <Button type="button" variant="outline" onClick={generatePDF}>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Button type="submit" className="flex-1 min-w-[150px]" disabled={saving}>
+            <Calculator className="h-4 w-4 mr-2" />
+            {saving ? 'Salvando...' : 'Salvar Orçamento'}
+          </Button>
+          <Button type="button" variant="outline" onClick={generatePDF} disabled={generatingPDF}>
             <Download className="h-4 w-4 mr-2" />
-            Gerar PDF
+            {generatingPDF ? 'Gerando...' : 'Baixar PDF'}
+          </Button>
+          <Button type="button" variant="outline" onClick={handlePrintQuote} disabled={generatingPDF}>
+            <Printer className="h-4 w-4 mr-2" />
+            Imprimir
           </Button>
           <Button type="button" variant="outline" onClick={sendQuote}>
             <Send className="h-4 w-4 mr-2" />
-            Enviar Cliente
+            Enviar
           </Button>
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
         </div>

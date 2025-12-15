@@ -1,1 +1,31 @@
 project_id = "vnlxkqenljwrdlmjvtht"
+
+[functions.generate-quote-pdf]
+verify_jwt = false
+
+[functions.quote-pdf]
+verify_jwt = false
+
+[functions.send-quote-email]
+verify_jwt = false
+
+[functions.send-whatsapp-message]
+verify_jwt = false
+
+[functions.ai-assistant]
+verify_jwt = false
+
+[functions.import-xlsx]
+verify_jwt = false
+
+[functions.xml-product-importer]
+verify_jwt = false
+
+[functions.exchange-google-auth-code]
+verify_jwt = false
+
+[functions.validate-form-data]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false
