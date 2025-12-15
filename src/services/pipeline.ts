@@ -1,5 +1,3 @@
-
-// @ts-nocheck - Missing tables and columns - types will be regenerated after migration
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -269,12 +267,30 @@ export async function getDealsWithRelations() {
 // Criar nova oportunidade/deal
 export async function createDeal(dealData: Omit<Deal, 'id' | 'created_at' | 'updated_at'>) {
   try {
+    // Remove campos não aceitos pelo banco
+    const { customers, pipeline_stages, priorities, qualification_status, ...cleanData } = dealData as any;
+    
     const { data, error } = await supabase
       .from('deals')
       .insert({
-        ...dealData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        customer_id: cleanData.customer_id,
+        title: cleanData.title,
+        value: cleanData.value || 0,
+        description: cleanData.description,
+        status: cleanData.status,
+        stage: cleanData.stage,
+        assigned_to: cleanData.assigned_to,
+        pipeline_stage_id: cleanData.pipeline_stage_id,
+        priority_id: cleanData.priority_id,
+        qualification_status_id: cleanData.qualification_status_id,
+        estimated_value: cleanData.estimated_value,
+        actual_value: cleanData.actual_value,
+        close_date: cleanData.close_date,
+        proposal_sent_date: cleanData.proposal_sent_date,
+        proposal_value: cleanData.proposal_value,
+        follow_up_date: cleanData.follow_up_date,
+        active_follow_up: cleanData.active_follow_up,
+        observations: cleanData.observations
       })
       .select()
       .single();
@@ -411,7 +427,16 @@ export async function createPipelineActivity(activity: Omit<PipelineActivity, 'i
   try {
     const { data, error } = await supabase
       .from('pipeline_activities')
-      .insert(activity)
+      .insert({
+        deal_id: activity.deal_id,
+        type: activity.activity_type || 'note',
+        description: activity.description || activity.title || '',
+        activity_type: activity.activity_type,
+        title: activity.title,
+        customer_id: activity.customer_id,
+        scheduled_date: activity.scheduled_date,
+        status: activity.status || 'pendente'
+      })
       .select()
       .single();
       

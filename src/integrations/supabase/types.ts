@@ -336,6 +336,30 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_types: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -346,6 +370,7 @@ export type Database = {
           contact_role: string | null
           created_at: string | null
           created_by: string | null
+          customer_type_id: string | null
           data_completeness_percentage: number | null
           data_quality_score: number | null
           email: string | null
@@ -353,13 +378,17 @@ export type Database = {
           last_contact_date: string | null
           last_validated_at: string | null
           lead_source: string | null
+          lifecycle_stage: string | null
           name: string
           notes: string | null
+          owner_id: string | null
           phone: string | null
           priority: string | null
           segment_id: string | null
+          social_reason: string | null
           state: string | null
           status: string | null
+          tags: string[] | null
           updated_at: string | null
           validation_errors: string[] | null
           website: string | null
@@ -375,6 +404,7 @@ export type Database = {
           contact_role?: string | null
           created_at?: string | null
           created_by?: string | null
+          customer_type_id?: string | null
           data_completeness_percentage?: number | null
           data_quality_score?: number | null
           email?: string | null
@@ -382,13 +412,17 @@ export type Database = {
           last_contact_date?: string | null
           last_validated_at?: string | null
           lead_source?: string | null
+          lifecycle_stage?: string | null
           name: string
           notes?: string | null
+          owner_id?: string | null
           phone?: string | null
           priority?: string | null
           segment_id?: string | null
+          social_reason?: string | null
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           updated_at?: string | null
           validation_errors?: string[] | null
           website?: string | null
@@ -404,6 +438,7 @@ export type Database = {
           contact_role?: string | null
           created_at?: string | null
           created_by?: string | null
+          customer_type_id?: string | null
           data_completeness_percentage?: number | null
           data_quality_score?: number | null
           email?: string | null
@@ -411,20 +446,32 @@ export type Database = {
           last_contact_date?: string | null
           last_validated_at?: string | null
           lead_source?: string | null
+          lifecycle_stage?: string | null
           name?: string
           notes?: string | null
+          owner_id?: string | null
           phone?: string | null
           priority?: string | null
           segment_id?: string | null
+          social_reason?: string | null
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           updated_at?: string | null
           validation_errors?: string[] | null
           website?: string | null
           whatsapp?: string | null
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_customer_type_id_fkey"
+            columns: ["customer_type_id"]
+            isOneToOne: false
+            referencedRelation: "customer_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers_quotes: {
         Row: {
@@ -515,16 +562,29 @@ export type Database = {
       }
       deals: {
         Row: {
+          active_follow_up: boolean | null
           actual_revenue: number | null
+          actual_value: number | null
           assigned_to: string | null
+          close_date: string | null
           closed_at: string | null
           created_at: string | null
           customer_id: string
           description: string | null
+          estimated_value: number | null
           expected_revenue: number | null
+          follow_up_date: string | null
           id: string
+          last_contact_date: string | null
+          observations: string | null
           opportunity_id: string | null
           owner_id: string | null
+          pipeline_stage_id: string | null
+          presentation_sent_date: string | null
+          priority_id: string | null
+          proposal_sent_date: string | null
+          proposal_value: number | null
+          qualification_status_id: string | null
           stage: string | null
           status: string | null
           title: string
@@ -532,16 +592,29 @@ export type Database = {
           value: number
         }
         Insert: {
+          active_follow_up?: boolean | null
           actual_revenue?: number | null
+          actual_value?: number | null
           assigned_to?: string | null
+          close_date?: string | null
           closed_at?: string | null
           created_at?: string | null
           customer_id: string
           description?: string | null
+          estimated_value?: number | null
           expected_revenue?: number | null
+          follow_up_date?: string | null
           id?: string
+          last_contact_date?: string | null
+          observations?: string | null
           opportunity_id?: string | null
           owner_id?: string | null
+          pipeline_stage_id?: string | null
+          presentation_sent_date?: string | null
+          priority_id?: string | null
+          proposal_sent_date?: string | null
+          proposal_value?: number | null
+          qualification_status_id?: string | null
           stage?: string | null
           status?: string | null
           title: string
@@ -549,16 +622,29 @@ export type Database = {
           value: number
         }
         Update: {
+          active_follow_up?: boolean | null
           actual_revenue?: number | null
+          actual_value?: number | null
           assigned_to?: string | null
+          close_date?: string | null
           closed_at?: string | null
           created_at?: string | null
           customer_id?: string
           description?: string | null
+          estimated_value?: number | null
           expected_revenue?: number | null
+          follow_up_date?: string | null
           id?: string
+          last_contact_date?: string | null
+          observations?: string | null
           opportunity_id?: string | null
           owner_id?: string | null
+          pipeline_stage_id?: string | null
+          presentation_sent_date?: string | null
+          priority_id?: string | null
+          proposal_sent_date?: string | null
+          proposal_value?: number | null
+          qualification_status_id?: string | null
           stage?: string | null
           status?: string | null
           title?: string
@@ -578,6 +664,27 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_pipeline_stage_id_fkey"
+            columns: ["pipeline_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_priority_id_fkey"
+            columns: ["priority_id"]
+            isOneToOne: false
+            referencedRelation: "priorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_qualification_status_id_fkey"
+            columns: ["qualification_status_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_status"
             referencedColumns: ["id"]
           },
         ]
@@ -633,6 +740,30 @@ export type Database = {
           module?: string
           permission_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      lead_sources: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -749,6 +880,7 @@ export type Database = {
           product_id: string | null
           quantity: number
           total: number
+          unit: string | null
           unit_price: number
         }
         Insert: {
@@ -759,6 +891,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           total?: number
+          unit?: string | null
           unit_price?: number
         }
         Update: {
@@ -769,6 +902,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           total?: number
+          unit?: string | null
           unit_price?: number
         }
         Relationships: [
@@ -907,39 +1041,64 @@ export type Database = {
       }
       pipeline_activities: {
         Row: {
+          activity_type: string | null
+          completed_date: string | null
           created_at: string | null
           created_by: string | null
+          customer_id: string | null
           deal_id: string
           description: string
           id: string
           new_stage: string | null
           opportunity_id: string | null
           previous_stage: string | null
+          scheduled_date: string | null
+          status: string | null
+          title: string | null
           type: string
         }
         Insert: {
+          activity_type?: string | null
+          completed_date?: string | null
           created_at?: string | null
           created_by?: string | null
+          customer_id?: string | null
           deal_id: string
           description: string
           id?: string
           new_stage?: string | null
           opportunity_id?: string | null
           previous_stage?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          title?: string | null
           type: string
         }
         Update: {
+          activity_type?: string | null
+          completed_date?: string | null
           created_at?: string | null
           created_by?: string | null
+          customer_id?: string | null
           deal_id?: string
           description?: string
           id?: string
           new_stage?: string | null
           opportunity_id?: string | null
           previous_stage?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          title?: string | null
           type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pipeline_activities_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pipeline_activities_deal_id_fkey"
             columns: ["deal_id"]
@@ -952,6 +1111,58 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_history: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          deal_id: string | null
+          from_stage_id: string | null
+          id: string
+          reason: string | null
+          to_stage_id: string | null
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          deal_id?: string | null
+          from_stage_id?: string | null
+          id?: string
+          reason?: string | null
+          to_stage_id?: string | null
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          deal_id?: string | null
+          from_stage_id?: string | null
+          id?: string
+          reason?: string | null
+          to_stage_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_history_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_history_from_stage_id_fkey"
+            columns: ["from_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_history_to_stage_id_fkey"
+            columns: ["to_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
             referencedColumns: ["id"]
           },
         ]
@@ -986,6 +1197,33 @@ export type Database = {
           name?: string
           order_position?: number
           pipeline_type?: string | null
+        }
+        Relationships: []
+      }
+      priorities: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string | null
+          id: string
+          level: number
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          level?: number
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          level?: number
+          name?: string
         }
         Relationships: []
       }
@@ -1086,6 +1324,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      qualification_status: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       quote_items: {
         Row: {
