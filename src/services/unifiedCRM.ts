@@ -247,7 +247,7 @@ class UnifiedCRMService {
       .from('customers')
       .insert({
         ...customerData,
-        owner_id: (await supabase.auth.getUser()).data.user?.id
+        created_by: (await supabase.auth.getUser()).data.user?.id
       })
       .select()
       .single();
