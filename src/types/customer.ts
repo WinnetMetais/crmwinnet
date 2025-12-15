@@ -18,12 +18,20 @@ export interface CustomerFormData {
   website: string;
   social_reason: string;
   
+  // Novos campos
+  lifecycle_stage: 'lead' | 'prospect' | 'qualified' | 'customer' | 'churned';
+  customer_type_id?: string;
+  tags?: string[];
+  owner_id?: string;
+  
   // Status e acompanhamento
   status: 'active' | 'inactive' | 'prospect' | 'qualified' | 'customer';
   notes: string;
   
   // Dados de contato adicional
   contact_person: string;
+  contact_role?: string;
+  whatsapp?: string;
   
   // Timestamps
   created_at?: string;

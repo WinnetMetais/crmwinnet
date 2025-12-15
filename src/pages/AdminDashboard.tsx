@@ -1,11 +1,13 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Building2, Shield, Activity } from 'lucide-react';
+import { Users, Building2, Shield, Database } from 'lucide-react';
 import { ProfileManagement } from '@/components/admin/ProfileManagement';
 import { DepartmentManagement } from '@/components/admin/DepartmentManagement';
 import { PermissionManagement } from '@/components/admin/PermissionManagement';
 import { AdminStats } from '@/components/admin/AdminStats';
+import { CommercialTestData } from '@/components/admin/CommercialTestData';
+import { CreateSampleData } from '@/components/financial/CreateSampleData';
 
 const AdminDashboard = () => {
   return (
@@ -21,7 +23,7 @@ const AdminDashboard = () => {
         <AdminStats />
 
         <Tabs defaultValue="profiles" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto">
             <TabsTrigger value="profiles" className="gap-2">
               <Users className="h-4 w-4" />
               Perfis
@@ -33,6 +35,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="permissions" className="gap-2">
               <Shield className="h-4 w-4" />
               Permissões
+            </TabsTrigger>
+            <TabsTrigger value="testdata" className="gap-2">
+              <Database className="h-4 w-4" />
+              Dados de Teste
             </TabsTrigger>
           </TabsList>
 
@@ -46,6 +52,13 @@ const AdminDashboard = () => {
 
           <TabsContent value="permissions" className="space-y-4">
             <PermissionManagement />
+          </TabsContent>
+
+          <TabsContent value="testdata" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CommercialTestData />
+              <CreateSampleData />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
