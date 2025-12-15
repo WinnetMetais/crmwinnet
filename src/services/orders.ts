@@ -1,4 +1,3 @@
-// @ts-nocheck - Missing tables and columns - types will be regenerated after migration
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Order {
@@ -10,8 +9,11 @@ export interface Order {
   gross_total: number;
   net_total: number;
   status: string;
-  owner_id: string;
-  user_id: string;
+  owner_id?: string;
+  user_id?: string;
+  delivery_address?: string;
+  payment_method?: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -20,10 +22,14 @@ export interface OrderItem {
   id: string;
   order_id: string;
   product_id?: string;
+  description?: string;
   quantity: number;
   unit_price: number;
+  subtotal: number;
   created_at: string;
 }
+
+export type OrderInsert = Omit<Order, 'id' | 'created_at' | 'updated_at'>;
 
 class OrdersService {
   async getOrders() {
@@ -55,12 +61,14 @@ class OrdersService {
     return data;
   }
 
-  async createOrder(orderData: Partial<Order>) {
+  async createOrder(orderData: Omit<Order, 'id' | 'created_at' | 'updated_at'>) {
+    const { data: userData } = await supabase.auth.getUser();
+    
     const { data, error } = await supabase
       .from('orders')
       .insert([{
         ...orderData,
-        user_id: (await supabase.auth.getUser()).data.user?.id || ''
+        user_id: userData.user?.id
       }])
       .select()
       .single();

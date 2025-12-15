@@ -39,11 +39,13 @@ export const quoteService = {
 
   // Criar novo orçamento
   async createQuote(quote: QuoteInsert) {
+    const { data: userData } = await supabase.auth.getUser();
+    
     const { data, error } = await supabase
       .from('quotes')
       .insert({
         ...quote,
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        created_by: userData.user?.id
       })
       .select()
       .single();

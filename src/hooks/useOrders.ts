@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ordersService, Order } from "@/services/orders";
+import { ordersService, Order, OrderInsert } from "@/services/orders";
 import { useToast } from "@/hooks/use-toast";
 
 export const useOrders = () => {
@@ -10,7 +10,6 @@ export const useOrders = () => {
 };
 
 export const useOrder = (id: string) => {
-  // @ts-ignore - Suppress complex union type error
   return useQuery({
     queryKey: ['orders', id],
     queryFn: () => ordersService.getOrder(id),
@@ -23,7 +22,7 @@ export const useCreateOrder = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (orderData: Partial<Order>) => ordersService.createOrder(orderData),
+    mutationFn: (orderData: OrderInsert) => ordersService.createOrder(orderData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       toast({

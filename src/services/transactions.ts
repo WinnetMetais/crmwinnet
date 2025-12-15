@@ -1,4 +1,3 @@
-// @ts-nocheck - Missing tables and functions - types will be regenerated after migration
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -10,8 +9,9 @@ export const transactionService = {
   // Buscar todas as transações ativas (não deletadas)
   async getTransactions() {
     const { data, error } = await supabase
-      .from('active_transactions')
+      .from('transactions')
       .select('*')
+      .is('deleted_at', null)
       .order('date', { ascending: false });
     
     if (error) throw error;
