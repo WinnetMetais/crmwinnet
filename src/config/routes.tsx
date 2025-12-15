@@ -35,6 +35,7 @@ const ProductionSetup = lazy(() => import('@/pages/ProductionSetup'));
 const Quotes = lazy(() => import('@/pages/Quotes'));
 const OpportunityDetail = lazy(() => import('@/pages/OpportunityDetail'));
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 
 // Content sub-pages
 const ContentPlan = lazy(() => import('@/pages/content/ContentPlan'));
@@ -60,6 +61,7 @@ export interface RouteConfig {
 export const routes: RouteConfig[] = [
   { path: '/', element: Index },
   { path: '/auth', element: Auth },
+  { path: '/auth/reset-password', element: ResetPassword },
   { path: '/dashboard', element: Dashboard },
   { path: '/financial', element: Financial },
   { path: '/customers', element: Customers },
