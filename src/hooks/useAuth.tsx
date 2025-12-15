@@ -9,7 +9,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
@@ -78,12 +79,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     navigate('/');
   }
 
-  async function signUp(email: string, password: string) {
+  async function signUp(email: string, password: string, fullName?: string) {
     const { error, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          full_name: fullName,
+        }
       }
     });
 
@@ -115,6 +119,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Você foi autenticado automaticamente.",
       });
       navigate('/');
+    }
+  }
+
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      }
+    });
+
+    if (error) {
+      toast({
+        title: "Erro ao fazer login com Google",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
     }
   }
 
@@ -183,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         signIn,
         signUp,
+        signInWithGoogle,
         signOut,
         resetPassword,
         updatePassword,
