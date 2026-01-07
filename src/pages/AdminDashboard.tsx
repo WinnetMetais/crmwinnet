@@ -1,13 +1,13 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Building2, Shield, Database } from 'lucide-react';
+import { Users, Building2, Shield, Database, Zap } from 'lucide-react';
 import { ProfileManagement } from '@/components/admin/ProfileManagement';
 import { DepartmentManagement } from '@/components/admin/DepartmentManagement';
 import { PermissionManagement } from '@/components/admin/PermissionManagement';
 import { AdminStats } from '@/components/admin/AdminStats';
 import { CommercialTestData } from '@/components/admin/CommercialTestData';
 import { CreateSampleData } from '@/components/financial/CreateSampleData';
+import { SystemInitializer } from '@/components/admin/SystemInitializer';
 
 const AdminDashboard = () => {
   return (
@@ -22,8 +22,12 @@ const AdminDashboard = () => {
 
         <AdminStats />
 
-        <Tabs defaultValue="profiles" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+        <Tabs defaultValue="system" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+            <TabsTrigger value="system" className="gap-2">
+              <Zap className="h-4 w-4" />
+              Sistema
+            </TabsTrigger>
             <TabsTrigger value="profiles" className="gap-2">
               <Users className="h-4 w-4" />
               Perfis
@@ -41,6 +45,10 @@ const AdminDashboard = () => {
               Dados de Teste
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="system" className="space-y-4">
+            <SystemInitializer />
+          </TabsContent>
 
           <TabsContent value="profiles" className="space-y-4">
             <ProfileManagement />
