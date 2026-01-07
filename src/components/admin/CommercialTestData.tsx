@@ -92,34 +92,34 @@ export const CommercialTestData = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="font-medium text-blue-700">Cliente</div>
-                <div className="text-blue-600">{result.customer?.name}</div>
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="font-medium text-blue-700 dark:text-blue-300">Cliente</div>
+                <div className="text-blue-600 dark:text-blue-400">{result.customer?.name}</div>
                 <Badge variant="outline" className="mt-1">{result.customer?.company}</Badge>
               </div>
               
-              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                <div className="font-medium text-green-700">Produto</div>
-                <div className="text-green-600">{result.product?.name}</div>
+              <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="font-medium text-green-700 dark:text-green-300">Produto</div>
+                <div className="text-green-600 dark:text-green-400">{result.product?.name}</div>
                 <Badge variant="outline" className="mt-1">R$ {result.product?.sale_price?.toFixed(2)}</Badge>
               </div>
               
-              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div className="font-medium text-yellow-700">Oportunidade</div>
-                <div className="text-yellow-600 truncate">{result.opportunity?.title}</div>
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <div className="font-medium text-yellow-700 dark:text-yellow-300">Oportunidade</div>
+                <div className="text-yellow-600 dark:text-yellow-400 truncate">{result.opportunity?.title}</div>
                 <Badge variant="outline" className="mt-1">R$ {result.opportunity?.value?.toFixed(2)}</Badge>
               </div>
               
-              <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                <div className="font-medium text-purple-700">Orçamento</div>
-                <div className="text-purple-600">{result.quote?.quote_number}</div>
+              <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="font-medium text-purple-700 dark:text-purple-300">Orçamento</div>
+                <div className="text-purple-600 dark:text-purple-400">{result.quote?.quote_number}</div>
                 <Badge variant="outline" className="mt-1">R$ {result.quote?.total?.toFixed(2)}</Badge>
               </div>
             </div>
             
-            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-              <div className="font-medium text-orange-700">Deal (Negociação)</div>
-              <div className="text-orange-600">{result.deal?.title}</div>
+            <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
+              <div className="font-medium text-orange-700 dark:text-orange-300">Deal (Negociação)</div>
+              <div className="text-orange-600 dark:text-orange-400">{result.deal?.title}</div>
               <div className="flex gap-2 mt-1">
                 <Badge variant="outline">R$ {result.deal?.value?.toFixed(2)}</Badge>
                 <Badge variant="secondary">{result.deal?.stage}</Badge>
@@ -129,7 +129,7 @@ export const CommercialTestData = () => {
         )}
 
         {error && (
-          <div className="flex items-center gap-2 text-red-600 p-3 bg-red-50 rounded-lg">
+          <div className="flex items-center gap-2 text-destructive p-3 bg-destructive/10 rounded-lg">
             <AlertCircle className="h-5 w-5" />
             <span>{error}</span>
           </div>
