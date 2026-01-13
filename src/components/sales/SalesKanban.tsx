@@ -238,24 +238,24 @@ export const SalesKanban = () => {
                         </div>
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">{deal.title}</p>
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{deal.title}</p>
                       
                       {deal.customers?.company && (
-                        <div className="flex items-center text-xs text-gray-500 mb-1">
+                        <div className="flex items-center text-xs text-muted-foreground mb-1">
                           <Building className="h-3 w-3 mr-1" />
                           <span className="truncate">{deal.customers.company}</span>
                         </div>
                       )}
                       
                       {deal.customers?.city && (
-                        <div className="flex items-center text-xs text-gray-500 mb-2">
+                        <div className="flex items-center text-xs text-muted-foreground mb-2">
                           <MapPin className="h-3 w-3 mr-1" />
                           <span className="truncate">{deal.customers.city}, {deal.customers.state}</span>
                         </div>
                       )}
                       
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-green-600 text-sm">
+                        <span className="font-medium text-primary text-sm">
                           {formatCurrency(deal.estimated_value)}
                         </span>
                         {deal.qualification_status && (
@@ -281,7 +281,7 @@ export const SalesKanban = () => {
                       </div>
                       
                       {deal.follow_up_date && new Date(deal.follow_up_date) > new Date() && (
-                        <div className="mt-2 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                        <div className="mt-2 text-xs text-warning dark:text-warning bg-warning/10 px-2 py-1 rounded">
                           Follow-up: {new Date(deal.follow_up_date).toLocaleDateString('pt-BR')}
                         </div>
                       )}
@@ -298,38 +298,38 @@ export const SalesKanban = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-lg font-bold text-blue-600">{filteredDeals.length}</div>
-              <div className="text-sm text-gray-600">Total de Negócios</div>
+              <div className="text-lg font-bold text-primary">{filteredDeals.length}</div>
+              <div className="text-sm text-muted-foreground">Total de Negócios</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-lg font-bold text-green-600">
+              <div className="text-lg font-bold text-primary">
                 {formatCurrency(filteredDeals.reduce((sum: number, deal: Deal) => sum + (deal.estimated_value || 0), 0))}
               </div>
-              <div className="text-sm text-gray-600">Valor Total</div>
+              <div className="text-sm text-muted-foreground">Valor Total</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-lg font-bold text-orange-600">
+              <div className="text-lg font-bold text-warning">
                 {filteredDeals.filter((deal: Deal) => deal.pipeline_stages?.name === 'Negociação').length}
               </div>
-              <div className="text-sm text-gray-600">Em Negociação</div>
+              <div className="text-sm text-muted-foreground">Em Negociação</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-lg font-bold text-purple-600">
+              <div className="text-lg font-bold text-secondary-foreground">
                 {filteredDeals.filter((deal: Deal) => deal.active_follow_up).length}
               </div>
-              <div className="text-sm text-gray-600">Follow-ups Ativos</div>
+              <div className="text-sm text-muted-foreground">Follow-ups Ativos</div>
             </div>
           </CardContent>
         </Card>
